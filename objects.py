@@ -1,0 +1,157 @@
+
+class ObjectState:
+    def __init__ (self):
+        self.title = None
+        self.colors = set()
+        self.power = None
+        self.toughness = None
+        self.owner_id = None
+        self.controller_id = None
+        self.tags = set()
+        self.types = set()
+        self.supertypes = set()
+        self.subtypes = set()
+        self.abilities = []
+        self.manacost = None
+        self.text = None
+
+    def copy (self):
+        ret = ObjectState ()
+        ret.title = self.title
+        ret.colors = self.colors.copy()
+        ret.power = self.power
+        ret.toughness = self.toughness
+        ret.owner_id = self.owner_id
+        ret.controller_id = self.controller_id
+        ret.tags = self.tags.copy()
+        ret.text = self.text
+        ret.types = self.types.copy()
+        ret.supertypes = self.supertypes.copy()
+        ret.subtypes = self.subtypes.copy()
+        ret.abilities = self.abilities[:]
+        ret.manacost = self.manacost
+        return ret
+
+class Object:
+    def __init__ (self):
+        self.id = None
+        self.initial_state = ObjectState()
+        self.controller_id = None
+        self.owner_id = None
+        self.state = ObjectState()
+        self.zone_id = None
+        self.timestamp = None
+        self.tapped = False
+        self.rules = None
+        self.damage = 0
+
+    def get_state (self):
+        return self.state
+
+    def copy(self):
+        ret = Object()
+        return ret._copy(self)
+
+    def _copy(self, src):
+        self.id = src.id
+        self.initial_state = src.initial_state.copy()
+        self.controller_id = src.controller_id
+        self.owner_id = src.owner_id
+        self.state = src.state.copy()
+        self.zone_id = src.zone_id
+        self.timestamp = src.timestamp
+        self.tapped = src.tapped
+        self.rules = src.rules
+        self.damage = src.damage
+
+    def __str__ (self):
+        return "[#%s %s {%s}]" % (str(self.id), self.state.title, ", ".join(self.state.tags))
+
+class Zone(Object):
+    def __init__ (self, type=None, player_id=None):
+        Object.__init__ (self)
+        self.type = type
+        self.player_id = player_id
+        self.objects = []
+
+    def copy(self):
+        return Zone()._copy(self)
+
+    def _copy(self, src):
+        Object._copy(self, src)
+        self.type = src.type
+        self.player_id = src.player_id
+        self.objects = src.objects[:]
+
+class Player (Object):
+    def __init__ (self, name):
+        Object.__init__ (self)
+        self.hand_id = None
+        self.library_id = None
+        self.graveyard_id = None
+        self.life = 20
+        self.name = name
+        self.manapool = ""
+        self.maximum_hand_size = 0
+        self.land_play_limit = 0
+        self.land_played = 0
+
+    def copy(self):
+        return Player(self.name)._copy(self)
+
+    def _copy(self, src):
+        Object._copy(self, src)
+        self.hand_id = src.hand_id
+        self.library_id = src.library_id
+        self.graveyard_id = src.graveyard_id
+        self.life = src.life
+        self.name = src.name
+        self.manapool = src.manapool
+        self.maximum_hand_size = src.maximum_hand_size
+        self.land_play_limit = src.land_play_limit
+        self.land_played = src.land_played
+
+class DamageAssignment (Object):
+    def __init__ (self, damage_assignment_list):
+        Object.__init__ (self)
+        self.damage_assignment_list = damage_assignment_list
+        self.initial_state.title = "damage assignment"
+        self.initial_state.text = "damage assignment"
+
+    def copy(self):
+        return DamageAssignment(self.damage_assignment_list)._copy(self)
+
+    def _copy(self, src):
+        Object._copy(self, src)
+        self.damage_assignment_list = src.damage_assignment_list
+
+
+class LastKnownInformation:
+    def __init__ (self, game, object):
+        self.game = game
+        self.object = object
+        self._state = None
+        self.moved = False
+        self.game.add_event_handler ("pre_zone_transfer", self.onPreMoveObject)
+
+    def get_id(self):
+        return self.object.id
+
+    def get_object (self):
+        return self.object
+
+    def get_state (self):
+        if self._state == None:
+            return self.object.get_state ()
+        else:
+            return self._state
+
+    def onPreMoveObject (self, object, zone_from, zone_to):
+        if self._state is None and object == self.object:
+            self._state = self.object.get_state()
+            self.moved = True
+
+    def is_moved(self):
+        return self.moved
+
+

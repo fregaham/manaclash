@@ -1,0 +1,253 @@
+
+from objects import *
+
+class Game:
+    def __init__ (self, input, output):
+        self.zones = []
+        self.objects = {}
+        self.obj_max_id = 0
+
+        self.players = []
+
+        self.active_player_id = None
+        self.current_player_priority_id = None
+        self.current_phase = None
+        self.current_step = None
+
+        # Player chosen as the defending player during combat
+        self.defending_player_id = None
+        self.attacking_player_id = None
+
+        self.triggered_abilities = []
+
+        self.declared_attackers = set()
+        self.declared_blockers = set()
+        self.declared_blockers_map = {}
+
+        self.input = input
+        self.output = output
+
+        self.events = {}
+
+        self.turn_number = 0
+
+    def add_object (self, object):
+        self.obj_max_id += 1
+        object.id = self.obj_max_id
+        self.objects[self.obj_max_id] = object
+        #object.game = self
+
+    def create_card (self, title, manacost, supertypes, types, subtypes, tags, text, power, toughness):
+        o = Object()
+        self.add_object(o)
+        o.initial_state.title = title
+        o.initial_state.manacost = manacost
+        o.initial_state.supertypes.update(supertypes)
+        o.initial_state.types.update(types)
+        o.initial_state.subtypes.update(subtypes)
+        o.initial_state.tags.update(tags)
+        o.initial_state.text = text
+        o.initial_state.power = power
+        o.initial_state.toughness = toughness
+
+        self.output.createCard(o.id)
+
+        return o
+
+    def create_player (self, name, cards):
+        player = Player (name)
+        self.add_object (player)
+        self.players.append (player)
+
+        player.initial_state.types.add ("player")
+        player.initial_state.title = name
+
+        hand = Zone ("hand", player.id)
+        library = Zone ("library", player.id)
+        graveyard = Zone ("graveyard", player.id)
+
+        self.add_object(hand)
+        self.add_object(library)
+        self.add_object(graveyard)
+
+        self.output.createPlayer(player.id)
+        self.output.createZone(hand.id, player.id, "hand")
+        self.output.createZone(library.id, player.id, "library")
+        self.output.createZone(graveyard.id, player.id, "graveyard")
+
+        player.hand_id = hand.id
+        player.library_id = library.id
+        player.graveyard_id = graveyard.id
+
+        self.zones.append (hand)
+        self.zones.append (library)
+        self.zones.append (graveyard)
+
+        # add cards to player library
+        for card in cards:
+            card.zone_id = library.id
+            card.owner_id = player.id
+            card.controller_id = player.id
+            library.objects.append (card)
+
+        return player
+
+    def get_next_player (self, player):
+        # returns a player next in succession
+        for i in range(len(self.players)):
+            if self.players[i] == player:
+                return self.players[(i + 1) % len(self.players)]
+
+    def create_damage_assignment(self, damage_assignment_list):
+        d = DamageAssignment(damage_assignment_list)
+        self.add_object(d)
+        return d
+
+    def create (self):
+        #p1 = self.create_player("Alice")
+        #p2 = self.create_player("Bob")  
+
+        in_play = Zone ("in play", None)
+        self.add_object(in_play)
+
+        removed = Zone("removed", None)
+        self.add_object(removed)
+
+        stack = Zone("stack", None)
+        self.add_object(stack)
+
+        self.output.createZone(in_play.id, None, "in play")
+        self.output.createZone(removed.id, None, "removed")
+        self.output.createZone(stack.id, None, "stack")
+
+        self.zones.append ( in_play )
+        self.zones.append ( removed )
+        self.zones.append ( stack )
+
+        self.stack = self.get_stack_zone().objects
+
+    def get_stack_length (self):
+        return len(self.stack)
+
+    def stack_top (self):
+        return self.stack[-1]
+
+    def stack_pop (self):
+        return self.stack.pop ()
+
+    def stack_push (self, s):
+        assert s.zone_id == None
+        s.zone_id = self.get_stack_zone().id
+        self.stack.append (s)
+
+    def add_event_handler (self, event, handler):
+        event_handlers = self.events.get (event)
+        if event_handlers is None:
+            event_handlers = []
+            self.events[event] = event_handlers
+
+        event_handlers.append (handler)
+
+    def raise_event (self, event, *args, **kargs):
+        event_handlers = self.events.get(event, [])
+        for handler in event_handlers:
+            handler (*args, **kargs)
+
+    def _get_zone (self, type):
+        for zone in self.zones:
+            if zone.type == type:
+                return zone
+        return None
+
+    def get_in_play_zone (self):
+        return self._get_zone ("in play")
+
+    def get_stack_zone (self):
+        return self._get_zone ("stack")
+
+    def get_hand(self, player):
+        return self.objects[player.hand_id]
+
+    def get_library(self, player):
+        return self.objects[player.library_id]
+
+    def get_graveyard(self, player):
+        return self.objects[player.graveyard_id]
+
+    def doTap (self, object):
+        self.raise_event ("pre_tap", object)
+        object.tapped = True
+        self.raise_event ("post_tap", object)
+
+    def doUntap (self, object):
+        object.tapped = False
+
+    def doAddMana (self, player, source, mana):
+        player.manapool += mana
+
+    def doDrawCard (self, player):
+        library = self.get_library(player)
+        if len(library.objects) == 0:
+            #  TODO: lose
+            pass
+        else:
+            card = library.objects[-1]
+            self.doZoneTransfer(card, self.get_hand(player))
+
+    def get_active_player(self):
+        return self.objects[self.active_player_id]
+
+    def get_defending_player(self):
+        return self.objects.get(self.defending_player_id)
+
+    def get_attacking_player(self):
+        return self.objects.get(self.attacking_player_id)
+
+    def doZoneTransfer (self, object, zone):
+        object.damage = 0
+        zone_from = self.objects[object.zone_id]
+
+        print "pre zone transfer %s from %s" % (object, object.zone_id)
+
+        self.raise_event ("pre_zone_transfer", object, zone_from, zone)
+        object.zone_id = zone.id
+        zone_from.objects.remove(object)
+        zone.objects.append (object)
+
+        print "post zone transfer %s to %s" % (object, object.zone_id)
+
+        # objects moving into play have summoning sickness tag applied to them
+        if zone == self.get_in_play_zone():
+            object.initial_state.tags.add("summoning sickness")
+
+        self.raise_event ("post_zone_transfer", object, zone_from, zone)
+
+
+    def doDiscard(self, player, card):
+        self.doZoneTransfer (card, self.get_graveyard(player))
+
+    def doLoseLife(self, player, count):
+        player.life -= count
+
+    def doAssignDamage(self, list):
+        print "doAssignDamage"
+        for a, b, n in list:
+            if not b.is_moved():
+                if "player" in b.get_state().types:
+                    print "%d damage to player %s " % (n, b.get_object())
+                    b.get_object().life -= n
+                else:
+                    print "%d damage to %s" % (n, b.get_object())
+                    b.get_object().damage += n
+
+    def doDestroy(self, obj):
+        print "doDestroy %s" % (obj)
+        self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
+    def delete(self, obj):
+        print "deleting object %s" % obj
+        self.objects[obj.zone_id].objects.remove(obj)
+        obj.zone_id = None
+        del self.objects[obj.id]
+
+
