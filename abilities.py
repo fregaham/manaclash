@@ -18,13 +18,15 @@
 # 
 
 from cost import *
+from functools import partial
 
 class Ability:
     def get_text(self, obj):
         return ""
 
 class TriggeredAbility(Ability):
-    pass
+    def register(self, game, obj):
+        pass
 
 class StaticAbility(Ability):
     pass
@@ -82,4 +84,19 @@ class PlaySpell(ActivatedAbility):
     def determineCost(self, game, obj, player):
         c = ManaCost(obj.state.manacost)
         return [c]
+
+
+class WhenSelfComesIntoPlayDoEffectAbility(TriggeredAbility):
+    def __init__(self, effect):
+        self.effect = effect
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
+
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
+        if SELF.id == obj.id and zone_to.type == "in play":
+            from process import process_trigger_effect
+            process_trigger_effect(game, obj, self.effect)
+
+
 

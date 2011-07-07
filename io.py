@@ -72,6 +72,10 @@ class Output:
     def createZone(self, id, owner, name):
         print "Creating zone %d %s %s" % (id, str(owner), name)
 
+    def createEffectObject(self, id):
+        print "Creating effect %d" % id
+
+
 def input_generator ():
 
     print greeting

@@ -46,6 +46,7 @@ class Game:
         self.output = output
 
         self.events = {}
+        self.volatile_events = {}
 
         self.turn_number = 0
 
@@ -119,7 +120,18 @@ class Game:
     def create_damage_assignment(self, damage_assignment_list):
         d = DamageAssignment(damage_assignment_list)
         self.add_object(d)
+
+        self.output.createDamageAssignment(d.id)
+
         return d
+
+    def create_effect_object(self, controller_id, text):
+        e = EffectObject(controller_id, text)
+        self.add_object(e)
+
+        self.output.createEffectObject(e.id)
+
+        return e
 
     def create (self):
         #p1 = self.create_player("Alice")
@@ -166,8 +178,20 @@ class Game:
 
         event_handlers.append (handler)
 
+    def add_volatile_event_handler(self, event, handler):
+        event_handlers = self.volatile_events.get(event)
+        if event_handlers is None:
+            event_handlers = []
+            self.volatile_events[event] = event_handlers
+
+        event_handlers.append (handler)
+
     def raise_event (self, event, *args, **kargs):
         event_handlers = self.events.get(event, [])
+        for handler in event_handlers:
+            handler (*args, **kargs)
+
+        event_handlers = self.volatile_events.get(event, [])
         for handler in event_handlers:
             handler (*args, **kargs)
 

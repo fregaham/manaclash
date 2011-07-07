@@ -17,7 +17,11 @@
 #
 # 
 
+
 from abilities import *
+from objects import *
+from effects import *
+from selectors import *
 
 class ObjectRules:
     def evaluate(self, game, obj):
@@ -37,6 +41,8 @@ class BasicPermanentRules(ObjectRules):
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
 
+        obj.state.abilities.extend (parsePermanentAbilities(game, obj))
+
     def resolve(self, game, obj):
         print "resolving permanenet %s" % obj.state.title
         game.doZoneTransfer(obj, game.get_in_play_zone())
@@ -44,6 +50,13 @@ class BasicPermanentRules(ObjectRules):
 class DamageAssignmentRules(ObjectRules):
     def resolve(self, game, obj):
         game.doAssignDamage(obj.damage_assignment_list)
+        game.delete(obj)
+
+class EffectRules(ObjectRules):
+    def __init__(self, effect):
+        self.effect = effect
+    def resolve(self, game, obj):
+        self.effect.resolve(game, obj)
         game.delete(obj)
 
 g_rules = {}
@@ -56,11 +69,22 @@ g_rules["damage assignment"] = DamageAssignmentRules()
 g_rules[""] = ObjectRules()
 g_rules[None] = ObjectRules()
 
-def parse(state):
-    if state.text == "" or state.text == "None":
-        if "artifact" in state.types or "creature" in state.types or "enchantment" in state.types:
-            return BasicPermanentRules()
+def parse(obj):
 
-    return g_rules[state.text]
+    if isinstance(obj, EffectObject):
+        if "each player loses 1 life." == obj.state.text:
+            return EffectRules(PlayerLooseLifeEffect(AllPlayersSelector(), 1))
+    
+    if "artifact" in obj.state.types or "creature" in obj.state.types or "enchantment" in obj.state.types:
+        return BasicPermanentRules()
+    
+    return g_rules[obj.state.text]
+
+def parsePermanentAbilities(game, obj):
+    if obj.state.text == "when SELF comes into play, each player loses 1 life.":
+        return [WhenSelfComesIntoPlayDoEffectAbility("each player loses 1 life.")]
+    return []
+
+
 
 

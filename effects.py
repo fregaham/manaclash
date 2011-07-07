@@ -18,7 +18,11 @@
 # 
 
 class Effect:
-    pass
+    def setText(self):
+        self.text = text
+
+    def getText(self):
+        return self.text
 
 class ContinuousEffect(Effect):
     def __init__ (self, types):
@@ -27,5 +31,18 @@ class ContinuousEffect(Effect):
 
     def apply (self):
         pass
+
+class OneShotEffect(Effect):
+    def resolve(self, game, obj):
+        pass
+
+class PlayerLooseLifeEffect(OneShotEffect):
+    def __init__ (self, playerSelector, count):
+        self.selector = playerSelector
+        self.count = count
+
+    def resolve(self, game, obj):
+        for player in self.selector.all(game):
+            game.doLoseLife(player, self.count)
 
 

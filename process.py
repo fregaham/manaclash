@@ -28,9 +28,10 @@ def get_possible_actions (game, player):
     _al = AllSelector()
     for obj in _al.all(game):
         for ability in obj.state.abilities:
-            #print "testing ability: " + `ability`
-            if ability.canActivate(game, obj, player):
-                ret.append (AbilityAction(player, obj, ability, ability.get_text(game, obj)))
+            if isinstance(ability, ActivatedAbility):
+                #print "testing ability: " + `ability`
+                if ability.canActivate(game, obj, player):
+                    ret.append (AbilityAction(player, obj, ability, ability.get_text(game, obj)))
 
     return ret
 
@@ -47,6 +48,8 @@ def resolve (game, resolvable):
 
 def evaluate (game):
     """ evaluate all continuous effects """
+
+    game.volatile_events = {}
 
     for player in game.players:
         player.maximum_hand_size = 7
@@ -69,7 +72,7 @@ def evaluate (game):
         object.state.controller_id = object.controller_id
         object.state.owner_id = object.owner_id
 
-        object.rules = parse(object.state)
+        object.rules = parse(object)
 
         object.rules.evaluate(game, object)
 
@@ -99,6 +102,15 @@ def evaluate (game):
 
         for obj in unblocked:
             obj.get_state().tags.add ("unblocked")
+
+    # static abilities
+
+    # register triggered abilities' triggers
+    _as = AllSelector ()
+    for object in _as.all(game):
+        for ability in object.state.abilities:
+            if isinstance(ability, TriggeredAbility):
+                ability.register(game, object)
 
     # Playing lands
     _al = AllTypeSelector("land")
@@ -681,5 +693,9 @@ def process_game (game):
                 return
 
         game.turn_number += 1
+
+def process_trigger_effect(game, origin, effect):
+    e = game.create_effect_object (origin.controller_id, effect)
+    game.triggered_abilities.append (e)
 
 

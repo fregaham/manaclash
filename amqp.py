@@ -35,6 +35,10 @@ class AMQPOutput(Output):
         msg = Message(content={"type":"createCard", "id":id})
         self.send.send(msg)
 
+    def createEffectObject(self, id):
+        msg = Message(content={"type":"createEffectObject", "id":id})
+        self.send.send(msg)
+
     def createZone(self, id, owner, name):
         msg = Message(content={"type":"createZone", "id":id, "owner":owner, "name":name})
         self.send.send(msg)

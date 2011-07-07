@@ -18,15 +18,21 @@
 # 
 
 class Selector:
-    def all (self):
+    def all (self, game):
         return []
 
-class AllSelector:
+    def __str__(self):
+        return "selector"
+
+class AllSelector(Selector):
     def all(self, game):
         for item in game.objects.values():
             yield item
 
-class AllTypeSelector:
+    def __str__(self):
+        return "all"
+
+class AllTypeSelector(Selector):
     def __init__ (self, type):
         self.type = type
 
@@ -35,12 +41,17 @@ class AllTypeSelector:
             if self.type in item.state.types:
                 yield item
 
-class AllPermanentSelector:
+    def __str__ (self):
+        return "all %s" % self.type
+
+class AllPermanentSelector(Selector):
     def all(self, game):
          for item in game.objects.values():
             if "permanent" in item.state.tags:
                 yield item
 
+    def __str__(self):
+        return "all permanents"
 
 class PermanentPlayerControlsSelector(Selector):
     def __init__ (self, player):
@@ -51,5 +62,16 @@ class PermanentPlayerControlsSelector(Selector):
             if "permanent" in item.state.tags:
                 if item.state.controller_id == self.player_id:
                     yield item
+
+    def __str__ (self):
+        return "permanent player controls"
+
+class AllPlayersSelector(Selector):
+    def all(self, game):
+        for player in game.players:
+            yield player
+
+    def __str__(self):
+        return "all players"
 
 

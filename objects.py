@@ -83,7 +83,7 @@ class Object:
         self.damage = src.damage
 
     def __str__ (self):
-        return "[#%s %s {%s}]" % (str(self.id), self.state.title, ", ".join(self.state.tags))
+        return "[#%s %s {%s} `%s']" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text)
 
 class Zone(Object):
     def __init__ (self, type=None, player_id=None):
@@ -143,6 +143,18 @@ class DamageAssignment (Object):
         Object._copy(self, src)
         self.damage_assignment_list = src.damage_assignment_list
 
+class EffectObject(Object):
+    def __init__ (self, controller_id, text):
+        Object.__init__ (self)
+        self.controller_id = controller_id
+        self.initial_state.title = "Effect"
+        self.initial_state.text = text
+
+    def copy(self):
+        return EffectObject(self.controller_id, self.text)._copy(self)
+
+    def _copy(self, src):
+        Object._copy(self, src)
 
 class LastKnownInformation:
     def __init__ (self, game, object):
