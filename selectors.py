@@ -17,6 +17,8 @@
 #
 # 
 
+from objects import *
+
 class Selector:
     def all (self, game, context):
         return []
@@ -85,15 +87,23 @@ class AllPlayersSelector(Selector):
 
 class SelfSelector(Selector):
     def all(self, game, context):
-        yield game.objects.get(context.get_self_id())
+        yield context.get_source_lki()
 
     def __str__(self):
         return "SELF"
         
 class ThatPlayerSelector(Selector):
     def all(self, game, context):
-        player_id = context.get_slot("that player")
-        assert player_id is not None
-        yield game.objects.get(player_id)
+        player_lki = context.get_slot("that player")
+        assert player_lki is not None
+        yield player_lki
 
+class CreatureOrPlayerSelector(Selector):
+    def all(self, game, context):
+        for player in game.players:
+            yield player
+
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types:
+                yield item
 

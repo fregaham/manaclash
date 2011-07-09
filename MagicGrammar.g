@@ -54,6 +54,7 @@ ability returns [value]
 effect returns [value]
     : a=playerLooseLifeEffect {$value = $a.value}
     | a=playerDiscardsACardEffect {$value = $a.value}
+    | a=xDealNDamageToTargetYEffect {$value = $a.value}
     ;
 
 continuousAbility returns [value]
@@ -61,8 +62,16 @@ continuousAbility returns [value]
     ;
 
 triggeredAbility returns [value]
+    : a=whenXComesIntoPlayDoEffectAbility {$value = $a.value}
+    | a=whenXDealsDamageToYDoEffectAbility {$value = $a.value}
+    ;
+
+whenXComesIntoPlayDoEffectAbility returns [value]
     : ('when '|'whenever ') selector ' comes into play, ' effect {$value = WhenXComesIntoPlayDoEffectAbility($selector.value, $effect.text)}
-    | ('when '|'whenever ') x=selector (' deals' | ' deal') ' damage to ' y=selector ', ' effect {$value = WhenXDealsDamageToYDoEffectAbility($x.value, $y.value, $effect.text)}
+    ;
+
+whenXDealsDamageToYDoEffectAbility returns [value]
+    : ('when '|'whenever ') x=selector (' deals '|' deal ') 'damage to ' y=selector ', ' effect {$value = WhenXDealsDamageToYDoEffectAbility($x.value, $y.value, $effect.text)}
     ;
 
 activatedAbility returns [value]
@@ -82,10 +91,15 @@ playerDiscardsACardEffect returns [value]
     : selector (' discard '|' discards ') numberOfCards '.' {$value = PlayerDiscardsCardEffect($selector.value, $numberOfCards.value)}
     ;
 
+xDealNDamageToTargetYEffect returns [value]
+    : x=selector (' deal ' | ' deals ') NUMBER ' damage to target ' y=selector '.' {$value = XDealNDamageToTargetYEffect($x.value, int($NUMBER.getText()), $y.value)}
+    ;
+
 selector returns [value]
     : ('a player' | 'each player') {$value = AllPlayersSelector()}
     | 'that player' {$value = ThatPlayerSelector()}
     | 'SELF' {$value = SelfSelector()}
+    | 'creature or player' {$value = CreatureOrPlayerSelector()}
     ;
 
 numberOfCards returns [value]

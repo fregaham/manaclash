@@ -125,8 +125,8 @@ class Game:
 
         return d
 
-    def create_effect_object(self, origin_id, controller_id, text, slots):
-        e = EffectObject(origin_id, controller_id, text, slots)
+    def create_effect_object(self, origin, controller_id, text, slots):
+        e = EffectObject(origin, controller_id, text, slots)
         self.add_object(e)
 
         self.output.createEffectObject(e.id)
@@ -271,8 +271,8 @@ class Game:
     def doLoseLife(self, player, count):
         player.life -= count
 
-    def doAssignDamage(self, list):
-        print "doAssignDamage"
+    def doDealDamage(self, list):
+        print "doDealDamage"
         for a, b, n in list:
             if not b.is_moved():
 

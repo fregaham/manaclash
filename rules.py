@@ -34,6 +34,9 @@ class ObjectRules:
     def resolve(self, game, obj):
         pass
 
+    def selectTargets(self, game, player, obj):
+        return True
+
 class BasicLandRules(ObjectRules):
     def __init__ (self, color):
         self.color = color
@@ -53,7 +56,7 @@ class BasicPermanentRules(ObjectRules):
 
 class DamageAssignmentRules(ObjectRules):
     def resolve(self, game, obj):
-        game.doAssignDamage(obj.damage_assignment_list)
+        game.doDealDamage(obj.damage_assignment_list)
         game.delete(obj)
 
 class EffectRules(ObjectRules):
@@ -62,6 +65,8 @@ class EffectRules(ObjectRules):
     def resolve(self, game, obj):
         self.effect.resolve(game, obj)
         game.delete(obj)
+    def selectTargets(self, game, player, obj):
+        return self.effect.selectTargets(game, player, obj)
 
 g_rules = {}
 g_rules["[G]"] = BasicLandRules("G")
@@ -76,13 +81,14 @@ g_rules[None] = ObjectRules()
 def parse(obj):
 
     if isinstance(obj, EffectObject):
-        # print "trying to parse: \"%s\"" % obj.state.text
+        print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
         lexer = MagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)
         parser = MagicGrammarParser(tokens);
 
         effect = parser.effect()
+        print `effect.value`
         return EffectRules(effect.value)
     
     if "artifact" in obj.state.types or "creature" in obj.state.types or "enchantment" in obj.state.types:
@@ -92,7 +98,7 @@ def parse(obj):
 
 def parsePermanentAbilities(game, obj):
     if obj.state.text != "":
-        # print "trying to parse: \"%s\"" % obj.state.text
+        print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
         lexer = MagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)

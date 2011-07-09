@@ -19,6 +19,7 @@
 
 from cost import *
 from functools import partial
+from objects import *
 
 class Ability:
     def get_text(self, obj):
@@ -146,10 +147,10 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
 
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = source.get_id()
+                slots[slot] = source
 
             for slot in self.y_selector.slots():
-                slots[slot] = dest.get_id()
+                slots[slot] = dest
 
             process_trigger_effect(game, SELF, self.effect, slots)
 

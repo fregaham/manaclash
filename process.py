@@ -185,13 +185,17 @@ def process_play_spell (game, ability, player, obj):
 
 def process_activate_tapping_ability(game, ability, player, obj, effect):
 
-    e = game.create_effect_object (obj.get_self_id(), player, effect, {})
+    e = game.create_effect_object (LastKnownInformation(game, obj), player, effect, {})
 
     stack = game.get_stack_zone()
     e.zone_id = stack.id
     stack.objects.append (e)
 
     evaluate(game)
+
+    if not e.rules.selectTargets(game, player, e):
+        game.doDestroy(e)
+        return
 
     costs = ability.determineCost(game, obj, player)
     # cost = ability.get_cost(game, player, obj)
@@ -732,8 +736,44 @@ def process_game (game):
 
         game.turn_number += 1
 
-def process_trigger_effect(game, origin, effect, slots):
-    e = game.create_effect_object (origin.get_self_id(), origin.controller_id, effect, slots)
+def process_trigger_effect(game, source, effect, slots):
+    e = game.create_effect_object (LastKnownInformation(source), origin.controller_id, effect, slots)
     game.triggered_abilities.append (e)
 
-     
+def _is_valid_target(game, source, target):
+    # TODO: protections and stuff 
+    return True
+
+def process_select_target(game, player, source, selector):
+    actions = []
+
+    _pass = PassAction (player)
+    _pass.text = "Cancel"
+    actions.append (_pass)
+
+    for obj in selector.all(game, source):
+        if _is_valid_target(game, source, obj):
+            _p = Action ()
+            _p.object = obj
+            _p.text = "Target " + str(obj)
+            actions.append (_p)
+
+    _as = ActionSet (game, player, "Choose a target for " + str(source), actions)
+    a = game.input.send (_as)
+
+    if a == _pass:
+        return None
+
+    return a.object
+
+def process_validate_target(game, source, selector, target):
+    assert isinstance(target, LastKnownInformation)
+    if target.is_moved():
+        return False
+
+    if not selector.contains(game, source, target):
+        return False
+
+    return _is_valid_target(game, source, target)
+
+

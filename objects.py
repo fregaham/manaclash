@@ -62,6 +62,7 @@ class Object:
         self.tapped = False
         self.rules = None
         self.damage = 0
+        self.targets = {}
 
     def get_id(self):
         return self.id
@@ -69,12 +70,19 @@ class Object:
     def get_self_id(self):
         return self.id
 
+    # little hack, this is useful for spell effects, which are their own source, if they resolve, there is no need for lki
+    def get_source_lki(self):
+        return self
+
     def get_state (self):
         return self.state
 
     def copy(self):
         ret = Object()
         return ret._copy(self)
+
+    def is_moved(self):
+        return False
 
     def _copy(self, src):
         self.id = src.id
@@ -87,6 +95,7 @@ class Object:
         self.tapped = src.tapped
         self.rules = src.rules
         self.damage = src.damage
+        self.targets = src.targets.copy()
 
     def __str__ (self):
         return "[#%s %s {%s} `%s']" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text)
@@ -150,9 +159,12 @@ class DamageAssignment (Object):
         self.damage_assignment_list = src.damage_assignment_list
 
 class EffectObject(Object):
-    def __init__ (self, source_id, controller_id, text, slots):
+    def __init__ (self, source_lki, controller_id, text, slots):
         Object.__init__ (self)
-        self.source_id = source_id
+
+        assert isinstance(source_lki, Object)
+
+        self.source_lki = source_lki
         self.controller_id = controller_id
         self.initial_state.title = "Effect"
         self.initial_state.text = text
@@ -160,19 +172,21 @@ class EffectObject(Object):
         self.slots = slots
 
     def get_self_id(self):
-        # for "SELF deal 1 damage to...", the SELF of an effect is the source of the effect
-        return self.source_id
+        return self.source_lki.get_id()
+
+    def get_source_lki(self):
+        return self.source_lki
 
     def get_slot(self, key):
         return self.slots.get(key)
 
     def copy(self):
-        return EffectObject(self.controller_id, self.text, self.slots)._copy(self)
+        return EffectObject(self.source_lki, self.controller_id, self.text, self.slots)._copy(self)
 
     def _copy(self, src):
         Object._copy(self, src)
 
-class LastKnownInformation:
+class LastKnownInformation(Object):
     def __init__ (self, game, object):
         self.game = game
         self.object = object

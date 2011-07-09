@@ -17,6 +17,8 @@
 #
 # 
 
+from objects import  *
+
 class Effect:
     def setText(self):
         self.text = text
@@ -38,6 +40,12 @@ class ContinuousEffect(Effect):
 class OneShotEffect(Effect):
     def resolve(self, game, obj):
         pass
+
+    def selectTargets(self, game, player, obj):
+        return True
+
+    def validateTargets(self, game, obj):
+        return True
 
 class PlayerLooseLifeEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
@@ -61,5 +69,34 @@ class PlayerDiscardsCardEffect(OneShotEffect):
                 process_discard_a_card(game, player)
 
 
+class XDealNDamageToTargetYEffect(OneShotEffect):
+    def __init__ (self, sourceSelector, count, targetSelector):
+        self.sourceSelector = sourceSelector
+        self.count = count
+        self.targetSelector = targetSelector
 
+    def resolve(self, game, obj):
+        if self.validateTargets(game, obj):
+            target = obj.targets["target"]
+            
+            sources = [x for x in self.sourceSelector.all(game, obj)]
+            assert len(sources) == 1
+
+            source = sources[0]
+
+            game.doDealDamage([(source, target, self.count)])
+
+    def validateTargets(self, game, obj):
+        from process import process_validate_target
+        return process_validate_target(game, obj, self.targetSelector, obj.targets["target"])
+
+    def selectTargets(self, game, player, obj):
+        from process import process_select_target
+        target = process_select_target(game, player, obj, self.targetSelector)        
+        if target == None:
+            return False
+
+        obj.targets["target"] = LastKnownInformation(game, target)
+
+        return True
 
