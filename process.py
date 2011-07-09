@@ -170,6 +170,12 @@ def process_play_spell (game, ability, player, obj):
 
     evaluate(game)
 
+    if not obj.rules.selectTargets(game, player, obj):
+        obj.zone_id = zone_from.id
+        stack.objects.remove(obj)
+        zone_from.objects.insert(zone_index, obj)
+        return
+
     costs = ability.determineCost(game, obj, player)
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:

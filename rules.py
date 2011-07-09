@@ -68,6 +68,18 @@ class EffectRules(ObjectRules):
     def selectTargets(self, game, player, obj):
         return self.effect.selectTargets(game, player, obj)
 
+class BasicNonPermanentRules(ObjectRules):
+    def __init__(self, effect):
+        self.effect = effect
+    def evaluate(self, game, obj):
+        obj.state.abilities.append (PlaySpell())
+    def resolve(self, game, obj):
+        self.effect.resolve(game, obj)
+        game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
+    def selectTargets(self, game, player, obj):
+        return self.effect.selectTargets(game, player, obj)
+
+
 g_rules = {}
 g_rules["[G]"] = BasicLandRules("G")
 g_rules["[R]"] = BasicLandRules("R")
@@ -93,6 +105,18 @@ def parse(obj):
     
     if "artifact" in obj.state.types or "creature" in obj.state.types or "enchantment" in obj.state.types:
         return BasicPermanentRules()
+
+    if "sorcery" in obj.state.types or "instant" in obj.state.types:
+        print "trying to parse: \"%s\"" % obj.state.text
+        char_stream = ANTLRStringStream(obj.state.text)
+        lexer = MagicGrammarLexer(char_stream)
+        tokens = CommonTokenStream(lexer)
+        parser = MagicGrammarParser(tokens);
+
+        effect = parser.effect()
+        print `effect.value`
+
+        return BasicNonPermanentRules(effect.value)
     
     return g_rules[obj.state.text]
 
@@ -108,7 +132,6 @@ def parsePermanentAbilities(game, obj):
         return [ability]
 
     return []
-
 
 
 

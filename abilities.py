@@ -74,7 +74,7 @@ class PlayLandAbility(ActivatedAbility):
 
 class PlaySpell(ActivatedAbility):
     def canActivate(self, game, obj, player):
-        return (player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and (game.current_phase == "precombat main" or game.current_phase == "postcombat main") and game.get_stack_length() == 0 and obj.zone_id == game.objects[obj.state.controller_id].hand_id)
+        return (player.id == obj.state.controller_id  and ("instant" in obj.state.types or (obj.state.controller_id == game.active_player_id and (game.current_phase == "precombat main" or game.current_phase == "postcombat main") and game.get_stack_length() == 0)) and obj.zone_id == game.objects[obj.state.controller_id].hand_id)
 
     def activate(self, game, obj, player):
         from process import process_play_spell
