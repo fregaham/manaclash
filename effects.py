@@ -18,6 +18,7 @@
 # 
 
 from objects import  *
+from selectors import *
 
 class Effect:
     def setText(self):
@@ -30,11 +31,7 @@ class Effect:
         return []
 
 class ContinuousEffect(Effect):
-    def __init__ (self, types):
-        self.types = types
-        self.timestamp = None
-
-    def apply (self):
+    def apply (self, game):
         pass
 
 class OneShotEffect(Effect):
@@ -77,23 +74,15 @@ class PlayerDiscardsCardEffect(OneShotEffect):
                 from process import process_discard_a_card
                 process_discard_a_card(game, player)
 
+class SingleTargetOneShotEffect(OneShotEffect):
 
-class XDealNDamageToTargetYEffect(OneShotEffect):
-    def __init__ (self, sourceSelector, count, targetSelector):
-        self.sourceSelector = sourceSelector
-        self.count = count
-        self.targetSelector = targetSelector
+    def __init__ (self, targetSelector):
+        self.targetSelector = targetSelector    
 
     def resolve(self, game, obj):
         if self.validateTargets(game, obj):
             target = obj.targets["target"]
-            
-            sources = [x for x in self.sourceSelector.all(game, obj)]
-            assert len(sources) == 1
-
-            source = sources[0]
-
-            game.doDealDamage([(source, target, self.count)])
+            self.doResolve(game, obj, target)
 
     def validateTargets(self, game, obj):
         from process import process_validate_target
@@ -108,5 +97,45 @@ class XDealNDamageToTargetYEffect(OneShotEffect):
         obj.targets["target"] = LastKnownInformation(game, target)
 
         return True
+
+    def doResolve(self, game, obj, target):
+        pass
+   
+
+class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
+    def __init__ (self, sourceSelector, count, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.sourceSelector = sourceSelector
+        self.count = count
+           
+    def doResolve(self, game, obj, target): 
+        sources = [x for x in self.sourceSelector.all(game, obj)]
+        assert len(sources) == 1
+
+        source = sources[0]
+
+        game.doDealDamage([(source, target, self.count)])
+
+class XGetsNN(ContinuousEffect):
+    def __init__ (self, source, selector, power, toughness):
+        self.source = source
+        self.selector = selector
+        self.power = power
+        self.toughness = toughness
+
+    def apply(self, game):
+        for obj in self.selector.all(game, self.source):
+            obj.state.power += self.power
+            obj.state.toughness += self.toughness
+
+class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, power, toughness):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.power = power
+        self.toughness = toughness
+
+    def doResolve(self, game, obj, target):
+        game.until_end_of_turn_effects.append (XGetsNN(obj, LKISelector(target), self.power, self.toughness))
+
 
 

@@ -48,6 +48,8 @@ class Game:
         self.events = {}
         self.volatile_events = {}
 
+        self.until_end_of_turn_effects = []
+
         self.turn_number = 0
 
     def add_object (self, object):

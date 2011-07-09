@@ -105,6 +105,10 @@ def evaluate (game):
 
     # static abilities
 
+    # until end of turn effects
+    for effect in game.until_end_of_turn_effects:
+        effect.apply(game)
+
     # register triggered abilities' triggers
     _as = AllSelector ()
     for object in _as.all(game, None):
@@ -200,7 +204,7 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
     evaluate(game)
 
     if not e.rules.selectTargets(game, player, e):
-        game.doDestroy(e)
+        game.delete(e)
         return
 
     costs = ability.determineCost(game, obj, player)
@@ -209,7 +213,7 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
         if not process_pay_cost(game, player, obj, costs):
 
             print "not payed, returning to previous state"
-            game.doDestroy(e)
+            game.delete(e)
             return
 
     game.doTap(obj)
@@ -704,6 +708,8 @@ def process_step_cleanup(game):
             repeat = False
 
         process_step_post(game)
+
+    game.until_end_of_turn_effects = []
 
 def process_phase_end (game):
     game.current_phase = "end"

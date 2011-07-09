@@ -56,6 +56,7 @@ effect returns [value]
     | a=playerGainLifeEffect {$value = $a.value}
     | a=playerDiscardsACardEffect {$value = $a.value}
     | a=xDealNDamageToTargetYEffect {$value = $a.value}
+    | a=targetXGetsNNUntilEndOfTurn {$value = $a.value}
     ;
 
 continuousAbility returns [value]
@@ -101,12 +102,17 @@ xDealNDamageToTargetYEffect returns [value]
     : x=selector (' deal ' | ' deals ') NUMBER ' damage to target ' y=selector '.' {$value = XDealNDamageToTargetYEffect($x.value, int($NUMBER.getText()), $y.value)}
     ;
 
+targetXGetsNNUntilEndOfTurn returns [value]
+    : 'target ' selector (' gets '|' get ') a=number '/' b=number ' until end of turn.' {$value = TargetXGetsNNUntilEndOfTurn($selector.value, $a.value, $b.value)}
+    ;
+
 selector returns [value]
     : ('a player' | 'each player') {$value = AllPlayersSelector()}
     | 'that player' {$value = ThatPlayerSelector()}
     | 'you' {$value = YouSelector()}
     | 'SELF' {$value = SelfSelector()}
     | 'creature or player' {$value = CreatureOrPlayerSelector()}
+    | 'attacking or blocking creature' {$value = AttackingOrBlockingCreatureSelector()}
     ;
 
 numberOfCards returns [value]
@@ -120,6 +126,12 @@ manaCost returns [value]
 
 manaCostElement returns [value]
     : '{' NUMBER '}' {$value = $NUMBER.getText()}
+    ;
+
+number returns [value]
+    : NUMBER {$value = int($NUMBER.getText())}
+    | '-' NUMBER {$value = -int($NUMBER.getText())}
+    | '+' NUMBER {$value = int($NUMBER.getText())}
     ;
 
 /*------------------------------------------------------------------

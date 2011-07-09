@@ -98,7 +98,10 @@ class Object:
         self.targets = src.targets.copy()
 
     def __str__ (self):
-        return "[#%s %s {%s} `%s']" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text)
+        if self.state.power != None:
+            return "[#%s %s {%s} `%s' %d/%d]" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text, self.state.power, self.state.toughness)
+        else:
+            return "[#%s %s {%s} `%s']" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text)
 
 class Zone(Object):
     def __init__ (self, type=None, player_id=None):

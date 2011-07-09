@@ -102,6 +102,14 @@ class YouSelector(Selector):
     def all(self, game, context):
         yield game.objects[context.get_state().controller_id]
 
+class LKISelector(Selector):
+    def __init__ (self, lki):
+        self.lki = lki
+    def all(self, game, context):
+        if not self.lki.is_moved():
+            yield self.lki.get_object()
+        return    
+
 class CreatureOrPlayerSelector(Selector):
     def all(self, game, context):
         for player in game.players:
@@ -110,4 +118,11 @@ class CreatureOrPlayerSelector(Selector):
         for item in game.objects.values():
             if "permanent" in item.state.tags and "creature" in item.state.types:
                 yield item
+
+class AttackingOrBlockingCreatureSelector(Selector):
+    def all(self, game, context):
+        for obj in game.objects.values():
+            if "permanent" in obj.state.tags and "creature" in obj.state.types and ("attacking" in obj.state.tags or "blocking" in obj.state.tags):
+                yield obj
+
 
