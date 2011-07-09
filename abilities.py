@@ -91,6 +91,28 @@ class FlyingAbility(StaticAbility):
         if obj.zone_id == game.get_in_play_zone().id:
             obj.state.tags.add("flying")
 
+class TapCostDoEffectAbility(ActivatedAbility):
+    def __init__ (self, manacost, effect):
+        self.manacost = manacost
+        self.effect = effect
+
+    def canActivate(self, game, obj, player):
+        return (player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
+
+    def activate(self, game, obj, player):
+        from process import process_activate_tapping_ability
+
+        process_activate_tapping_ability(game, self, player, obj, self.effect)
+
+    def get_text(self, game, obj):
+        return "Activate \"%s\" [T %s]" % (self.effect, self.manacost)
+
+    def determineCost(self, game, obj, player):
+        if self.manacost != "":
+            c = ManaCost(self.manacost)
+            return [c]
+        return []
+
 class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def __init__(self, selector, effect):
         self.selector = selector

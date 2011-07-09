@@ -48,6 +48,7 @@ def main(argv, otherArg=None):
 ability returns [value] 
     : a=continuousAbility {$value = $a.value}
     | a=triggeredAbility {$value = $a.value}
+    | a=activatedAbility {$value = $a.value}
     ;
 
 effect returns [value]
@@ -62,6 +63,15 @@ continuousAbility returns [value]
 triggeredAbility returns [value]
     : ('when '|'whenever ') selector ' comes into play, ' effect {$value = WhenXComesIntoPlayDoEffectAbility($selector.value, $effect.text)}
     | ('when '|'whenever ') x=selector (' deals' | ' deal') ' damage to ' y=selector ', ' effect {$value = WhenXDealsDamageToYDoEffectAbility($x.value, $y.value, $effect.text)}
+    ;
+
+activatedAbility returns [value]
+    : a=tappingActivatedAbility {$value=$a.value}
+    ;
+
+tappingActivatedAbility returns [value]
+    : manaCost ', {T}: ' effect {$value = TapCostDoEffectAbility($manaCost.value, $effect.text)}
+    | '{T}: ' effect {$value = TapCostDoEffectAbility("", $effect.text)}
     ;
 
 playerLooseLifeEffect returns [value]
@@ -82,7 +92,14 @@ numberOfCards returns [value]
     : 'a card' {$value = 1}
     ;
 
+manaCost returns [value]
+    : a=manaCostElement b=manaCost {$value = $a.value + $b.value}
+    | manaCostElement {$value = $manaCostElement.value}
+    ;
 
+manaCostElement returns [value]
+    : '{' NUMBER '}' {$value = $NUMBER.getText()}
+    ;
 
 /*------------------------------------------------------------------
  * LEXER RULES

@@ -175,7 +175,7 @@ def process_play_spell (game, ability, player, obj):
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
 
-            print "not payed, returning to previous stat"
+            print "not payed, returning to previous state"
 
             # return the state of the game...
             obj.zone_id = zone_from.id
@@ -183,6 +183,27 @@ def process_play_spell (game, ability, player, obj):
             zone_from.objects.insert(zone_index, obj)
             return
 
+def process_activate_tapping_ability(game, ability, player, obj, effect):
+
+    e = game.create_effect_object (obj.get_self_id(), player, effect, {})
+
+    stack = game.get_stack_zone()
+    e.zone_id = stack.id
+    stack.objects.append (e)
+
+    evaluate(game)
+
+    costs = ability.determineCost(game, obj, player)
+    # cost = ability.get_cost(game, player, obj)
+    if len(costs) > 0:
+        if not process_pay_cost(game, player, obj, costs):
+
+            print "not payed, returning to previous state"
+            game.doDestroy(e)
+            return
+
+    game.doTap(obj)
+ 
 
 def process_priority_succession (game, player):
 
@@ -715,4 +736,4 @@ def process_trigger_effect(game, origin, effect, slots):
     e = game.create_effect_object (origin.get_self_id(), origin.controller_id, effect, slots)
     game.triggered_abilities.append (e)
 
-
+     
