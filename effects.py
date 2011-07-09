@@ -56,6 +56,15 @@ class PlayerLooseLifeEffect(OneShotEffect):
         for player in self.selector.all(game, obj):
             game.doLoseLife(player, self.count)
 
+class PlayerGainLifeEffect(OneShotEffect):
+    def __init__ (self, playerSelector, count):
+        self.selector = playerSelector
+        self.count = count
+
+    def resolve(self, game, obj):
+        for player in self.selector.all(game, obj):
+            game.doGainLife(player, self.count)
+
 class PlayerDiscardsCardEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
         self.selector = playerSelector
@@ -99,4 +108,5 @@ class XDealNDamageToTargetYEffect(OneShotEffect):
         obj.targets["target"] = LastKnownInformation(game, target)
 
         return True
+
 

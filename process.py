@@ -743,7 +743,7 @@ def process_game (game):
         game.turn_number += 1
 
 def process_trigger_effect(game, source, effect, slots):
-    e = game.create_effect_object (LastKnownInformation(source), origin.controller_id, effect, slots)
+    e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, effect, slots)
     game.triggered_abilities.append (e)
 
 def _is_valid_target(game, source, target):

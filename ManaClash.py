@@ -66,6 +66,7 @@ if __name__ == "__main__":
     c1.append (g.create_card (u"Hasty Moggie Bird", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying",u"haste"]), "when SELF comes into play, each player loses 1 life.", 1, 1))
     c1.append (g.create_card (u"Loose Ring", "1", set(), set([u"artifact"]), set(), set(), "{T}: SELF deals 4 damage to target creature or player.", None, None))
     c1.append (g.create_card (u"Deal Damage", "W", set(), set([u"instant"]), set(), set(), "SELF deals 1 damage to target creature or player.", None, None))
+    c1.append (g.create_card (u"Pimp of Mercy", "W", set(), set([u"creature"]), set(), set(), "when SELF enters the battlefield, you gain 3 life.", None, None))
 
     g.create_player("Alice", c1)
 

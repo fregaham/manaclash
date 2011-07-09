@@ -53,6 +53,7 @@ ability returns [value]
 
 effect returns [value]
     : a=playerLooseLifeEffect {$value = $a.value}
+    | a=playerGainLifeEffect {$value = $a.value}
     | a=playerDiscardsACardEffect {$value = $a.value}
     | a=xDealNDamageToTargetYEffect {$value = $a.value}
     ;
@@ -68,6 +69,7 @@ triggeredAbility returns [value]
 
 whenXComesIntoPlayDoEffectAbility returns [value]
     : ('when '|'whenever ') selector ' comes into play, ' effect {$value = WhenXComesIntoPlayDoEffectAbility($selector.value, $effect.text)}
+    | ('when '|'whenever ') selector ' enters the battlefield, ' effect {$value = WhenXComesIntoPlayDoEffectAbility($selector.value, $effect.text)}
     ;
 
 whenXDealsDamageToYDoEffectAbility returns [value]
@@ -87,6 +89,10 @@ playerLooseLifeEffect returns [value]
     : selector (' lose ' | ' loses ') NUMBER ' life.' {$value = PlayerLooseLifeEffect($selector.value, int($NUMBER.getText()))}
     ;
 
+playerGainLifeEffect returns [value]
+    : selector (' gain ' | ' gains ') NUMBER ' life.' {$value = PlayerGainLifeEffect($selector.value, int($NUMBER.getText()))}
+    ;
+
 playerDiscardsACardEffect returns [value]
     : selector (' discard '|' discards ') numberOfCards '.' {$value = PlayerDiscardsCardEffect($selector.value, $numberOfCards.value)}
     ;
@@ -98,6 +104,7 @@ xDealNDamageToTargetYEffect returns [value]
 selector returns [value]
     : ('a player' | 'each player') {$value = AllPlayersSelector()}
     | 'that player' {$value = ThatPlayerSelector()}
+    | 'you' {$value = YouSelector()}
     | 'SELF' {$value = SelfSelector()}
     | 'creature or player' {$value = CreatureOrPlayerSelector()}
     ;

@@ -271,6 +271,9 @@ class Game:
     def doLoseLife(self, player, count):
         player.life -= count
 
+    def doGainLife(self, player, count):
+        player.life += count
+
     def doDealDamage(self, list):
         print "doDealDamage"
         for a, b, n in list:

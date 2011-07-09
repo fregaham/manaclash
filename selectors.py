@@ -98,6 +98,10 @@ class ThatPlayerSelector(Selector):
         assert player_lki is not None
         yield player_lki
 
+class YouSelector(Selector):
+    def all(self, game, context):
+        yield game.objects[context.get_state().controller_id]
+
 class CreatureOrPlayerSelector(Selector):
     def all(self, game, context):
         for player in game.players:
