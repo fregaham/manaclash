@@ -26,7 +26,7 @@ from objects import *
 def get_possible_actions (game, player):
     ret = []
     _al = AllSelector()
-    for obj in _al.all(game):
+    for obj in _al.all(game, None):
         for ability in obj.state.abilities:
             if isinstance(ability, ActivatedAbility):
                 #print "testing ability: " + `ability`
@@ -57,7 +57,7 @@ def evaluate (game):
 
     # clear states of all objects and evalute card texts
     _as = AllSelector ()
-    for object in _as.all(game):
+    for object in _as.all(game, None):
         object.state = object.initial_state.copy ()
 
         # some basic rules
@@ -107,19 +107,19 @@ def evaluate (game):
 
     # register triggered abilities' triggers
     _as = AllSelector ()
-    for object in _as.all(game):
+    for object in _as.all(game, None):
         for ability in object.state.abilities:
             if isinstance(ability, TriggeredAbility):
                 ability.register(game, object)
 
     # Playing lands
     _al = AllTypeSelector("land")
-    for land in _al.all(game):
+    for land in _al.all(game, None):
         land.state.abilities.append (PlayLandAbility())
 
     # state based effects
     _ap = AllPermanentSelector()
-    for object in _ap.all(game):
+    for object in _ap.all(game, None):
         if "creature" in object.state.types:
             if object.damage >= object.state.toughness:
                 game.doDestroy(object)
@@ -133,7 +133,7 @@ def process_pay_cost (game, player, obj, costs):
         actions.append (_pass)
 
         _al = AllSelector()
-        for obj in _al.all(game):
+        for obj in _al.all(game, None):
             for ability in obj.state.abilities:
                 if isinstance(ability, ManaAbility):
                     if ability.canActivate(game, obj, player):
@@ -256,7 +256,7 @@ def process_step_untap (game):
     process_step_pre (game)
 
     selector = PermanentPlayerControlsSelector (game.get_active_player())
-    for permanent in selector.all (game):
+    for permanent in selector.all (game, None):
         process_untap (game, permanent)
 
     process_step_post (game)
@@ -297,7 +297,7 @@ def process_phase_beginning (game):
 
     # remove the summoning sickness tag
     selector = PermanentPlayerControlsSelector (game.get_active_player())
-    for permanent in selector.all (game):
+    for permanent in selector.all (game, None):
         if "summoning sickness" in permanent.initial_state.tags:
             permanent.initial_state.tags.remove("summoning sickness")
 
@@ -349,7 +349,7 @@ def process_step_declare_attackers (game):
             actions.append (_pass)
 
             selector = PermanentPlayerControlsSelector(game.get_attacking_player())
-            for permanent in selector.all(game):
+            for permanent in selector.all(game, None):
                 if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent not in attackers:
                     _p = Action ()
                     _p.object = permanent
@@ -419,7 +419,7 @@ def process_step_declare_blockers (game):
             actions.append (_pass)
 
             selector = PermanentPlayerControlsSelector(game.get_defending_player())
-            for permanent in selector.all(game):
+            for permanent in selector.all(game, None):
                 if "creature" in permanent.state.types and not permanent.tapped and permanent not in blockers:
                     _p = Action ()
                     _p.object = permanent
@@ -438,7 +438,7 @@ def process_step_declare_blockers (game):
                 actions.append (_pass)
 
                 selector = AllPermanentSelector()
-                for permanent in selector.all(game):
+                for permanent in selector.all(game, None):
                     if "attacking" in permanent.state.tags:
                         if is_valid_block(game, permanent, b.object):
                             _p = Action ()
@@ -621,6 +621,22 @@ def process_step_end_of_turn(game):
 
     process_step_post (game)
 
+def process_discard_a_card(game, player):
+
+    if len(game.get_hand(player).objects) == 0:
+        return
+
+    actions = []
+    for card in game.get_hand(player).objects:
+        _p = Action ()
+        _p.object = card
+        _p.text = "Discard " + card.state.title
+        actions.append (_p)
+
+    _as = ActionSet (game, player, "Discard a card", actions)
+    a = game.input.send (_as)
+
+    game.doDiscard(player, a.object)
 
 
 def process_step_cleanup(game):
@@ -631,21 +647,22 @@ def process_step_cleanup(game):
         # 314.1
         if game.get_active_player().maximum_hand_size != None:
             while len(game.get_hand(game.get_active_player()).objects) > game.get_active_player().maximum_hand_size:
-                actions = []
-                for card in game.get_hand(game.get_active_player()).objects:
-                    _p = Action ()
-                    _p.object = card
-                    _p.text = "Discard " + card.state.title
-                    actions.append (_p)
+                #actions = []
+                #for card in game.get_hand(game.get_active_player()).objects:
+                #    _p = Action ()
+                #    _p.object = card
+                #    _p.text = "Discard " + card.state.title
+                #    actions.append (_p)
 
-                _as = ActionSet (game, game.get_active_player(), "Discard a card", actions)
-                a = game.input.send (_as)
+                #_as = ActionSet (game, game.get_active_player(), "Discard a card", actions)
+                #a = game.input.send (_as)
 
-                game.doDiscard(game.get_active_player(), a.object)
+                #game.doDiscard(game.get_active_player(), a.object)
+                process_discard_a_card(game, game.get_active_player())
 
 
         selector = AllPermanentSelector ()
-        for permanent in selector.all (game):
+        for permanent in selector.all (game, None):
             permanent.damage = 0
 
         game.get_active_player().land_played = 0
@@ -694,8 +711,8 @@ def process_game (game):
 
         game.turn_number += 1
 
-def process_trigger_effect(game, origin, effect):
-    e = game.create_effect_object (origin.controller_id, effect)
+def process_trigger_effect(game, origin, effect, slots):
+    e = game.create_effect_object (origin.get_self_id(), origin.controller_id, effect, slots)
     game.triggered_abilities.append (e)
 
 

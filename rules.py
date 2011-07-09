@@ -76,7 +76,7 @@ g_rules[None] = ObjectRules()
 def parse(obj):
 
     if isinstance(obj, EffectObject):
-        print "trying to parse: \"%s\"" % obj.state.text
+        # print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
         lexer = MagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)
@@ -92,6 +92,7 @@ def parse(obj):
 
 def parsePermanentAbilities(game, obj):
     if obj.state.text != "":
+        # print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
         lexer = MagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)

@@ -43,6 +43,10 @@ class AMQPOutput(Output):
         msg = Message(content={"type":"createZone", "id":id, "owner":owner, "name":name})
         self.send.send(msg)
 
+    def createDamageAssignment(self, id):
+        msg = Message(content={"type":"createDamageAssignment", "id":id})
+        self.send.send(msg)
+
 def amqp_input_generator(session, send, recv):
     print "pre first yield"
     _as = yield None

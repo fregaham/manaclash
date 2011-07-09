@@ -125,8 +125,8 @@ class Game:
 
         return d
 
-    def create_effect_object(self, controller_id, text):
-        e = EffectObject(controller_id, text)
+    def create_effect_object(self, origin_id, controller_id, text, slots):
+        e = EffectObject(origin_id, controller_id, text, slots)
         self.add_object(e)
 
         self.output.createEffectObject(e.id)
@@ -275,12 +275,18 @@ class Game:
         print "doAssignDamage"
         for a, b, n in list:
             if not b.is_moved():
+
+                self.raise_event("pre_deal_damage", a, b, n)
+
                 if "player" in b.get_state().types:
                     print "%d damage to player %s " % (n, b.get_object())
                     b.get_object().life -= n
                 else:
                     print "%d damage to %s" % (n, b.get_object())
                     b.get_object().damage += n
+
+                self.raise_event("post_deal_damage", a, b, n)
+
 
     def doDestroy(self, obj):
         print "doDestroy %s" % (obj)

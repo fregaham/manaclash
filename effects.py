@@ -24,6 +24,9 @@ class Effect:
     def getText(self):
         return self.text
 
+    def getSlots(self):
+        return []
+
 class ContinuousEffect(Effect):
     def __init__ (self, types):
         self.types = types
@@ -42,7 +45,21 @@ class PlayerLooseLifeEffect(OneShotEffect):
         self.count = count
 
     def resolve(self, game, obj):
-        for player in self.selector.all(game):
+        for player in self.selector.all(game, obj):
             game.doLoseLife(player, self.count)
+
+class PlayerDiscardsCardEffect(OneShotEffect):
+    def __init__ (self, playerSelector, count):
+        self.selector = playerSelector
+        self.count = count
+
+    def resolve(self, game, obj):
+        for player in self.selector.all(game, obj):
+            assert player is not None
+            for i in range(self.count):
+                from process import process_discard_a_card
+                process_discard_a_card(game, player)
+
+
 
 

@@ -52,6 +52,7 @@ ability returns [value]
 
 effect returns [value]
     : a=playerLooseLifeEffect {$value = $a.value}
+    | a=playerDiscardsACardEffect {$value = $a.value}
     ;
 
 continuousAbility returns [value]
@@ -59,22 +60,28 @@ continuousAbility returns [value]
     ;
 
 triggeredAbility returns [value]
-    : 'when SELF comes into play, ' effect {$value = WhenSelfComesIntoPlayDoEffectAbility($effect.text)}
+    : ('when '|'whenever ') selector ' comes into play, ' effect {$value = WhenXComesIntoPlayDoEffectAbility($selector.value, $effect.text)}
+    | ('when '|'whenever ') x=selector (' deals' | ' deal') ' damage to ' y=selector ', ' effect {$value = WhenXDealsDamageToYDoEffectAbility($x.value, $y.value, $effect.text)}
     ;
 
 playerLooseLifeEffect returns [value]
-    : selector ('lose' | 'loses') NUMBER 'life.' {$value = PlayerLooseLifeEffect($selector.value, int($NUMBER.getText()))}
+    : selector (' lose ' | ' loses ') NUMBER ' life.' {$value = PlayerLooseLifeEffect($selector.value, int($NUMBER.getText()))}
+    ;
+
+playerDiscardsACardEffect returns [value]
+    : selector (' discard '|' discards ') numberOfCards '.' {$value = PlayerDiscardsCardEffect($selector.value, $numberOfCards.value)}
     ;
 
 selector returns [value]
-    : 'each player' {$value = AllPlayersSelector()}
+    : ('a player' | 'each player') {$value = AllPlayersSelector()}
+    | 'that player' {$value = ThatPlayerSelector()}
+    | 'SELF' {$value = SelfSelector()}
     ;
 
-expr  returns [value]  : term ( ( PLUS | MINUS )  term )* {$value = "42"};
+numberOfCards returns [value]
+    : 'a card' {$value = 1}
+    ;
 
-term    : factor ( ( MULT | DIV ) factor )* ;
-
-factor  : NUMBER ;
 
 
 /*------------------------------------------------------------------
@@ -82,7 +89,6 @@ factor  : NUMBER ;
  *------------------------------------------------------------------*/
 
 NUMBER  : (DIGIT)+ ;
-
 WHITESPACE : ( '\t' | ' ' | '\r' | '\n'| '\u000C' )+    { $channel = HIDDEN; } ;
 
 fragment DIGIT  : '0'..'9' ;

@@ -18,14 +18,20 @@
 # 
 
 class Selector:
-    def all (self, game):
+    def all (self, game, context):
+        return []
+
+    def contains(self, game, context, obj):
+        return obj.get_id() in map(lambda x:x.get_id(), self.all(game, context))
+
+    def slots(self):
         return []
 
     def __str__(self):
         return "selector"
 
 class AllSelector(Selector):
-    def all(self, game):
+    def all(self, game, context):
         for item in game.objects.values():
             yield item
 
@@ -36,7 +42,7 @@ class AllTypeSelector(Selector):
     def __init__ (self, type):
         self.type = type
 
-    def all (self, game):
+    def all (self, game, context):
         for item in game.objects.values():
             if self.type in item.state.types:
                 yield item
@@ -45,7 +51,7 @@ class AllTypeSelector(Selector):
         return "all %s" % self.type
 
 class AllPermanentSelector(Selector):
-    def all(self, game):
+    def all(self, game, context):
          for item in game.objects.values():
             if "permanent" in item.state.tags:
                 yield item
@@ -57,7 +63,7 @@ class PermanentPlayerControlsSelector(Selector):
     def __init__ (self, player):
         self.player_id = player.id
 
-    def all (self, game):
+    def all (self, game, context):
         for item in game.objects.values():
             if "permanent" in item.state.tags:
                 if item.state.controller_id == self.player_id:
@@ -67,11 +73,27 @@ class PermanentPlayerControlsSelector(Selector):
         return "permanent player controls"
 
 class AllPlayersSelector(Selector):
-    def all(self, game):
+    def all(self, game, context):
         for player in game.players:
             yield player
 
+    def slots(self):
+        return ["that player"]
+
     def __str__(self):
         return "all players"
+
+class SelfSelector(Selector):
+    def all(self, game, context):
+        yield game.objects.get(context.get_self_id())
+
+    def __str__(self):
+        return "SELF"
+        
+class ThatPlayerSelector(Selector):
+    def all(self, game, context):
+        player_id = context.get_slot("that player")
+        assert player_id is not None
+        yield game.objects.get(player_id)
 
 

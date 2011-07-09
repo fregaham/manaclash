@@ -75,6 +75,9 @@ class Output:
     def createEffectObject(self, id):
         print "Creating effect %d" % id
 
+    def createDamageAssignment(self, id):
+        print "Creating damage assignment %d" % id
+
 
 def input_generator ():
 

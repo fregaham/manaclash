@@ -91,17 +91,44 @@ class FlyingAbility(StaticAbility):
         if obj.zone_id == game.get_in_play_zone().id:
             obj.state.tags.add("flying")
 
-class WhenSelfComesIntoPlayDoEffectAbility(TriggeredAbility):
-    def __init__(self, effect):
+class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
+    def __init__(self, selector, effect):
+        self.selector = selector
         self.effect = effect
 
     def register(self, game, obj):
         game.add_volatile_event_handler("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
-        if SELF.id == obj.id and zone_to.type == "in play":
+        if self.selector.contains(game, SELF, obj) and zone_to.type == "in play":
             from process import process_trigger_effect
-            process_trigger_effect(game, obj, self.effect)
 
+            slots = {}
+            for slot in self.selector.slots():
+                slots[slot] = obj
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
+    def __init__(self, x_selector, y_selector, effect):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.effect = effect
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("post_deal_damage", partial(self.onPostDealDamage, game, obj))
+
+    def onPostDealDamage(self, game, SELF, source, dest, n):
+        if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
+            from process import process_trigger_effect
+
+            slots = {}
+            for slot in self.x_selector.slots():
+                slots[slot] = source.get_id()
+
+            for slot in self.y_selector.slots():
+                slots[slot] = dest.get_id()
+
+            process_trigger_effect(game, SELF, self.effect, slots)
 
 

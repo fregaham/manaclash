@@ -63,6 +63,12 @@ class Object:
         self.rules = None
         self.damage = 0
 
+    def get_id(self):
+        return self.id
+
+    def get_self_id(self):
+        return self.id
+
     def get_state (self):
         return self.state
 
@@ -144,14 +150,24 @@ class DamageAssignment (Object):
         self.damage_assignment_list = src.damage_assignment_list
 
 class EffectObject(Object):
-    def __init__ (self, controller_id, text):
+    def __init__ (self, source_id, controller_id, text, slots):
         Object.__init__ (self)
+        self.source_id = source_id
         self.controller_id = controller_id
         self.initial_state.title = "Effect"
         self.initial_state.text = text
 
+        self.slots = slots
+
+    def get_self_id(self):
+        # for "SELF deal 1 damage to...", the SELF of an effect is the source of the effect
+        return self.source_id
+
+    def get_slot(self, key):
+        return self.slots.get(key)
+
     def copy(self):
-        return EffectObject(self.controller_id, self.text)._copy(self)
+        return EffectObject(self.controller_id, self.text, self.slots)._copy(self)
 
     def _copy(self, src):
         Object._copy(self, src)
@@ -165,6 +181,9 @@ class LastKnownInformation:
         self.game.add_event_handler ("pre_zone_transfer", self.onPreMoveObject)
 
     def get_id(self):
+        return self.object.id
+
+    def get_self_id(self):
         return self.object.id
 
     def get_object (self):
