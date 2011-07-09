@@ -23,6 +23,10 @@ from objects import *
 from effects import *
 from selectors import *
 
+from antlr3 import *
+from MagicGrammarLexer import *
+from MagicGrammarParser import *
+
 class ObjectRules:
     def evaluate(self, game, obj):
         pass
@@ -72,8 +76,14 @@ g_rules[None] = ObjectRules()
 def parse(obj):
 
     if isinstance(obj, EffectObject):
-        if "each player loses 1 life." == obj.state.text:
-            return EffectRules(PlayerLooseLifeEffect(AllPlayersSelector(), 1))
+        print "trying to parse: \"%s\"" % obj.state.text
+        char_stream = ANTLRStringStream(obj.state.text)
+        lexer = MagicGrammarLexer(char_stream)
+        tokens = CommonTokenStream(lexer)
+        parser = MagicGrammarParser(tokens);
+
+        effect = parser.effect()
+        return EffectRules(effect.value)
     
     if "artifact" in obj.state.types or "creature" in obj.state.types or "enchantment" in obj.state.types:
         return BasicPermanentRules()
@@ -81,8 +91,15 @@ def parse(obj):
     return g_rules[obj.state.text]
 
 def parsePermanentAbilities(game, obj):
-    if obj.state.text == "when SELF comes into play, each player loses 1 life.":
-        return [WhenSelfComesIntoPlayDoEffectAbility("each player loses 1 life.")]
+    if obj.state.text != "":
+        char_stream = ANTLRStringStream(obj.state.text)
+        lexer = MagicGrammarLexer(char_stream)
+        tokens = CommonTokenStream(lexer)
+        parser = MagicGrammarParser(tokens);
+
+        ability = parser.ability()
+        return [ability]
+
     return []
 
 

@@ -29,7 +29,8 @@ class TriggeredAbility(Ability):
         pass
 
 class StaticAbility(Ability):
-    pass
+    def evaluate(self, game, obj):
+        pass
 
 class ActivatedAbility(Ability):
     def canActivate(self, game, obj, player):
@@ -85,6 +86,10 @@ class PlaySpell(ActivatedAbility):
         c = ManaCost(obj.state.manacost)
         return [c]
 
+class FlyingAbility(StaticAbility):
+   def evaluate(self, game, obj):
+        if obj.zone_id == game.get_in_play_zone().id:
+            obj.state.tags.add("flying")
 
 class WhenSelfComesIntoPlayDoEffectAbility(TriggeredAbility):
     def __init__(self, effect):
