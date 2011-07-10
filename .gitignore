@@ -4,3 +4,4 @@ rules/*
 MagicGrammar.tokens
 MagicGrammarLexer.py
 MagicGrammarParser.py
+mc.py

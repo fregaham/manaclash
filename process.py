@@ -181,6 +181,7 @@ def process_play_spell (game, ability, player, obj):
         return
 
     costs = ability.determineCost(game, obj, player)
+
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
@@ -795,5 +796,20 @@ def process_validate_target(game, source, selector, target):
         return False
 
     return _is_valid_target(game, source, target)
+
+def process_ask_x(game, obj, player):
+    _as = QueryNumber(game, player, "Choose X")
+    a = game.input.send(_as)
+
+    obj.x = a
+
+    # convert number to mana string
+    ret = ""
+    while a > 9:
+        ret += "9"
+        a -= 9
+    ret += str(a)
+
+    return ret
 
 

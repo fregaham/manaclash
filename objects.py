@@ -63,6 +63,7 @@ class Object:
         self.rules = None
         self.damage = 0
         self.targets = {}
+        self.x = None
 
     def get_id(self):
         return self.id
@@ -96,6 +97,7 @@ class Object:
         self.rules = src.rules
         self.damage = src.damage
         self.targets = src.targets.copy()
+        self.x = src.x
 
     def __str__ (self):
         if self.state.power != None:

@@ -52,4 +52,9 @@ class ActionSet:
         self.text = text
         self.actions = actions
 
+class QueryNumber:
+    def __init__(self, game, player, text):
+        self.game = game
+        self.player = player
+        self.text = text
 

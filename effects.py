@@ -114,7 +114,14 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
 
         source = sources[0]
 
-        game.doDealDamage([(source, target, self.count)])
+        count = 0
+        if self.count == "X":
+            assert obj.x is not None
+            count = obj.x
+        else:
+            count = int(self.count)
+
+        game.doDealDamage([(source, target, count)])
 
 class XGetsNN(ContinuousEffect):
     def __init__ (self, source, selector, power, toughness):
@@ -135,6 +142,15 @@ class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
         self.toughness = toughness
 
     def doResolve(self, game, obj, target):
+        if self.power == "+X":
+            self.power = obj.x
+        elif self.power == "-X":
+            self.power = - obj.x
+        if self.toughness == "+X":
+            self.toughness = obj.x
+        elif self.toughness == "-X":
+            self.toughness = - obj.x
+        
         game.until_end_of_turn_effects.append (XGetsNN(obj, LKISelector(target), self.power, self.toughness))
 
 

@@ -68,7 +68,7 @@ if __name__ == "__main__":
     #c1.append (g.create_card (u"Deal Damage", "W", set(), set([u"instant"]), set(), set(), "SELF deals 1 damage to target creature or player.", None, None))
     c1.append (g.create_card (u"Pimp of Mercy", "W", set(), set([u"creature"]), set(), set(), "when SELF enters the battlefield, you gain 3 life.", 1, 1))
     c1.append (g.create_card (u"Angelic Jimmy", "W", set(), set([u"creature"]), set(), set(), "{T}: target attacking or blocking creature gets +1/+1 until end of turn.", 1, 1))
-
+    c1.append (g.create_card (u"Bleezy", "XW", set(), set([u"sorcery"]), set(), set(), "SELF deals X damage to target creature or player.", None, None))
 
     g.create_player("Alice", c1)
 

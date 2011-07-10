@@ -99,7 +99,7 @@ playerDiscardsACardEffect returns [value]
     ;
 
 xDealNDamageToTargetYEffect returns [value]
-    : x=selector (' deal ' | ' deals ') NUMBER ' damage to target ' y=selector '.' {$value = XDealNDamageToTargetYEffect($x.value, int($NUMBER.getText()), $y.value)}
+    : x=selector (' deal ' | ' deals ') number ' damage to target ' y=selector '.' {$value = XDealNDamageToTargetYEffect($x.value, $number.value, $y.value)}
     ;
 
 targetXGetsNNUntilEndOfTurn returns [value]
@@ -130,8 +130,11 @@ manaCostElement returns [value]
 
 number returns [value]
     : NUMBER {$value = int($NUMBER.getText())}
+    | 'X' {$value = 'X'}
     | '-' NUMBER {$value = -int($NUMBER.getText())}
+    | '-' 'X' {$value = '-X'}
     | '+' NUMBER {$value = int($NUMBER.getText())}
+    | '+' 'X' {$value = '+X'}
     ;
 
 /*------------------------------------------------------------------

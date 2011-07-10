@@ -84,7 +84,14 @@ class PlaySpell(ActivatedAbility):
         return "Play " + obj.state.title + " [%s]" % (obj.state.manacost)
 
     def determineCost(self, game, obj, player):
-        c = ManaCost(obj.state.manacost)
+
+        manacost = obj.state.manacost
+        if "X" in obj.state.manacost:
+            from process import process_ask_x
+            xcost = process_ask_x(game, obj, player)
+            manacost = manacost.replace("X", xcost)
+
+        c = ManaCost(manacost)
         return [c]
 
 class FlyingAbility(StaticAbility):

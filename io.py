@@ -19,6 +19,7 @@
 
 from objects import *
 from abilities import *
+from actions import *
 
 greeting = """ManaClash  Copyright (C) 2011  Marek Schmidt
     This program comes with ABSOLUTELY NO WARRANTY; for details type `warranty'
@@ -99,9 +100,14 @@ def input_generator ():
         action = None
         while action == None:
             i = 0
-            for a in _as.actions:
-                print ("%d: %s"  % (i, a.text))
-                i += 1
+
+            if isinstance(_as, ActionSet):
+                for a in _as.actions:
+                    print ("%d: %s"  % (i, a.text))
+                    i += 1
+            elif isinstance(_as, QueryNumber):
+                print "Enter number: "
+
 
             try:
 
@@ -111,9 +117,10 @@ def input_generator ():
                 autopass = True
                 if _as.text != "You have priority":
                     autopass = False
-                for a in _as.actions:
-                    if a.text != "Pass" and not isinstance(a.ability, BasicManaAbility):
-                        autopass = False
+                if isinstance(_as, ActionSet):
+                    for a in _as.actions:
+                        if a.text != "Pass" and not isinstance(a.ability, BasicManaAbility):
+                            autopass = False
 
                 if autopass:
                     _input = "0"
@@ -136,8 +143,11 @@ def input_generator ():
             except ValueError, x:
                 selected = -1
 
-            if selected >= 0 and selected < len(_as.actions):
-                action = _as.actions[selected]
+            if isinstance(_as, ActionSet):
+                if selected >= 0 and selected < len(_as.actions):
+                    action = _as.actions[selected]
+            elif isinstance(_as, QueryNumber):
+                action = selected
 
         _as = yield action
 
