@@ -50,8 +50,13 @@ class PlayerLooseLifeEffect(OneShotEffect):
         self.count = count
 
     def resolve(self, game, obj):
+        if self.count == "X":
+            count = obj.x
+        else:
+            count = self.count
+
         for player in self.selector.all(game, obj):
-            game.doLoseLife(player, self.count)
+            game.doLoseLife(player, count)
 
 class PlayerGainLifeEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
@@ -59,8 +64,30 @@ class PlayerGainLifeEffect(OneShotEffect):
         self.count = count
 
     def resolve(self, game, obj):
+        if self.count == "X":
+            count = obj.x
+        else:
+            count = self.count
+
         for player in self.selector.all(game, obj):
-            game.doGainLife(player, self.count)
+            game.doGainLife(player, count)
+
+class PlayerGainLifeForEachXEffect(OneShotEffect):
+    def __init__ (self, playerSelector, count, eachSelector):
+        self.selector = playerSelector
+        self.count = count
+        self.eachSelector = eachSelector
+
+    def resolve(self, game, obj):
+        if self.count == "X":
+            count = obj.x
+        else:
+            count = self.count
+
+        for player in self.selector.all(game, obj):
+            eachcount = len([x for x in self.eachSelector.all(game, obj)])
+            game.doGainLife(player, count * eachcount)
+
 
 class PlayerDiscardsCardEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):

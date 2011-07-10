@@ -54,6 +54,7 @@ ability returns [value]
 effect returns [value]
     : a=playerLooseLifeEffect {$value = $a.value}
     | a=playerGainLifeEffect {$value = $a.value}
+    | a=playerGainLifeForEachXEffect {$value = $a.value}
     | a=playerDiscardsACardEffect {$value = $a.value}
     | a=xDealNDamageToTargetYEffect {$value = $a.value}
     | a=targetXGetsNNUntilEndOfTurn {$value = $a.value}
@@ -87,11 +88,15 @@ tappingActivatedAbility returns [value]
     ;
 
 playerLooseLifeEffect returns [value]
-    : selector (' lose ' | ' loses ') NUMBER ' life.' {$value = PlayerLooseLifeEffect($selector.value, int($NUMBER.getText()))}
+    : selector (' lose ' | ' loses ') number ' life.' {$value = PlayerLooseLifeEffect($selector.value, $number.value)}
     ;
 
 playerGainLifeEffect returns [value]
-    : selector (' gain ' | ' gains ') NUMBER ' life.' {$value = PlayerGainLifeEffect($selector.value, int($NUMBER.getText()))}
+    : selector (' gain ' | ' gains ') number ' life.' {$value = PlayerGainLifeEffect($selector.value, $number.value)}
+    ;
+
+playerGainLifeForEachXEffect returns [value]
+    : a=selector (' gain '|' gains ') number ' life for each ' x=selector '.' {$value = PlayerGainLifeForEachXEffect($a.value, $number.value, $x.value)}
     ;
 
 playerDiscardsACardEffect returns [value]
@@ -113,6 +118,7 @@ selector returns [value]
     | 'SELF' {$value = SelfSelector()}
     | 'creature or player' {$value = CreatureOrPlayerSelector()}
     | 'attacking or blocking creature' {$value = AttackingOrBlockingCreatureSelector()}
+    | 'creature attacking you' {$value = CreatureAttackingYouSelector()}
     ;
 
 numberOfCards returns [value]

@@ -125,4 +125,9 @@ class AttackingOrBlockingCreatureSelector(Selector):
             if "permanent" in obj.state.tags and "creature" in obj.state.types and ("attacking" in obj.state.tags or "blocking" in obj.state.tags):
                 yield obj
 
+class CreatureAttackingYouSelector(Selector):
+    def all(self, game, context):
+        for obj in game.objects.values():
+            if "permanent" in obj.state.tags and "creature" in obj.state.types and "attacking" in obj.state.tags and game.defending_player_id == context.get_state().controller_id:
+                yield obj
 
