@@ -58,6 +58,8 @@ effect returns [value]
     | a=playerDiscardsACardEffect {$value = $a.value}
     | a=xDealNDamageToTargetYEffect {$value = $a.value}
     | a=targetXGetsNNUntilEndOfTurn {$value = $a.value}
+    | a=destroyTargetX {$value = $a.value}
+    | a=destroyTargetXYGainLifeEqualsToItsPower {$value = $a.value}
     ;
 
 continuousAbility returns [value]
@@ -111,6 +113,14 @@ targetXGetsNNUntilEndOfTurn returns [value]
     : 'target ' selector (' gets '|' get ') a=number '/' b=number ' until end of turn.' {$value = TargetXGetsNNUntilEndOfTurn($selector.value, $a.value, $b.value)}
     ;
 
+destroyTargetX returns [value]
+    : 'destroy target ' x=selector '.' {$value = DestroyTargetX($x.value)}
+    ;
+
+destroyTargetXYGainLifeEqualsToItsPower returns [value]
+    : 'destroy target ' x=selector '. ' y=selector (' gain '|' gains ') 'life equal to its power.' {$value = DestroyTargetXYGainLifeEqualsToItsPower($x.value, $y.value)}
+    ;
+
 selector returns [value]
     : ('a player' | 'each player') {$value = AllPlayersSelector()}
     | 'that player' {$value = ThatPlayerSelector()}
@@ -118,6 +128,7 @@ selector returns [value]
     | 'SELF' {$value = SelfSelector()}
     | 'creature or player' {$value = CreatureOrPlayerSelector()}
     | 'attacking or blocking creature' {$value = AttackingOrBlockingCreatureSelector()}
+    | 'attacking creature' {$value = AttackingCreatureSelector()}
     | 'creature attacking you' {$value = CreatureAttackingYouSelector()}
     ;
 

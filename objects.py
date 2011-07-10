@@ -78,6 +78,9 @@ class Object:
     def get_state (self):
         return self.state
 
+    def get_object(self):
+        return self
+
     def copy(self):
         ret = Object()
         return ret._copy(self)

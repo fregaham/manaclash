@@ -294,6 +294,7 @@ class Game:
 
 
     def doDestroy(self, obj):
+        obj = obj.get_object()
         print "doDestroy %s" % (obj)
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 

@@ -180,5 +180,23 @@ class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
         
         game.until_end_of_turn_effects.append (XGetsNN(obj, LKISelector(target), self.power, self.toughness))
 
+class DestroyTargetX(SingleTargetOneShotEffect):
+    def __init__(self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+        game.doDestroy(target)
+        
+class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
+    def __init__(self, targetSelector, playerSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.playerSelector = playerSelector
+
+    def doResolve(self, game, obj, target):
+        game.doDestroy(target)
+
+        count = target.get_state().power
+        for player in self.playerSelector.all(game, obj):
+            game.doGainLife(player, count)
 
 

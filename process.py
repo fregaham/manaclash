@@ -411,6 +411,14 @@ def process_step_declare_attackers (game):
 
     process_priority_succession (game, game.get_active_player())
 
+    # remove the moved declared attackers
+    torm = []
+    for attacker in game.declared_attackers:
+        if attacker.is_moved():
+            torm.append (attacker)
+    for attacker in torm:
+        game.declared_attackers.remove(attacker)
+
     process_step_post (game)
 
 
@@ -507,6 +515,14 @@ def process_step_declare_blockers (game):
 
     process_priority_succession (game, game.get_active_player())
 
+    # remove the moved declared attackers
+    torm = []
+    for attacker in game.declared_attackers:
+        if attacker.is_moved():
+            torm.append (attacker)
+    for attacker in torm:
+        game.declared_attackers.remove(attacker)
+
     process_step_post (game)
 
 
@@ -551,9 +567,9 @@ def process_step_combat_damage (game):
         a_lki = id2lki[a_id]
         a_obj = id2lki[a_id].get_object()
         a_state = id2lki[a_id].get_state()
-
+        
         # only creatures deal combat damage
-        if "creature" in a_state.types:
+        if not a_lki.is_moved() and "creature" in a_state.types:
 
             if len(b_ids) == 0:
                 # unblocked creature deal damage to the defending player
@@ -591,7 +607,7 @@ def process_step_combat_damage (game):
             b_lki = id2lki[b_id]
             b_obj = id2lki[b_id].get_object()
             b_state = id2lki[b_id].get_state()
-            if "creature" in b_state.types:
+            if not b_lki.is_moved() and "creature" in b_state.types:
                 damage.append ( (b_lki, a_lki, b_state.power) )
 
     merged = {}
