@@ -585,6 +585,14 @@ def process_step_combat_damage (game):
 
                     d -= 1
 
+        # damage by the blocked creatures
+        for b_id in b_ids:
+            b_lki = id2lki[b_id]
+            b_obj = id2lki[b_id].get_object()
+            b_state = id2lki[b_id].get_state()
+            if "creature" in b_state.types:
+                damage.append ( (b_lki, a_lki, b_state.power) )
+
     merged = {}
     for a, b, n in damage:
         d = merged.get( (a,b), 0)

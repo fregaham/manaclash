@@ -18,6 +18,11 @@
 # 
 
 from ManaClash import *
+from game import *
+from process import *
+from io import *
+
+import unittest
 
 def test_common(g):
     g.create()
@@ -65,25 +70,32 @@ def test_common(g):
 
     return (p1, p2)
 
-def test1():
-    ig = test_input_generator([0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    n = ig.next()
-    g = Game(ig)
-    test_common(g)
 
-def test2():
-    ig = test_input_generator([0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 1, 3,1, 2, 0, 0, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0])
-    n = ig.next()
-    g = Game(ig)
-    alice, bob = test_common(g)    
-    alice_graveyard = g.get_graveyard(alice)
-    assert len(alice_graveyard.objects) == 2 
-    assert alice_graveyard.objects[0].state.title == "Suntail Hawk"
-    print alice_graveyard.objects[1].state.title
-    assert alice_graveyard.objects[1].state.title == "Suntail Hawk"
+class ManaClashTest(unittest.TestCase):
+
+    def test1(self):
+        ig = test_input_generator([0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        n = ig.next()
+        o = Output()
+        g = Game(ig, o)
+        test_common(g)
+
+    def test2(self):
+        ig = test_input_generator([0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 1, 3,1, 2, 0, 0, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0])
+        n = ig.next()
+        o = Output()
+        g = Game(ig, o)
+        alice, bob = test_common(g)    
+        alice_graveyard = g.get_graveyard(alice)
+        bob_graveyard = g.get_graveyard(bob)
+        assert len(alice_graveyard.objects) == 2 
+        assert alice_graveyard.objects[0].state.title == "Suntail Hawk"
+        print alice_graveyard.objects[1].state.title
+        assert alice_graveyard.objects[1].state.title == "Hasty Suntail Hawk"
     
+        assert len(bob_graveyard.objects) == 1
+        assert bob_graveyard.objects[0].state.title == "Scatchy Zombies"
 
 if __name__ == "__main__":
-    test1()
-    test2()
+    unittest.main()
 
