@@ -186,7 +186,14 @@ class DestroyTargetX(SingleTargetOneShotEffect):
 
     def doResolve(self, game, obj, target):
         game.doDestroy(target)
-        
+
+class BuryTargetX(SingleTargetOneShotEffect):
+    def __init__(self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+        game.doBury(target)
+       
 class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
     def __init__(self, targetSelector, playerSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)

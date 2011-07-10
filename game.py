@@ -298,6 +298,11 @@ class Game:
         print "doDestroy %s" % (obj)
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
+    def doBury(self, obj):
+        obj = obj.get_object()
+        print "doBury %s" % (obj)
+        self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
     def delete(self, obj):
         print "deleting object %s" % obj
         self.objects[obj.zone_id].objects.remove(obj)

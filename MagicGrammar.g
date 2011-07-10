@@ -59,6 +59,7 @@ effect returns [value]
     | a=xDealNDamageToTargetYEffect {$value = $a.value}
     | a=targetXGetsNNUntilEndOfTurn {$value = $a.value}
     | a=destroyTargetX {$value = $a.value}
+    | a=buryTargetX {$value = $a.value}
     | a=destroyTargetXYGainLifeEqualsToItsPower {$value = $a.value}
     ;
 
@@ -117,6 +118,10 @@ destroyTargetX returns [value]
     : 'destroy target ' x=selector '.' {$value = DestroyTargetX($x.value)}
     ;
 
+buryTargetX returns [value]
+    : 'destroy target ' x=selector '. it can\'t be regenerated.' {$value = BuryTargetX($x.value)}
+    ;
+
 destroyTargetXYGainLifeEqualsToItsPower returns [value]
     : 'destroy target ' x=selector '. ' y=selector (' gain '|' gains ') 'life equal to its power.' {$value = DestroyTargetXYGainLifeEqualsToItsPower($x.value, $y.value)}
     ;
@@ -130,6 +135,7 @@ selector returns [value]
     | 'attacking or blocking creature' {$value = AttackingOrBlockingCreatureSelector()}
     | 'attacking creature' {$value = AttackingCreatureSelector()}
     | 'creature attacking you' {$value = CreatureAttackingYouSelector()}
+    | 'non' color ' creature' {$value = NonColorCreatureSelector($color.value)}
     ;
 
 numberOfCards returns [value]
@@ -152,6 +158,14 @@ number returns [value]
     | '-' 'X' {$value = '-X'}
     | '+' NUMBER {$value = int($NUMBER.getText())}
     | '+' 'X' {$value = '+X'}
+    ;
+
+color returns [value]
+    : 'red' {$value = 'red'}
+    | 'green' {$value = 'green'}
+    | 'black' {$value = 'black'}
+    | 'white' {$value = 'white'}
+    | 'blue' {$value = 'blue'}
     ;
 
 /*------------------------------------------------------------------

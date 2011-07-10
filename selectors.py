@@ -137,3 +137,13 @@ class CreatureAttackingYouSelector(Selector):
             if "permanent" in obj.state.tags and "creature" in obj.state.types and "attacking" in obj.state.tags and game.defending_player_id == context.get_state().controller_id:
                 yield obj
 
+#e.g. non-black creature
+class NonColorCreatureSelector(Selector):
+    def __init__ (self, color):
+        self.color = color
+    def all(self, game, context):
+        for obj in game.objects.values():
+            if "permanent" in obj.state.tags and "creature" in obj.state.types and self.color not in obj.state.tags:
+                yield obj
+
+

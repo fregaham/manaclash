@@ -103,6 +103,21 @@ def evaluate (game):
         for obj in unblocked:
             obj.get_state().tags.add ("unblocked")
 
+    # colors
+    _as = AllSelector()
+    for object in _as.all(game, None):
+        if object.state.manacost is not None:
+            if "R" in object.state.manacost:
+                object.state.tags.add("red")
+            if "G" in object.state.manacost:
+                object.state.tags.add("green")
+            if "U" in object.state.manacost:
+                object.state.tags.add("blue")
+            if "B" in object.state.manacost:
+                object.state.tags.add("black")
+            if "W" in object.state.manacost:
+                object.state.tags.add("white")
+
     # static abilities
 
     # until end of turn effects
