@@ -206,4 +206,19 @@ class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
         for player in self.playerSelector.all(game, obj):
             game.doGainLife(player, count)
 
+class DoXAtEndOfCombat(OneShotEffect):
+    def __init__ (self, effect):
+        self.effect = effect
+
+    def resolve(self, game, obj):
+        e = game.create_effect_object(obj.get_source_lki(), obj.get_controller_id(), self.effect, obj.get_slots())
+        game.end_of_combat_triggers.append (e)
+
+class DestroyX(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            game.doDestroy(o)
 

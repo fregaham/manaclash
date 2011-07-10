@@ -523,6 +523,8 @@ def process_step_declare_blockers (game):
         game.declared_blockers.add (b_lki)
         game.declared_blockers_map[b.id] = blockers_map[b.id].id
 
+    process_raise_blocking_events(game)
+
     for ability in game.triggered_abilities:
         game.stack_push (ability)
 
@@ -540,6 +542,17 @@ def process_step_declare_blockers (game):
 
     process_step_post (game)
 
+def process_raise_blocking_events(game):
+    attacker_lki_map = {}
+
+    for obj in game.declared_attackers:
+        attacker_lki_map[obj.get_id()] = obj
+
+    for obj in game.declared_blockers:
+        blocked_id = game.declared_blockers_map[obj.get_id()]
+        blocked_lki = attacker_lki_map[blocked_id]
+
+        game.raise_event("blocks", obj, blocked_lki)
 
 def process_step_combat_damage (game):
     game.current_step = "combat damage"
@@ -647,6 +660,11 @@ def process_step_combat_damage (game):
 def process_step_end_of_combat (game):
     game.current_step = "end of combat"
     process_step_pre (game)
+
+    for ability in game.end_of_combat_triggers:
+        game.triggered_abilities.append (ability)
+    game.end_of_combat_triggers = []
+
     for ability in game.triggered_abilities:
         game.stack_push (ability)
     game.triggered_abilities = []

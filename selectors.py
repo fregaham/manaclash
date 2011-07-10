@@ -98,6 +98,12 @@ class ThatPlayerSelector(Selector):
         assert player_lki is not None
         yield player_lki
 
+class ThatCreatureSelector(Selector):
+    def all(self, game, context):
+        creature_lki = context.get_slot("that creature")
+        assert creature_lki is not None
+        yield creature_lki
+
 class YouSelector(Selector):
     def all(self, game, context):
         yield game.objects[context.get_state().controller_id]
@@ -124,18 +130,24 @@ class AttackingOrBlockingCreatureSelector(Selector):
         for obj in game.objects.values():
             if "permanent" in obj.state.tags and "creature" in obj.state.types and ("attacking" in obj.state.tags or "blocking" in obj.state.tags):
                 yield obj
+    def slots(self):
+        return ["that creature"]
 
 class AttackingCreatureSelector(Selector):
     def all(self, game, context):
         for obj in game.objects.values():
             if "permanent" in obj.state.tags and "creature" in obj.state.types and "attacking" in obj.state.tags:
                 yield obj
+    def slots(self):
+        return ["that creature"]
 
 class CreatureAttackingYouSelector(Selector):
     def all(self, game, context):
         for obj in game.objects.values():
             if "permanent" in obj.state.tags and "creature" in obj.state.types and "attacking" in obj.state.tags and game.defending_player_id == context.get_state().controller_id:
                 yield obj
+    def slots(self):
+        return ["that creature"]
 
 #e.g. non-black creature
 class NonColorCreatureSelector(Selector):
@@ -145,5 +157,7 @@ class NonColorCreatureSelector(Selector):
         for obj in game.objects.values():
             if "permanent" in obj.state.tags and "creature" in obj.state.types and self.color not in obj.state.tags:
                 yield obj
+    def slots(self):
+        return ["that creature"]
 
 

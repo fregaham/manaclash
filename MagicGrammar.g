@@ -60,7 +60,9 @@ effect returns [value]
     | a=targetXGetsNNUntilEndOfTurn {$value = $a.value}
     | a=destroyTargetX {$value = $a.value}
     | a=buryTargetX {$value = $a.value}
+    | a=destroyX {$value = $a.value}
     | a=destroyTargetXYGainLifeEqualsToItsPower {$value = $a.value}
+    | a=destroyXAtEndOfCombat {$value = $a.value}
     ;
 
 continuousAbility returns [value]
@@ -70,6 +72,7 @@ continuousAbility returns [value]
 triggeredAbility returns [value]
     : a=whenXComesIntoPlayDoEffectAbility {$value = $a.value}
     | a=whenXDealsDamageToYDoEffectAbility {$value = $a.value}
+    | a=whenXBlocksOrBecomesBlockedByYDoEffectAbility {$value = $a.value}
     ;
 
 whenXComesIntoPlayDoEffectAbility returns [value]
@@ -79,6 +82,10 @@ whenXComesIntoPlayDoEffectAbility returns [value]
 
 whenXDealsDamageToYDoEffectAbility returns [value]
     : ('when '|'whenever ') x=selector (' deals '|' deal ') 'damage to ' y=selector ', ' effect {$value = WhenXDealsDamageToYDoEffectAbility($x.value, $y.value, $effect.text)}
+    ;
+
+whenXBlocksOrBecomesBlockedByYDoEffectAbility returns [value]
+    : ('when '|'whenever ') x=selector ' blocks or becomes blocked by' (' a '|' an ') y=selector ', ' effect {$value=WhenXBlocksOrBecomesBlockedByYDoEffectAbility($x.value, $y.value, $effect.text)}
     ;
 
 activatedAbility returns [value]
@@ -126,8 +133,19 @@ destroyTargetXYGainLifeEqualsToItsPower returns [value]
     : 'destroy target ' x=selector '. ' y=selector (' gain '|' gains ') 'life equal to its power.' {$value = DestroyTargetXYGainLifeEqualsToItsPower($x.value, $y.value)}
     ;
 
+destroyXAtEndOfCombat returns [value]
+    : 'destroy ' x=selector ' at end of combat.' {$value = DoXAtEndOfCombat('destroy ' + $x.text + '.')}
+    | 'destroy that creature at end of combat.' {$value = DoXAtEndOfCombat('destroy that creature.')}
+    ;
+
+destroyX returns [value]
+    : 'destroy ' x=selector '.' {$value=DestroyX($x.value)}
+    | 'destroy that creature.' {$value=DestroyX(ThatCreatureSelector())}
+    ;
+
 selector returns [value]
-    : ('a player' | 'each player') {$value = AllPlayersSelector()}
+    : ('a player'|'each player') {$value = AllPlayersSelector()}
+    | 'that creature' {$value = ThatCreatureSelector()}
     | 'that player' {$value = ThatPlayerSelector()}
     | 'you' {$value = YouSelector()}
     | 'SELF' {$value = SelfSelector()}

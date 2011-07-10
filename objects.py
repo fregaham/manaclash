@@ -88,6 +88,9 @@ class Object:
     def is_moved(self):
         return False
 
+    def get_controller_id(self):
+        return self.state.controller_id
+
     def _copy(self, src):
         self.id = src.id
         self.initial_state = src.initial_state.copy()
@@ -184,6 +187,12 @@ class EffectObject(Object):
 
     def get_source_lki(self):
         return self.source_lki
+
+    def get_controller_id(self):
+        return self.controller_id
+
+    def get_slots(self):
+        return self.slots
 
     def get_slot(self, key):
         return self.slots.get(key)

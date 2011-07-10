@@ -50,6 +50,8 @@ class Game:
 
         self.until_end_of_turn_effects = []
 
+        self.end_of_combat_triggers = []
+
         self.turn_number = 0
 
     def add_object (self, object):

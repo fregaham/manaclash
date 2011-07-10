@@ -161,4 +161,26 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
 
             process_trigger_effect(game, SELF, self.effect, slots)
 
+class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
+    def __init__(self, x_selector, y_selector, effect):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.effect = effect
 
+    def register(self, game, obj):
+        game.add_volatile_event_handler("blocks", partial(self.onBlocks, game, obj))
+
+    def onBlocks(self, game, SELF, blocker, attacker):
+        from process import process_trigger_effect
+        if self.x_selector.contains(game, SELF, blocker) and self.y_selector.contains(game, SELF, attacker):
+            slots = {}
+            for slot in self.y_selector.slots():
+                slots[slot] = attacker
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+        elif (self.x_selector.contains(game, SELF, attacker) and self.y_selector.contains(game, SELF, blocker)):
+            slots = {}
+            for slot in self.y_selector.slots():
+                slots[slot] = blocker
+            process_trigger_effect(game, SELF, self.effect, slots)
+   
