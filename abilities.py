@@ -99,6 +99,14 @@ class FlyingAbility(StaticAbility):
         if obj.zone_id == game.get_in_play_zone().id:
             obj.state.tags.add("flying")
 
+class ContinuousEffectStaticAbility(StaticAbility):
+    def __init__ (self, effect):
+        self.effect = effect
+
+    def evaluate(self, game, obj):
+        # TODO: add the effect to the proper bucket
+        game.volatile_effects.append ( (obj, self.effect) )
+
 class TapCostDoEffectAbility(ActivatedAbility):
     def __init__ (self, manacost, effect):
         self.manacost = manacost

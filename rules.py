@@ -24,8 +24,6 @@ from effects import *
 from selectors import *
 
 from antlr3 import *
-from MagicGrammarLexer import *
-from MagicGrammarParser import *
 
 class ObjectRules:
     def evaluate(self, game, obj):
@@ -79,6 +77,33 @@ class BasicNonPermanentRules(ObjectRules):
     def selectTargets(self, game, player, obj):
         return self.effect.selectTargets(game, player, obj)
 
+class EnchantPermanentRules(ObjectRules):
+    def __init__(self, selector, ability):
+        self.selector = selector
+        self.ability = ability
+
+    def evaluate(self, game, obj):
+        obj.state.abilities.append (PlaySpell())
+        obj.state.abilities.append(self.ability)
+
+    def resolve(self, game, obj):
+        from process import process_validate_target
+        if process_validate_target(game, obj, self.selector, obj.targets["target"]):
+            obj.enchanted_id = obj.targets["target"]
+            game.doZoneTransfer(obj, game.get_in_play_zone())
+        else:
+            game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
+
+    def selectTargets(self, game, player, obj):
+        from process import process_select_target
+        target = process_select_target(game, player, obj, self.selector)
+        if target == None:
+            return False
+
+        obj.targets["target"] = LastKnownInformation(game, target)
+
+        return True
+        
 
 g_rules = {}
 g_rules["[G]"] = BasicLandRules("G")
@@ -91,6 +116,8 @@ g_rules[""] = ObjectRules()
 g_rules[None] = ObjectRules()
 
 def parse(obj):
+    from MagicGrammarLexer import *
+    from MagicGrammarParser import *
 
     if isinstance(obj, EffectObject):
         print "trying to parse: \"%s\"" % obj.state.text
@@ -103,8 +130,18 @@ def parse(obj):
         print `effect.value`
         return EffectRules(effect.value)
     
-    if "artifact" in obj.state.types or "creature" in obj.state.types or "enchantment" in obj.state.types:
+    if "artifact" in obj.state.types or "creature" in obj.state.types: 
         return BasicPermanentRules()
+
+    if "enchantment" in obj.state.types:
+        print "trying to parse: \"%s\"" % obj.state.text
+        char_stream = ANTLRStringStream(obj.state.text)
+        lexer = MagicGrammarLexer(char_stream)
+        tokens = CommonTokenStream(lexer)
+        parser = MagicGrammarParser(tokens);
+
+        rule = parser.enchantment()
+        return rule
 
     if "sorcery" in obj.state.types or "instant" in obj.state.types:
         print "trying to parse: \"%s\"" % obj.state.text
@@ -121,6 +158,9 @@ def parse(obj):
     return g_rules[obj.state.text]
 
 def parsePermanentAbilities(game, obj):
+    from MagicGrammarLexer import *
+    from MagicGrammarParser import *
+
     if obj.state.text != "":
         print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)

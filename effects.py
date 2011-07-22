@@ -31,7 +31,7 @@ class Effect:
         return []
 
 class ContinuousEffect(Effect):
-    def apply (self, game):
+    def apply (self, game, obj):
         pass
 
 class OneShotEffect(Effect):
@@ -151,16 +151,26 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
         game.doDealDamage([(source, target, count)])
 
 class XGetsNN(ContinuousEffect):
-    def __init__ (self, source, selector, power, toughness):
-        self.source = source
+    def __init__ (self, selector, power, toughness):
         self.selector = selector
         self.power = power
         self.toughness = toughness
 
-    def apply(self, game):
-        for obj in self.selector.all(game, self.source):
-            obj.state.power += self.power
-            obj.state.toughness += self.toughness
+    def apply(self, game, obj):
+        power = self.power
+        toughness = self.toughness
+        if power == "+X":
+            power = obj.x
+        elif power == "-X":
+            power = - obj.x
+        if toughness == "+X":
+            toughness = obj.x
+        elif toughness == "-X":
+            toughness = - obj.x
+
+        for o in self.selector.all(game, obj):
+            o.state.power += power
+            o.state.toughness += toughness
 
 class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, power, toughness):
@@ -169,16 +179,18 @@ class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
         self.toughness = toughness
 
     def doResolve(self, game, obj, target):
-        if self.power == "+X":
-            self.power = obj.x
-        elif self.power == "-X":
-            self.power = - obj.x
-        if self.toughness == "+X":
-            self.toughness = obj.x
-        elif self.toughness == "-X":
-            self.toughness = - obj.x
+        power = self.power
+        toughness = self.toughness
+        if power == "+X":
+            power = obj.x
+        elif power == "-X":
+            power = - obj.x
+        if toughness == "+X":
+            toughness = obj.x
+        elif toughness == "-X":
+            toughness = - obj.x
         
-        game.until_end_of_turn_effects.append (XGetsNN(obj, LKISelector(target), self.power, self.toughness))
+        game.until_end_of_turn_effects.append ( (obj, XGetsNN(LKISelector(target), power, toughness)))
 
 class DestroyTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):
@@ -221,4 +233,12 @@ class DestroyX(OneShotEffect):
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
             game.doDestroy(o)
+
+class XDontUntapDuringItsControllersUntapStep(ContinuousEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def apply(self, game, obj):
+        for o in self.selector.all(game, obj):
+            o.state.tags.add ("does not untap")
 

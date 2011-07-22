@@ -116,6 +116,13 @@ class LKISelector(Selector):
             yield self.lki.get_object()
         return    
 
+class CreatureSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types:
+                yield item
+
+
 class CreatureOrPlayerSelector(Selector):
     def all(self, game, context):
         for player in game.players:
@@ -159,5 +166,14 @@ class NonColorCreatureSelector(Selector):
                 yield obj
     def slots(self):
         return ["that creature"]
+
+
+class EnchantedCreatureSelector(Selector):
+    def all(self, game, context):
+        if context.enchanted_id != None:
+            ret = game.objects[context.enchanted_id]
+            if "permanent" in ret.state.tags:
+                yield ret
+
 
 

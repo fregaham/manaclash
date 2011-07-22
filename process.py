@@ -50,6 +50,7 @@ def evaluate (game):
     """ evaluate all continuous effects """
 
     game.volatile_events = {}
+    game.volatile_effects = []
 
     for player in game.players:
         player.maximum_hand_size = 7
@@ -118,18 +119,23 @@ def evaluate (game):
             if "W" in object.state.manacost:
                 object.state.tags.add("white")
 
-    # static abilities
-
-    # until end of turn effects
-    for effect in game.until_end_of_turn_effects:
-        effect.apply(game)
-
+    
     # register triggered abilities' triggers
     _as = AllSelector ()
     for object in _as.all(game, None):
         for ability in object.state.abilities:
             if isinstance(ability, TriggeredAbility):
                 ability.register(game, object)
+            elif isinstance(ability, StaticAbility):
+                ability.evaluate(game, object)
+
+    # static abilities
+    for source, effect in game.volatile_effects:
+        effect.apply(game, source)
+
+    # until end of turn effects
+    for source, effect in game.until_end_of_turn_effects:
+        effect.apply(game, source)
 
     # Playing lands
     _al = AllTypeSelector("land")
@@ -308,7 +314,8 @@ def process_step_untap (game):
 
     selector = PermanentPlayerControlsSelector (game.get_active_player())
     for permanent in selector.all (game, None):
-        process_untap (game, permanent)
+        if "does not untap" not in permanent.state.tags:
+            process_untap (game, permanent)
 
     process_step_post (game)
 

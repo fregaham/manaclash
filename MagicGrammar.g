@@ -19,6 +19,7 @@ import traceback
 from abilities import *
 from effects import *
 from selectors import *
+from rules import *
 
 from MagicGrammarLexer import MagicGrammarLexer
 
@@ -57,12 +58,18 @@ effect returns [value]
     | a=playerGainLifeForEachXEffect {$value = $a.value}
     | a=playerDiscardsACardEffect {$value = $a.value}
     | a=xDealNDamageToTargetYEffect {$value = $a.value}
+    | a=xGetsNN {$value = $a.value}
     | a=targetXGetsNNUntilEndOfTurn {$value = $a.value}
     | a=destroyTargetX {$value = $a.value}
     | a=buryTargetX {$value = $a.value}
     | a=destroyX {$value = $a.value}
     | a=destroyTargetXYGainLifeEqualsToItsPower {$value = $a.value}
     | a=destroyXAtEndOfCombat {$value = $a.value}
+    | a=dontUntapDuringItsControllersUntapStep {$value = $a.value}
+    ;
+
+enchantment returns [value]
+    : 'enchant ' x=selector ' ' effect {$value = EnchantPermanentRules($x.value, ContinuousEffectStaticAbility($effect.value))}
     ;
 
 continuousAbility returns [value]
@@ -121,6 +128,14 @@ targetXGetsNNUntilEndOfTurn returns [value]
     : 'target ' selector (' gets '|' get ') a=number '/' b=number ' until end of turn.' {$value = TargetXGetsNNUntilEndOfTurn($selector.value, $a.value, $b.value)}
     ;
 
+dontUntapDuringItsControllersUntapStep returns [value]
+    : x=selector 'doesn\'t untap during its controller\'s untap step.' {$value = XDontUntapDuringItsControllersUntapStep($selector.value)}
+    ;
+
+xGetsNN returns [value]
+    : x=selector (' gets '|' get ') a=number '/' b=number '.' {$value = XGetsNN($x.value, $a.value, $b.value)}
+    ;
+
 destroyTargetX returns [value]
     : 'destroy target ' x=selector '.' {$value = DestroyTargetX($x.value)}
     ;
@@ -149,11 +164,13 @@ selector returns [value]
     | 'that player' {$value = ThatPlayerSelector()}
     | 'you' {$value = YouSelector()}
     | 'SELF' {$value = SelfSelector()}
+    | 'creature' {$value = CreatureSelector()}
     | 'creature or player' {$value = CreatureOrPlayerSelector()}
     | 'attacking or blocking creature' {$value = AttackingOrBlockingCreatureSelector()}
     | 'attacking creature' {$value = AttackingCreatureSelector()}
     | 'creature attacking you' {$value = CreatureAttackingYouSelector()}
     | 'non' color ' creature' {$value = NonColorCreatureSelector($color.value)}
+    | 'enchanted creature' {$value = EnchantedCreatureSelector()} 
     ;
 
 numberOfCards returns [value]

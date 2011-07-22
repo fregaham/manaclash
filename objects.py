@@ -64,6 +64,7 @@ class Object:
         self.damage = 0
         self.targets = {}
         self.x = None
+        self.enchanted_id = None
 
     def get_id(self):
         return self.id
@@ -104,12 +105,22 @@ class Object:
         self.damage = src.damage
         self.targets = src.targets.copy()
         self.x = src.x
+        self.enchanted_id = src.enchanted_id
 
     def __str__ (self):
+
+        ret = "["
         if self.state.power != None:
-            return "[#%s %s {%s} `%s' %d/%d]" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text, self.state.power, self.state.toughness)
+            ret += "#%s %s {%s} `%s' %d/%d" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text, self.state.power, self.state.toughness)
         else:
-            return "[#%s %s {%s} `%s']" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text)
+            ret += "#%s %s {%s} `%s'" % (str(self.id), self.state.title, ", ".join(self.state.tags), self.state.text)
+
+        if self.enchanted_id != None:
+            ret += " enchanting %s" % (str(self.enchanted_id))
+
+        ret += "]"
+
+        return ret
 
 class Zone(Object):
     def __init__ (self, type=None, player_id=None):

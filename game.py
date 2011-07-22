@@ -48,6 +48,8 @@ class Game:
         self.events = {}
         self.volatile_events = {}
 
+        self.volatile_effects = []
+
         self.until_end_of_turn_effects = []
 
         self.end_of_combat_triggers = []
@@ -259,6 +261,8 @@ class Game:
         object.zone_id = zone.id
         zone_from.objects.remove(object)
         zone.objects.append (object)
+    
+        object.enchanted_id = None
 
         print "post zone transfer %s to %s" % (object, object.zone_id)
 
