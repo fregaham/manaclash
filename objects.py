@@ -118,6 +118,9 @@ class Object:
         if self.enchanted_id != None:
             ret += " enchanting %s" % (str(self.enchanted_id))
 
+        if self.tapped:
+            ret += " tapped"
+
         ret += "]"
 
         return ret

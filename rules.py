@@ -89,7 +89,7 @@ class EnchantPermanentRules(ObjectRules):
     def resolve(self, game, obj):
         from process import process_validate_target
         if process_validate_target(game, obj, self.selector, obj.targets["target"]):
-            obj.enchanted_id = obj.targets["target"]
+            obj.enchanted_id = obj.targets["target"].get_id()
             game.doZoneTransfer(obj, game.get_in_play_zone())
         else:
             game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))

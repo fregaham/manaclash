@@ -69,7 +69,7 @@ effect returns [value]
     ;
 
 enchantment returns [value]
-    : 'enchant ' x=selector ' ' effect {$value = EnchantPermanentRules($x.value, ContinuousEffectStaticAbility($effect.value))}
+    :'enchant ' x=selector '\n' effect {$value = EnchantPermanentRules($x.value, ContinuousEffectStaticAbility($effect.value))}
     ;
 
 continuousAbility returns [value]
@@ -129,7 +129,7 @@ targetXGetsNNUntilEndOfTurn returns [value]
     ;
 
 dontUntapDuringItsControllersUntapStep returns [value]
-    : x=selector 'doesn\'t untap during its controller\'s untap step.' {$value = XDontUntapDuringItsControllersUntapStep($selector.value)}
+    : x=selector ' doesn\'t untap during its controller\'s untap step.' {$value = XDontUntapDuringItsControllersUntapStep($selector.value)}
     ;
 
 xGetsNN returns [value]
@@ -208,7 +208,7 @@ color returns [value]
  *------------------------------------------------------------------*/
 
 NUMBER  : (DIGIT)+ ;
-WHITESPACE : ( '\t' | ' ' | '\r' | '\n'| '\u000C' )+    { $channel = HIDDEN; } ;
+WHITESPACE : ( '\t' | ' ' | '\r' | '\u000C' )+    { $channel = HIDDEN; } ;
 
 fragment DIGIT  : '0'..'9' ;
 

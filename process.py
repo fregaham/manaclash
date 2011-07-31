@@ -427,6 +427,10 @@ def process_step_declare_attackers (game):
     for a in attackers:
         game.declared_attackers.add (LastKnownInformation(game, a))
 
+    # tap attacking creatures
+    for a in game.declared_attackers:
+        game.doTap(a.get_object())
+
     for ability in game.triggered_abilities:
         game.stack_push (ability)
     game.triggered_abilities = []

@@ -261,8 +261,9 @@ class Game:
         object.zone_id = zone.id
         zone_from.objects.remove(object)
         zone.objects.append (object)
-    
-        object.enchanted_id = None
+   
+        if zone.id != self.get_in_play_zone().id:
+            object.enchanted_id = None
 
         print "post zone transfer %s to %s" % (object, object.zone_id)
 
