@@ -46,7 +46,7 @@ class BasicPermanentRules(ObjectRules):
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
 
-        obj.state.abilities.extend (parsePermanentAbilities(game, obj))
+        obj.state.abilities.extend (parsePermanentAbilities(obj))
 
     def resolve(self, game, obj):
         print "resolving permanenet %s" % obj.state.title
@@ -105,6 +105,8 @@ class EnchantPermanentRules(ObjectRules):
         return True
         
 
+
+
 g_rules = {}
 g_rules["[G]"] = BasicLandRules("G")
 g_rules["[R]"] = BasicLandRules("R")
@@ -116,59 +118,77 @@ g_rules[""] = ObjectRules()
 g_rules[None] = ObjectRules()
 
 def parse(obj):
-    from MagicGrammarLexer import *
-    from MagicGrammarParser import *
+#    from MagicGrammarLexer import MagicGrammarLexer
+    from MagicGrammarParser import MyMagicGrammarLexer, MyMagicGrammarParser
 
     if isinstance(obj, EffectObject):
-        print "trying to parse: \"%s\"" % obj.state.text
+        # print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MagicGrammarLexer(char_stream)
+        lexer = MyMagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)
-        parser = MagicGrammarParser(tokens);
+        parser = MyMagicGrammarParser(tokens);
 
         effect = parser.effect()
-        print `effect.value`
+        
+        assert effect is not None
+        print "effect: " + `effect`
+        assert effect.value is not None
+
+        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
+
         return EffectRules(effect.value)
     
     if "artifact" in obj.state.types or "creature" in obj.state.types: 
+
+        parsePermanentAbilities(obj)
+
         return BasicPermanentRules()
 
     if "enchantment" in obj.state.types:
-        print "trying to parse: \"%s\"" % obj.state.text
+        #print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MagicGrammarLexer(char_stream)
+        lexer = MyMagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)
-        parser = MagicGrammarParser(tokens);
+        parser = MyMagicGrammarParser(tokens);
 
         rule = parser.enchantment()
+        assert rule is not None
+        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
         return rule
 
     if "sorcery" in obj.state.types or "instant" in obj.state.types:
-        print "trying to parse: \"%s\"" % obj.state.text
+        #print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MagicGrammarLexer(char_stream)
+        lexer = MyMagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)
-        parser = MagicGrammarParser(tokens);
+        parser = MyMagicGrammarParser(tokens)
 
         effect = parser.effect()
-        print `effect.value`
+#        print type(effect)
+
+        assert effect is not None
+        assert effect.value is not None
+        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
 
         return BasicNonPermanentRules(effect.value)
     
     return g_rules[obj.state.text]
 
-def parsePermanentAbilities(game, obj):
-    from MagicGrammarLexer import *
-    from MagicGrammarParser import *
+def parsePermanentAbilities(obj):
+#    from MagicGrammarLexer import MagicGrammarLexer
+    from MagicGrammarParser import MyMagicGrammarLexer, MyMagicGrammarParser
 
     if obj.state.text != "":
-        print "trying to parse: \"%s\"" % obj.state.text
+        #print "trying to parse: \"%s\"" % obj.state.text
         char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MagicGrammarLexer(char_stream)
+        lexer = MyMagicGrammarLexer(char_stream)
         tokens = CommonTokenStream(lexer)
-        parser = MagicGrammarParser(tokens);
+        parser = MyMagicGrammarParser(tokens)
 
         ability = parser.ability()
+        assert ability is not None 
+        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
+
         return [ability]
 
     return []

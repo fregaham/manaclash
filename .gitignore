@@ -1,6 +1,7 @@
 *.pyc
 oracle/*
 rules/*
+decks/*
 MagicGrammar.tokens
 MagicGrammarLexer.py
 MagicGrammarParser.py

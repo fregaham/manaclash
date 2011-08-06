@@ -4,13 +4,12 @@ options {
     language = Python;
 }
 
-tokens {
+/*tokens {
     PLUS    = '+' ;
     MINUS   = '-' ;
     MULT    = '*' ;
     DIV = '/' ;
-    
-}
+}*/
 
 @header {
 import sys
@@ -22,10 +21,31 @@ from selectors import *
 from rules import *
 
 from MagicGrammarLexer import MagicGrammarLexer
-
 }
 
+
+
 @main {
+
+class MyMagicGrammarParser(MagicGrammarParser):
+    def __init__ (self, tokens):
+        MagicGrammarParser.__init__ (self, tokens)
+        self.myErrors = []
+
+    def emitErrorMessage(self, msg):
+        #sys.stderr.write(msg + '\n')
+        self.myErrors.append (msg)
+
+class MyMagicGrammarLexer(MagicGrammarLexer):
+    def __init__ (self, s):
+        MagicGrammarLexer.__init__ (self, s)
+        self.myErrors = []
+
+    def emitErrorMessage(self, msg):
+        #sys.stderr.write(msg + '\n')
+        self.myErrors.append (msg)
+
+
 def main(argv, otherArg=None):
   char_stream = ANTLRStringStream(argv[1])
   lexer = MagicGrammarLexer(char_stream)
@@ -69,7 +89,7 @@ effect returns [value]
     ;
 
 enchantment returns [value]
-    :'enchant ' x=selector '\n' effect {$value = EnchantPermanentRules($x.value, ContinuousEffectStaticAbility($effect.value))}
+    :'enchant ' x=selector ';' effect {$value = EnchantPermanentRules($x.value, ContinuousEffectStaticAbility($effect.value))}
     ;
 
 continuousAbility returns [value]

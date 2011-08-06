@@ -79,6 +79,24 @@ class Output:
     def createDamageAssignment(self, id):
         print "Creating damage assignment %d" % id
 
+class NullOutput(Output):
+    def deleteObject(self, obj):
+        pass
+
+    def createPlayer(self, id):
+        pass
+
+    def createCard(self, id):
+        pass
+
+    def createZone(self, id, owner, name):
+        pass
+
+    def createEffectObject(self, id):
+        pass
+
+    def createDamageAssignment(self, id):
+        pass
 
 def input_generator ():
 
