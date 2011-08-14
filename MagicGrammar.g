@@ -66,6 +66,19 @@ def main(argv, otherArg=None):
  * PARSER RULES
  *------------------------------------------------------------------*/
 
+sorceryOrInstantRules returns [value]
+    : effect {$value = BasicNonPermanentRules($effect.value)}
+    ;
+
+effectRules returns [value]
+    : effect {$value = EffectRules($effect.value)}
+    ;
+
+permanentRules returns [value]
+    : ability {$value = BasicPermanentRules([$ability.value])}
+    | {$value = BasicPermanentRules([])}
+    ;
+
 ability returns [value] 
     : a=continuousAbility {$value = $a.value}
     | a=triggeredAbility {$value = $a.value}
@@ -88,7 +101,7 @@ effect returns [value]
     | a=dontUntapDuringItsControllersUntapStep {$value = $a.value}
     ;
 
-enchantment returns [value]
+enchantmentRules returns [value]
     :'enchant ' x=selector ';' effect {$value = EnchantPermanentRules($x.value, ContinuousEffectStaticAbility($effect.value))}
     ;
 

@@ -35,6 +35,7 @@ class ObjectRules:
     def selectTargets(self, game, player, obj):
         return True
 
+
 class BasicLandRules(ObjectRules):
     def __init__ (self, color):
         self.color = color
@@ -42,11 +43,16 @@ class BasicLandRules(ObjectRules):
     def evaluate(self, game, obj):
         obj.state.abilities.append (BasicManaAbility(self.color))
 
+    def __str__(self):
+        return "BasicLandRules()"
+
 class BasicPermanentRules(ObjectRules):
+    def __init__(self, abilities):
+        self.abilities = abilities
+
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
-
-        obj.state.abilities.extend (parsePermanentAbilities(obj))
+        obj.state.abilities.extend (self.abilities)
 
     def resolve(self, game, obj):
         print "resolving permanenet %s" % obj.state.title
@@ -118,80 +124,37 @@ g_rules[""] = ObjectRules()
 g_rules[None] = ObjectRules()
 
 def parse(obj):
-#    from MagicGrammarLexer import MagicGrammarLexer
+
+    text = obj.state.text
+    if text is None:
+        text = ""
+
     from MagicGrammarParser import MyMagicGrammarLexer, MyMagicGrammarParser
+    char_stream = ANTLRStringStream(text)
+    lexer = MyMagicGrammarLexer(char_stream)
+    tokens = CommonTokenStream(lexer)
+    parser = MyMagicGrammarParser(tokens)
+
+    rules = None
 
     if isinstance(obj, EffectObject):
-        # print "trying to parse: \"%s\"" % obj.state.text
-        char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MyMagicGrammarLexer(char_stream)
-        tokens = CommonTokenStream(lexer)
-        parser = MyMagicGrammarParser(tokens);
+        rules = parser.effectRules()
+    elif "artifact" in obj.state.types or "creature" in obj.state.types: 
+        rules = parser.permanentRules()
+    elif "enchantment" in obj.state.types:
+        rules = parser.enchantmentRules()
+    elif "sorcery" in obj.state.types or "instant" in obj.state.types:
+        rules = parser.sorceryOrInstantRules()
+    else:
+        return g_rules[obj.state.text]
 
-        effect = parser.effect()
-        
-        assert effect is not None
-        print "effect: " + `effect`
-        assert effect.value is not None
-
-        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
-
-        return EffectRules(effect.value)
-    
-    if "artifact" in obj.state.types or "creature" in obj.state.types: 
-
-        parsePermanentAbilities(obj)
-
-        return BasicPermanentRules()
-
-    if "enchantment" in obj.state.types:
-        #print "trying to parse: \"%s\"" % obj.state.text
-        char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MyMagicGrammarLexer(char_stream)
-        tokens = CommonTokenStream(lexer)
-        parser = MyMagicGrammarParser(tokens);
-
-        rule = parser.enchantment()
-        assert rule is not None
-        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
-        return rule
-
-    if "sorcery" in obj.state.types or "instant" in obj.state.types:
-        #print "trying to parse: \"%s\"" % obj.state.text
-        char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MyMagicGrammarLexer(char_stream)
-        tokens = CommonTokenStream(lexer)
-        parser = MyMagicGrammarParser(tokens)
-
-        effect = parser.effect()
-#        print type(effect)
-
-        assert effect is not None
-        assert effect.value is not None
-        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
-
-        return BasicNonPermanentRules(effect.value)
-    
-    return g_rules[obj.state.text]
-
-def parsePermanentAbilities(obj):
-#    from MagicGrammarLexer import MagicGrammarLexer
-    from MagicGrammarParser import MyMagicGrammarLexer, MyMagicGrammarParser
-
-    if obj.state.text != "":
-        #print "trying to parse: \"%s\"" % obj.state.text
-        char_stream = ANTLRStringStream(obj.state.text)
-        lexer = MyMagicGrammarLexer(char_stream)
-        tokens = CommonTokenStream(lexer)
-        parser = MyMagicGrammarParser(tokens)
-
-        ability = parser.ability()
-        assert ability is not None 
-        assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
-
-        return [ability]
-
-    return []
-
+    assert rules is not None
+    sys.stderr.write("Parsing %s\n" % text)
+    for lexerError in lexer.myErrors:
+        sys.stderr.write(lexerError + "\n")
+    for parserError in parser.myErrors:
+        sys.stderr.write(parserError + "\n")
+    assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
+    return rules
 
 
