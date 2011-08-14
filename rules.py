@@ -58,10 +58,16 @@ class BasicPermanentRules(ObjectRules):
         print "resolving permanenet %s" % obj.state.title
         game.doZoneTransfer(obj, game.get_in_play_zone())
 
+    def __str__(self):
+        return "BasicPermanentRules(" + (",".join(map(str, self.abilities))) + ")"
+
 class DamageAssignmentRules(ObjectRules):
     def resolve(self, game, obj):
         game.doDealDamage(obj.damage_assignment_list)
         game.delete(obj)
+
+    def __str__(self):
+        return "DamageAssignmentRules()"
 
 class EffectRules(ObjectRules):
     def __init__(self, effect):
@@ -71,6 +77,9 @@ class EffectRules(ObjectRules):
         game.delete(obj)
     def selectTargets(self, game, player, obj):
         return self.effect.selectTargets(game, player, obj)
+
+    def __str__(self):
+        return "EffectRules(%s)" % str(self.effect)
 
 class BasicNonPermanentRules(ObjectRules):
     def __init__(self, effect):
@@ -82,6 +91,9 @@ class BasicNonPermanentRules(ObjectRules):
         game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
     def selectTargets(self, game, player, obj):
         return self.effect.selectTargets(game, player, obj)
+
+    def __str__ (self):
+        return "BasicNonPermanentRules(%s)" % str(self.effect)
 
 class EnchantPermanentRules(ObjectRules):
     def __init__(self, selector, ability):
@@ -110,7 +122,8 @@ class EnchantPermanentRules(ObjectRules):
 
         return True
         
-
+    def __str__ (self):
+        return "EnchantPermanentRules(%s, %s)" % (str(self.selector), str(self.ability))
 
 
 g_rules = {}

@@ -60,6 +60,9 @@ class BasicManaAbility(ManaAbility):
     def get_text(self, game, obj):
         return "[%s]" % self.mana
 
+    def __str__ (self):
+        return "BasicManaAbility(%s)" % str(self.mana)
+
 class PlayLandAbility(ActivatedAbility):
     def canActivate(self, game, obj, player):
         return (player.land_play_limit is None or player.land_played < player.land_play_limit) and player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and (game.current_phase == "precombat main" or game.current_phase == "postcombat main") and game.get_stack_length() == 0 and obj.zone_id  == game.objects[obj.state.controller_id].hand_id
@@ -71,6 +74,9 @@ class PlayLandAbility(ActivatedAbility):
 
     def get_text(self, game, obj):
         return "Play " + obj.state.title
+
+    def __str__ (self):
+        return "PlayLandAbility()"
 
 class PlaySpell(ActivatedAbility):
     def canActivate(self, game, obj, player):
@@ -94,10 +100,16 @@ class PlaySpell(ActivatedAbility):
         c = ManaCost(manacost)
         return [c]
 
+    def __str__ (self):
+        return "PlaySpell()"
+
 class FlyingAbility(StaticAbility):
-   def evaluate(self, game, obj):
+    def evaluate(self, game, obj):
         if obj.zone_id == game.get_in_play_zone().id:
             obj.state.tags.add("flying")
+
+    def __str__ (self):
+        return "FlyingAbility()"
 
 class ContinuousEffectStaticAbility(StaticAbility):
     def __init__ (self, effect):
@@ -106,6 +118,9 @@ class ContinuousEffectStaticAbility(StaticAbility):
     def evaluate(self, game, obj):
         # TODO: add the effect to the proper bucket
         game.volatile_effects.append ( (obj, self.effect) )
+
+    def __str__ (self):
+        return "ContinuousEffectStaticAbility(%s)" % str(self.effect)
 
 class TapCostDoEffectAbility(ActivatedAbility):
     def __init__ (self, manacost, effect):
@@ -129,6 +144,9 @@ class TapCostDoEffectAbility(ActivatedAbility):
             return [c]
         return []
 
+    def __str__ (self):
+        return "TapCostDoEffectAbility(%s, %s)" % (str(self.manacost), str(self.effect))
+
 class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def __init__(self, selector, effect):
         self.selector = selector
@@ -146,6 +164,9 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
                 slots[slot] = obj
 
             process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXComesIntoPlayDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
 
 class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):
@@ -169,6 +190,9 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
 
             process_trigger_effect(game, SELF, self.effect, slots)
 
+    def __str__ (self):
+        return "WhenXDealsDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
+
 class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):
         self.x_selector = x_selector
@@ -191,4 +215,8 @@ class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
             for slot in self.y_selector.slots():
                 slots[slot] = blocker
             process_trigger_effect(game, SELF, self.effect, slots)
-   
+  
+    def __str__ (self):
+        return "WhenXBlocksOrBecomesBlockedByYDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
+
+

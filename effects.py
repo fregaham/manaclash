@@ -58,11 +58,13 @@ class PlayerLooseLifeEffect(OneShotEffect):
         for player in self.selector.all(game, obj):
             game.doLoseLife(player, count)
 
+    def __str__ (self):
+        return "PlayerLooseLifeEffect(%s, %s)" % (str(self.selector), str(self.count))
+
 class PlayerGainLifeEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
         self.selector = playerSelector
         self.count = count
-
     def resolve(self, game, obj):
         if self.count == "X":
             count = obj.x
@@ -71,6 +73,9 @@ class PlayerGainLifeEffect(OneShotEffect):
 
         for player in self.selector.all(game, obj):
             game.doGainLife(player, count)
+
+    def __str__ (self):
+        return "PlayerGainLifeEffect(%s, %s)" % (self.selector, self.count)
 
 class PlayerGainLifeForEachXEffect(OneShotEffect):
     def __init__ (self, playerSelector, count, eachSelector):
@@ -88,6 +93,8 @@ class PlayerGainLifeForEachXEffect(OneShotEffect):
             eachcount = len([x for x in self.eachSelector.all(game, obj)])
             game.doGainLife(player, count * eachcount)
 
+    def __str__ (self):
+        return "PlayerGainLifeForEachXEffect(%s, %s, %s)" % (self.selector, self.count, self.eachSelector)
 
 class PlayerDiscardsCardEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
@@ -100,6 +107,9 @@ class PlayerDiscardsCardEffect(OneShotEffect):
             for i in range(self.count):
                 from process import process_discard_a_card
                 process_discard_a_card(game, player)
+
+    def __str__ (self):
+        return "PlayerDiscardsCardEffect(%s, %s)" % (self.selector, self.count)
 
 class SingleTargetOneShotEffect(OneShotEffect):
 
@@ -127,7 +137,9 @@ class SingleTargetOneShotEffect(OneShotEffect):
 
     def doResolve(self, game, obj, target):
         pass
-   
+
+    def __str__ (self):
+        return "SingleTargetOneShotEffect(%s)" % self.targetSelector
 
 class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
     def __init__ (self, sourceSelector, count, targetSelector):
@@ -149,6 +161,9 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
             count = int(self.count)
 
         game.doDealDamage([(source, target, count)])
+
+    def __str__ (self):
+        return "XDealNDamageToTargetYEffect(%s, %s, %s)" % (self.targetSelector, self.count, self.sourceSelector)
 
 class XGetsNN(ContinuousEffect):
     def __init__ (self, selector, power, toughness):
@@ -172,6 +187,9 @@ class XGetsNN(ContinuousEffect):
             o.state.power += power
             o.state.toughness += toughness
 
+    def __str__ (self):
+        return "XGetsNN(%s, %s, %s)" % (self.selector, self.power, self.toughness)
+
 class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, power, toughness):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -192,6 +210,9 @@ class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
         
         game.until_end_of_turn_effects.append ( (obj, XGetsNN(LKISelector(target), power, toughness)))
 
+    def __str__ (self):
+        return "TargetXGetsNNUntilEndOfTurn(%s, %s, %s)" % (self.targetSelector, self.power, self.toughness)
+
 class DestroyTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -199,12 +220,18 @@ class DestroyTargetX(SingleTargetOneShotEffect):
     def doResolve(self, game, obj, target):
         game.doDestroy(target)
 
+    def __str__ (self):
+        return "DestroyTargetX(%s)" % self.targetSelector
+
 class BuryTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
         game.doBury(target)
+
+    def __str__ (self):
+        return "BuryTargetX(%s)" % self.targetSelector
        
 class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
     def __init__(self, targetSelector, playerSelector):
@@ -218,6 +245,9 @@ class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
         for player in self.playerSelector.all(game, obj):
             game.doGainLife(player, count)
 
+    def __str__ (self):
+        return "DestroyTargetXYGainLifeEqualsToItsPower(%s, %s)" % (self.targetSelector, self.playerSelector)
+
 class DoXAtEndOfCombat(OneShotEffect):
     def __init__ (self, effect):
         self.effect = effect
@@ -225,6 +255,9 @@ class DoXAtEndOfCombat(OneShotEffect):
     def resolve(self, game, obj):
         e = game.create_effect_object(obj.get_source_lki(), obj.get_controller_id(), self.effect, obj.get_slots())
         game.end_of_combat_triggers.append (e)
+
+    def __str__ (self):
+        return "DoXAtEndOfCombat(%s)" % self.effect
 
 class DestroyX(OneShotEffect):
     def __init__ (self, selector):
@@ -234,6 +267,9 @@ class DestroyX(OneShotEffect):
         for o in self.selector.all(game, obj):
             game.doDestroy(o)
 
+    def __str__ (self):
+        return "DestroyX(%s)" % self.selector
+
 class XDontUntapDuringItsControllersUntapStep(ContinuousEffect):
     def __init__ (self, selector):
         self.selector = selector
@@ -241,4 +277,8 @@ class XDontUntapDuringItsControllersUntapStep(ContinuousEffect):
     def apply(self, game, obj):
         for o in self.selector.all(game, obj):
             o.state.tags.add ("does not untap")
+
+    def __str__ (self):
+        return "XDontUntapDuringItsControllersUntapStep(%s)" % self.selector
+
 

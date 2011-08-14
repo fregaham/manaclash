@@ -146,9 +146,9 @@ if __name__ == "__main__":
             if rules is not None:
                 print obj.state.title 
                 print obj.state.text
-#                print `rules`
+                print rules
         except Exception, x:
-            #print `x`
+            # print `x`
             print u"Cannot parse %s" % obj.state.title
 
 

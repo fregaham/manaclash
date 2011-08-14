@@ -98,15 +98,24 @@ class ThatPlayerSelector(Selector):
         assert player_lki is not None
         yield player_lki
 
+    def __str__ (self):
+        return "that player"
+
 class ThatCreatureSelector(Selector):
     def all(self, game, context):
         creature_lki = context.get_slot("that creature")
         assert creature_lki is not None
         yield creature_lki
 
+    def __str__ (self):
+        return "that creature"
+
 class YouSelector(Selector):
     def all(self, game, context):
         yield game.objects[context.get_state().controller_id]
+
+    def __str__ (self):
+        return "you"
 
 class LKISelector(Selector):
     def __init__ (self, lki):
