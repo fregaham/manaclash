@@ -198,6 +198,7 @@ def test_input_generator (sequence):
                     return
 
                 selected = sequence[0]
+                print "selecting #%d" % selected
                 sequence = sequence[1:]
             except ValueError, x:
                 selected = -1
