@@ -130,6 +130,8 @@ class CreatureSelector(Selector):
         for item in game.objects.values():
             if "permanent" in item.state.tags and "creature" in item.state.types:
                 yield item
+    def __str__ (self):
+        return "creature"
 
 
 class CreatureOrPlayerSelector(Selector):
@@ -140,6 +142,8 @@ class CreatureOrPlayerSelector(Selector):
         for item in game.objects.values():
             if "permanent" in item.state.tags and "creature" in item.state.types:
                 yield item
+    def __str__ (self):
+        return "creature or player"
 
 class AttackingOrBlockingCreatureSelector(Selector):
     def all(self, game, context):
@@ -149,6 +153,9 @@ class AttackingOrBlockingCreatureSelector(Selector):
     def slots(self):
         return ["that creature"]
 
+    def __str__ (self):
+        return "attacking or blocking creature"
+
 class AttackingCreatureSelector(Selector):
     def all(self, game, context):
         for obj in game.objects.values():
@@ -157,6 +164,9 @@ class AttackingCreatureSelector(Selector):
     def slots(self):
         return ["that creature"]
 
+    def __str__ (self):
+        return "attacking creature"
+
 class CreatureAttackingYouSelector(Selector):
     def all(self, game, context):
         for obj in game.objects.values():
@@ -164,6 +174,9 @@ class CreatureAttackingYouSelector(Selector):
                 yield obj
     def slots(self):
         return ["that creature"]
+
+    def __str__ (self):
+        return "creature attacking you"
 
 #e.g. non-black creature
 class NonColorCreatureSelector(Selector):
@@ -175,6 +188,9 @@ class NonColorCreatureSelector(Selector):
                 yield obj
     def slots(self):
         return ["that creature"]
+    
+    def __str__ (self):
+        return "non%s creature" % (self.color)
 
 
 class EnchantedCreatureSelector(Selector):
@@ -184,5 +200,6 @@ class EnchantedCreatureSelector(Selector):
             if "permanent" in ret.state.tags:
                 yield ret
 
-
+    def __str__ (self):
+        return "enchanted creature"
 
