@@ -203,3 +203,14 @@ class EnchantedCreatureSelector(Selector):
     def __str__ (self):
         return "enchanted creature"
 
+
+class OpponentSelector(Selector):
+    def all(self, game, context):
+        for player in game.players:
+            # TODO: not all non-controllers are opponents
+            if player.get_id() != context.get_state().controller_id:
+                yield player
+
+    def __str__ (self):
+        return "opponent"
+

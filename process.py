@@ -819,6 +819,12 @@ def process_game (game):
 
 def process_trigger_effect(game, source, effect, slots):
     e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, effect, slots)
+
+    evaluate(game)
+
+    if not e.rules.selectTargets(game, game.objects[e.get_state().controller_id], e):
+        game.delete(e)
+
     game.triggered_abilities.append (e)
 
 def _is_valid_target(game, source, target):
@@ -830,7 +836,7 @@ def process_select_target(game, player, source, selector):
 
     _pass = PassAction (player)
     _pass.text = "Cancel"
-    actions.append (_pass)
+    # actions.append (_pass)
 
     for obj in selector.all(game, source):
         if _is_valid_target(game, source, obj):
@@ -838,6 +844,9 @@ def process_select_target(game, player, source, selector):
             _p.object = obj
             _p.text = "Target " + str(obj)
             actions.append (_p)
+
+    if len(actions) == 0:
+        actions.append (_pass)
 
     _as = ActionSet (game, player, "Choose a target for " + str(source), actions)
     a = game.input.send (_as)

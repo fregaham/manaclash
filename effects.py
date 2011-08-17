@@ -127,7 +127,7 @@ class SingleTargetOneShotEffect(OneShotEffect):
 
     def selectTargets(self, game, player, obj):
         from process import process_select_target
-        target = process_select_target(game, player, obj, self.targetSelector)        
+        target = process_select_target(game, player, obj, self.targetSelector)
         if target == None:
             return False
 
@@ -281,4 +281,14 @@ class XDontUntapDuringItsControllersUntapStep(ContinuousEffect):
     def __str__ (self):
         return "XDontUntapDuringItsControllersUntapStep(%s)" % self.selector
 
+class TargetXDiscardsACard(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+    
+    def doResolve(self, game, obj, target):
+        from process import process_discard_a_card
+        process_discard_a_card(game, target.get_object())
+
+    def __str__ (self):
+        return "TargetXDiscardsACard(%s)" % self.targetSelector
 

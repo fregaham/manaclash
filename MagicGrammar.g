@@ -105,6 +105,7 @@ effect returns [value]
     | a=destroyTargetXYGainLifeEqualsToItsPower {$value = $a.value}
     | a=destroyXAtEndOfCombat {$value = $a.value}
     | a=dontUntapDuringItsControllersUntapStep {$value = $a.value}
+    | a=targetXDiscardsACard {$value = $a.value}
     ;
 
 enchantmentRules returns [value]
@@ -197,6 +198,10 @@ destroyX returns [value]
     | 'destroy that creature.' {$value=DestroyX(ThatCreatureSelector())}
     ;
 
+targetXDiscardsACard returns [value]
+    : 'target ' x=selector ' discards a card.' {$value=TargetXDiscardsACard($x.value)}
+    ;
+
 selector returns [value]
     : ('a player'|'each player') {$value = AllPlayersSelector()}
     | 'that creature' {$value = ThatCreatureSelector()}
@@ -210,6 +215,7 @@ selector returns [value]
     | 'creature attacking you' {$value = CreatureAttackingYouSelector()}
     | 'non' color ' creature' {$value = NonColorCreatureSelector($color.value)}
     | 'enchanted creature' {$value = EnchantedCreatureSelector()} 
+    | 'opponent' {$value = OpponentSelector()}
     ;
 
 numberOfCards returns [value]
