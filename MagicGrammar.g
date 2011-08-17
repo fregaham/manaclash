@@ -2,6 +2,7 @@ grammar MagicGrammar;
 
 options {
     language = Python;
+    backtrack = true;
 }
 
 /*tokens {
@@ -75,8 +76,13 @@ effectRules returns [value]
     ;
 
 permanentRules returns [value]
-    : ability {$value = BasicPermanentRules([$ability.value])}
+    : abilities {$value = BasicPermanentRules($abilities.value)}
     | {$value = BasicPermanentRules([])}
+    ;
+
+abilities returns [value]
+    : a=ability ';' b=abilities {$value = [$a.value] + $b.value}
+    | ability {$value = [$ability.value]}
     ;
 
 ability returns [value] 
@@ -133,8 +139,8 @@ activatedAbility returns [value]
     ;
 
 tappingActivatedAbility returns [value]
-    : manaCost ', {T}: ' effect {$value = TapCostDoEffectAbility($manaCost.value, $effect.text)}
-    | '{T}: ' effect {$value = TapCostDoEffectAbility("", $effect.text)}
+    : manaCost ', {t}: ' effect {$value = TapCostDoEffectAbility($manaCost.value, $effect.text)}
+    | '{t}: ' effect {$value = TapCostDoEffectAbility("", $effect.text)}
     ;
 
 playerLooseLifeEffect returns [value]
@@ -221,7 +227,7 @@ manaCostElement returns [value]
 
 number returns [value]
     : NUMBER {$value = int($NUMBER.getText())}
-    | 'X' {$value = 'X'}
+    | 'x' {$value = 'X'}
     | '-' NUMBER {$value = -int($NUMBER.getText())}
     | '-' 'X' {$value = '-X'}
     | '+' NUMBER {$value = int($NUMBER.getText())}
