@@ -106,7 +106,7 @@ class PlayerDiscardsCardEffect(OneShotEffect):
             assert player is not None
             for i in range(self.count):
                 from process import process_discard_a_card
-                process_discard_a_card(game, player)
+                process_discard_a_card(game, player.get_object())
 
     def __str__ (self):
         return "PlayerDiscardsCardEffect(%s, %s)" % (self.selector, self.count)
@@ -282,13 +282,16 @@ class XDontUntapDuringItsControllersUntapStep(ContinuousEffect):
         return "XDontUntapDuringItsControllersUntapStep(%s)" % self.selector
 
 class TargetXDiscardsACard(SingleTargetOneShotEffect):
-    def __init__ (self, targetSelector):
+    def __init__ (self, targetSelector, count):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.count = count
     
     def doResolve(self, game, obj, target):
         from process import process_discard_a_card
-        process_discard_a_card(game, target.get_object())
+        for i in range(self.count):
+            process_discard_a_card(game, target.get_object())
 
     def __str__ (self):
-        return "TargetXDiscardsACard(%s)" % self.targetSelector
+        return "TargetXDiscardsACard(%s, %d)" % (self.targetSelector, self.count)
+
 

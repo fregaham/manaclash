@@ -199,7 +199,7 @@ destroyX returns [value]
     ;
 
 targetXDiscardsACard returns [value]
-    : 'target ' x=selector ' discards a card.' {$value=TargetXDiscardsACard($x.value)}
+    : 'target ' x=selector ' discards ' b=numberOfCards '.' {$value=TargetXDiscardsACard($x.value, $b.value)}
     ;
 
 selector returns [value]
