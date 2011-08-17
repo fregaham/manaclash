@@ -103,13 +103,17 @@ class PlaySpell(ActivatedAbility):
     def __str__ (self):
         return "PlaySpell()"
 
-class FlyingAbility(StaticAbility):
+class TagAbility(StaticAbility):
+    def __init__ (self, tag):
+        self.tag = tag
+
     def evaluate(self, game, obj):
         if obj.zone_id == game.get_in_play_zone().id:
-            obj.state.tags.add("flying")
+            obj.state.tags.add(self.tag)
 
     def __str__ (self):
-        return "FlyingAbility()"
+        return "TagAbility(%s)" % self.tag
+
 
 class ContinuousEffectStaticAbility(StaticAbility):
     def __init__ (self, effect):

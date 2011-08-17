@@ -113,7 +113,9 @@ enchantmentRules returns [value]
     ;
 
 continuousAbility returns [value]
-    : 'flying' {$value = FlyingAbility()}
+    : 'flying' {$value = TagAbility("flying")}
+    | 'fear' {$value = TagAbility("fear")}
+    | 'fear (this creature can\'t be blocked except by artifact creatures and/or black creatures.)' {$value = TagAbility("fear")}
     ;
 
 triggeredAbility returns [value]

@@ -457,6 +457,11 @@ def is_valid_block(game, attacker, blocker):
     if "flying" in attacker.get_state().tags and "flying" not in blocker.get_state().tags and "reach" not in blocker.get_state().tags:
         print "%s cannot block %s because of the flying evasion rule" % (blocker, attacker)
         return False
+
+    if "fear" in attacker.get_state().tags and "artifact" not in blocker.get_state().types and "black" not in blocker.get_state().tags:
+        print "%s cannot block %s because of the fear evasion rule" % (blocker, attacker)
+        return False
+
     return True
 
 def validate_block(game, blockers, blockers_map):
