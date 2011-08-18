@@ -106,6 +106,7 @@ effect returns [value]
     | a=destroyXAtEndOfCombat {$value = $a.value}
     | a=dontUntapDuringItsControllersUntapStep {$value = $a.value}
     | a=targetXDiscardsACard {$value = $a.value}
+    | a=targetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard {$value = $a.value}
     ;
 
 enchantmentRules returns [value]
@@ -204,6 +205,10 @@ targetXDiscardsACard returns [value]
     : 'target ' x=selector ' discards ' b=numberOfCards '.' {$value=TargetXDiscardsACard($x.value, $b.value)}
     ;
 
+targetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard returns [value]
+    : 'target ' x=selector ' reveals his or her hand. you choose ' y=selector ' from it. that player discards that card.' {$value = TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard($x.value, $y.value)}
+    ;
+
 selector returns [value]
     : ('a player'|'each player') {$value = AllPlayersSelector()}
     | 'that creature' {$value = ThatCreatureSelector()}
@@ -218,6 +223,7 @@ selector returns [value]
     | 'non' color ' creature' {$value = NonColorCreatureSelector($color.value)}
     | 'enchanted creature' {$value = EnchantedCreatureSelector()} 
     | 'opponent' {$value = OpponentSelector()}
+    | 'a card' {$value = AllSelector()}
     ;
 
 numberOfCards returns [value]

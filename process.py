@@ -747,6 +747,22 @@ def process_discard_a_card(game, player):
 
     game.doDiscard(player, a.object)
 
+def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, context):
+    if len(game.get_hand(player).objects) == 0:
+        return
+
+    actions = []
+    for card in game.get_hand(player).objects:
+        if cardSelector.contains(game, context, card):
+            _p = Action ()
+            _p.object = card
+            _p.text = "Choose " + card.state.title
+            actions.append (_p)
+
+    _as = ActionSet (game, chooser, "Choose a card", actions)
+    a = game.input.send (_as)
+
+    game.doDiscard(player, a.object)
 
 def process_step_cleanup(game):
 

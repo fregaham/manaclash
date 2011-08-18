@@ -294,4 +294,16 @@ class TargetXDiscardsACard(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXDiscardsACard(%s, %d)" % (self.targetSelector, self.count)
 
+class TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, cardSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.cardSelector = cardSelector
+
+    def doResolve(self, game, obj, target):
+        from process import process_reveal_hand_and_discard_a_card
+        process_reveal_hand_and_discard_a_card(game, target.get_object(), game.objects[obj.get_state().controller_id], self.cardSelector, obj)
+
+    def __str__ (self):
+        return "TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(%s, %s)" % (self.targetSelector, self.cardSelector)
+
 
