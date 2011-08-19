@@ -135,7 +135,7 @@ r = [
     R("get", ["gets"], lambda t:t),
     R("targetXGetsNNUntilEndOfTurn", ["target ", N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:TargetXGetsNNUntilEndOfTurn(x, a, b)),
 
-    R("dontUntapDuringItsControllersUntapStep", [N("selector"), " doesn't untap during its controller's untap step,"], lambda t,x:XDontUntapDuringItsControllersUntapStep(x)),
+    R("dontUntapDuringItsControllersUntapStep", [N("selector"), " doesn't untap during its controller's untap step."], lambda t,x:XDontUntapDuringItsControllersUntapStep(x)),
 
     R("xGetsNN", [N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), "."], lambda t, x,g,a,b: XGetsNN(x,a,b)),
     
