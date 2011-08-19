@@ -123,8 +123,8 @@ class Game:
             if self.players[i] == player:
                 return self.players[(i + 1) % len(self.players)]
 
-    def create_damage_assignment(self, damage_assignment_list):
-        d = DamageAssignment(damage_assignment_list)
+    def create_damage_assignment(self, damage_assignment_list, combat=False):
+        d = DamageAssignment(damage_assignment_list, combat)
         self.add_object(d)
 
         self.output.createDamageAssignment(d.id)
@@ -285,10 +285,13 @@ class Game:
     def doGainLife(self, player, count):
         player.life += count
 
-    def doDealDamage(self, list):
+    def doDealDamage(self, list, combat=False):
         print "doDealDamage"
         for a, b, n in list:
             if not b.is_moved():
+
+                if combat:
+                     self.raise_event("pre_deal_combat_damage", a, b, n)
 
                 self.raise_event("pre_deal_damage", a, b, n)
 
@@ -298,6 +301,9 @@ class Game:
                 else:
                     print "%d damage to %s" % (n, b.get_object())
                     b.get_object().damage += n
+
+                if combat:
+                     self.raise_event("post_deal_combat_damage", a, b, n)
 
                 self.raise_event("post_deal_damage", a, b, n)
 

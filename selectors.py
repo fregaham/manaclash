@@ -133,6 +133,14 @@ class CreatureSelector(Selector):
     def __str__ (self):
         return "creature"
 
+class CreatureYouControlSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types and item.state.controller_id == context.get_state().controller_id:
+                yield item
+    def __str__ (self):
+        return "creature you control"
+
 
 class CreatureOrPlayerSelector(Selector):
     def all(self, game, context):

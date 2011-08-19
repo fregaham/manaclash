@@ -276,6 +276,21 @@ class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
     def __str__ (self):
         return "DestroyTargetXYGainLifeEqualsToItsPower(%s, %s)" % (self.targetSelector, self.playerSelector)
 
+class BuryTargetXYGainLifeEqualsToItsToughness(SingleTargetOneShotEffect):
+    def __init__(self, targetSelector, playerSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.playerSelector = playerSelector
+
+    def doResolve(self, game, obj, target):
+        game.doBury(target)
+
+        count = target.get_state().toughness
+        for player in self.playerSelector.all(game, obj):
+            game.doGainLife(player, count)
+
+    def __str__ (self):
+        return "BuryTargetXYGainLifeEqualsToItsToughness(%s, %s)" % (self.targetSelector, self.playerSelector)
+
 class DoXAtEndOfCombat(OneShotEffect):
     def __init__ (self, effect):
         self.effect = effect

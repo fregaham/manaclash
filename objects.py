@@ -170,18 +170,20 @@ class Player (Object):
         self.land_played = src.land_played
 
 class DamageAssignment (Object):
-    def __init__ (self, damage_assignment_list):
+    def __init__ (self, damage_assignment_list, combat):
         Object.__init__ (self)
         self.damage_assignment_list = damage_assignment_list
         self.initial_state.title = "damage assignment"
         self.initial_state.text = "damage assignment"
+        self.combat = combat
 
     def copy(self):
-        return DamageAssignment(self.damage_assignment_list)._copy(self)
+        return DamageAssignment(self.damage_assignment_list, self.combat)._copy(self)
 
     def _copy(self, src):
         Object._copy(self, src)
         self.damage_assignment_list = src.damage_assignment_list
+        self.combat = src.combat
 
 class EffectObject(Object):
     def __init__ (self, source_lki, controller_id, text, slots):

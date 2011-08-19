@@ -64,7 +64,7 @@ class BasicPermanentRules(ObjectRules):
 
 class DamageAssignmentRules(ObjectRules):
     def resolve(self, game, obj):
-        game.doDealDamage(obj.damage_assignment_list)
+        game.doDealDamage(obj.damage_assignment_list, obj.combat)
         game.delete(obj)
 
     def __str__(self):

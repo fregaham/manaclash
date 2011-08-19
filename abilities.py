@@ -132,7 +132,7 @@ class TapCostDoEffectAbility(ActivatedAbility):
         self.effect = effect
 
     def canActivate(self, game, obj, player):
-        return (player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
+        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
 
     def activate(self, game, obj, player):
         from process import process_activate_tapping_ability
@@ -150,6 +150,31 @@ class TapCostDoEffectAbility(ActivatedAbility):
 
     def __str__ (self):
         return "TapCostDoEffectAbility(%s, %s)" % (str(self.manacost), str(self.effect))
+
+class SelfTurnTapCostDoEffectAbility(ActivatedAbility):
+    def __init__ (self, manacost, effect):
+        self.manacost = manacost
+        self.effect = effect
+
+    def canActivate(self, game, obj, player):
+        return (player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
+
+    def activate(self, game, obj, player):
+        from process import process_activate_tapping_ability
+
+        process_activate_tapping_ability(game, self, player, obj, self.effect)
+
+    def get_text(self, game, obj):
+        return "Activate \"%s\" [T %s]" % (self.effect, self.manacost)
+
+    def determineCost(self, game, obj, player):
+        if self.manacost != "":
+            c = ManaCost(self.manacost)
+            return [c]
+        return []
+
+    def __str__ (self):
+        return "SelfTurnTapCostDoEffectAbility(%s, %s)" % (str(self.manacost), str(self.effect))
 
 class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def __init__(self, selector, effect):
@@ -196,6 +221,31 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
 
     def __str__ (self):
         return "WhenXDealsDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
+
+class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
+    def __init__(self, x_selector, y_selector, effect):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.effect = effect
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))
+
+    def onPostDealDamage(self, game, SELF, source, dest, n):
+        if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
+            from process import process_trigger_effect
+
+            slots = {}
+            for slot in self.x_selector.slots():
+                slots[slot] = source
+
+            for slot in self.y_selector.slots():
+                slots[slot] = dest
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXDealsCombatDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
 
 class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):

@@ -68,6 +68,7 @@ r = [
     R("effect", [N("buryTargetX")], id),
     R("effect", [N("destroyX")], id),
     R("effect", [N("destroyTargetXYGainLifeEqualsToItsPower")], id),
+    R("effect", [N("buryTargetXYGainLifeEqualsToItsToughness")], id),
     R("effect", [N("destroyXAtEndOfCombat")], id),
     R("effect", [N("dontUntapDuringItsControllersUntapStep")], id),
     R("effect", [N("targetXDiscardsACard")], id),
@@ -82,6 +83,7 @@ r = [
 
     R("triggeredAbility", [N("whenXComesIntoPlayDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsDamageToYDoEffectAbility")], id),
+    R("triggeredAbility", [N("whenXDealsCombatDamageToYDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXBlocksOrBecomesBlockedByYDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDiscardsACardDoEffectAbility")], id),
 
@@ -96,6 +98,9 @@ r = [
 
     R("whenXDealsDamageToYDoEffectAbility", [N("when"), " ", selector, " ", N("deal"), " damage to ", selector, ", ", N("effectText")], lambda t,w,x,d,y,e:WhenXDealsDamageToYDoEffectAbility(x,y,e)),
 
+    R("whenXDealsCombatDamageToYDoEffectAbility", [N("when"), " ", selector, " ", N("deal"), " combat damage to ", selector, ", ", N("effectText")], lambda t,w,x,d,y,e:WhenXDealsCombatDamageToYDoEffectAbility(x,y,e)),
+
+
     R("a", ["a"], lambda t:t),
     R("a", ["an"], lambda t:t),
     R("whenXBlocksOrBecomesBlockedByYDoEffectAbility", [N("when"), " ", N("selector"), " blocks or becomes blocked by ", N("a"), " ", N("selector"), ", ", N("effectText")], lambda t,w,x,a,y,e:WhenXBlocksOrBecomesBlockedByYDoEffectAbility(x,y,e)),
@@ -105,8 +110,10 @@ r = [
     R("activatedAbility", [N("tappingActivatedAbility")], id),
 
     R("tappingActivatedAbility", [N("manaCost"), ", {t}: ", N("effectText")], lambda t, m, e: TapCostDoEffectAbility(m, e)),
+    R("tappingActivatedAbility", [N("manaCost"), ", {t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, m, e: SelfTurnTapCostDoEffectAbility(m, e)),
 
     R("tappingActivatedAbility", ["{t}: ", N("effectText")], lambda t, e: TapCostDoEffectAbility("", e)),
+    R("tappingActivatedAbility", ["{t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, e: SelfTurnTapCostDoEffectAbility("", e)),
 
     R("lose", ["lose"], lambda t:t),
     R("lose", ["loses"], lambda t:t),
@@ -136,7 +143,9 @@ r = [
     R("buryTargetX", ["destroy target ", N("selector"), ". it can't be regenerated."], lambda t,x: BuryTargetX(x)),
 
     R("destroyTargetXYGainLifeEqualsToItsPower", ["destroy target ", selector, ". ", selector, " ", gain, " life equal to its power."], lambda t,x,y,g: DestroyTargetXYGainLifeEqualsToItsPower(x, y)),
-    
+
+    R("buryTargetXYGainLifeEqualsToItsToughness", ["destroy target ", selector, ". it can't be regenerated. ", selector, " ", gain, " life equal to its toughness."], lambda t,x,y,g: BuryTargetXYGainLifeEqualsToItsToughness(x, y)),
+
     R("destroyXAtEndOfCombat", ["destroy ", N("selectorText"), " at end of combat."], lambda t,x: DoXAtEndOfCombat("destroy " + x)),
 
     R("destroyX", ["destroy ", selector, "."], lambda t,x: DestroyX(x)),
@@ -152,12 +161,14 @@ r = [
 
     R("selectorText", [selector], lambda t,x:t),
 
+    R("selector", ["player"], lambda t:AllPlayersSelector()),
     R("selector", ["a player"], lambda t:AllPlayersSelector()),
     R("selector", ["each player"], lambda t:AllPlayersSelector()),
     R("selector", ["that player"], lambda t:ThatPlayerSelector()),
     R("selector", ["you"], lambda t:YouSelector()),
     R("selector", ["SELF"], lambda t:SelfSelector()),
     R("selector", ["creature"], lambda t:CreatureSelector()),
+    R("selector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
     R("selector", ["that creature"], lambda t:ThatCreatureSelector()),
     R("selector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
     R("selector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
