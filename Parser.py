@@ -36,7 +36,7 @@ class Rule:
     def __repr__ (self):
         return `(self.lhs, self.rhs)`
 
-def parse(rules, label, string):
+def parse(rules, label, string, debug=False):
     stack = []
 
     stack.append ( (string, [(Rule("S", [nt(label)], lambda t,x:x), 0, [], "")]) )
@@ -44,7 +44,8 @@ def parse(rules, label, string):
     while len(stack) > 0:
         c = stack.pop()
 
-        # print `c`
+        if debug:
+            print `c`
 
         currentRule = c[1][-1][0]
         currentRulePos = c[1][-1][1]

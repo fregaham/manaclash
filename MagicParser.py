@@ -154,10 +154,11 @@ r = [
 
     R("selector", ["a player"], lambda t:AllPlayersSelector()),
     R("selector", ["each player"], lambda t:AllPlayersSelector()),
-    R("selector", ["that player"], lambda t:ThatPlayersSelector()),
+    R("selector", ["that player"], lambda t:ThatPlayerSelector()),
     R("selector", ["you"], lambda t:YouSelector()),
     R("selector", ["SELF"], lambda t:SelfSelector()),
     R("selector", ["creature"], lambda t:CreatureSelector()),
+    R("selector", ["that creature"], lambda t:ThatCreatureSelector()),
     R("selector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
     R("selector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
     R("selector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
