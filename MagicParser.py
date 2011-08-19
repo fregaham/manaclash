@@ -146,7 +146,7 @@ r = [
 
     R("buryTargetXYGainLifeEqualsToItsToughness", ["destroy target ", selector, ". it can't be regenerated. ", selector, " ", gain, " life equal to its toughness."], lambda t,x,y,g: BuryTargetXYGainLifeEqualsToItsToughness(x, y)),
 
-    R("destroyXAtEndOfCombat", ["destroy ", N("selectorText"), " at end of combat."], lambda t,x: DoXAtEndOfCombat("destroy " + x)),
+    R("destroyXAtEndOfCombat", ["destroy ", N("selectorText"), " at end of combat."], lambda t,x: DoXAtEndOfCombat("destroy " + x + ".")),
 
     R("destroyX", ["destroy ", selector, "."], lambda t,x: DestroyX(x)),
 

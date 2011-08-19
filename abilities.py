@@ -286,7 +286,7 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
         if self.x_selector.contains(game, SELF, player):
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = source
+                slots[slot] = player
             process_trigger_effect(game, SELF, self.effect, slots)
        
     def __str__ (self):
