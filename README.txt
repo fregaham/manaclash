@@ -13,15 +13,9 @@ http://manaclash.org
 Prerequisites:
     python2.6
     qpid-python (amqp client library, optional)
-    antlr 3.1.2
-    antlr-python 3.1.2 (python runtime)
 
 Running:
-    1. compile the ANTLR grammar:
-
-        java -cp antlr-3.1.2.jar org.antlr.Tool MagicGrammar.g
-
-    2. python ManaClash.py  (starts the console client)
+    python ManaClash.py  (starts the console client)
     
 
 ManaClash is free software: you can redistribute it and/or modify
