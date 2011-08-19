@@ -111,6 +111,34 @@ class PlayerDiscardsCardEffect(OneShotEffect):
     def __str__ (self):
         return "PlayerDiscardsCardEffect(%s, %s)" % (self.selector, self.count)
 
+class XDealNDamageToY(OneShotEffect):
+    def __init__ (self, x_selector, y_selector, n):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.count = n
+
+    def resolve(self, game, obj):
+        sources = [x for x in self.x_selector.all(game, obj)]
+        assert len(sources) == 1
+
+        source = sources[0]
+
+        count = 0
+        if self.count == "X":
+            assert obj.x is not None
+            count = obj.x
+        else:
+            count = int(self.count)
+
+        damage = []
+        for y in self.y_selector.all(game, obj):
+            damage.append ( (source, y, count) )
+
+        game.doDealDamage(damage)
+
+    def __str__ (self):
+        return "XDealNDamageToY(%s, %s, %s)" % (self.x_selector, self.y_selector, self.count)
+
 class SingleTargetOneShotEffect(OneShotEffect):
 
     def __init__ (self, targetSelector):

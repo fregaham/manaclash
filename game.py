@@ -275,7 +275,9 @@ class Game:
 
 
     def doDiscard(self, player, card):
+        self.raise_event ("pre_discard", player, card)
         self.doZoneTransfer (card, self.get_graveyard(player))
+        self.raise_event ("post_discard", player, card)
 
     def doLoseLife(self, player, count):
         player.life -= count

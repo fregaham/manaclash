@@ -22,8 +22,9 @@ from abilities import *
 from objects import *
 from effects import *
 from selectors import *
+# from MagicParser import *
 
-from antlr3 import *
+# from antlr3 import *
 
 class ObjectRules:
     def evaluate(self, game, obj):
@@ -142,32 +143,33 @@ def parse(obj):
     if text is None:
         text = ""
 
-    from MagicGrammarParser import MyMagicGrammarLexer, MyMagicGrammarParser
-    char_stream = ANTLRStringStream(text)
-    lexer = MyMagicGrammarLexer(char_stream)
-    tokens = CommonTokenStream(lexer)
-    parser = MyMagicGrammarParser(tokens)
+    from MagicParser import magic_parser
+    #from MagicGrammarParser import MyMagicGrammarLexer, MyMagicGrammarParser
+    #char_stream = ANTLRStringStream(text)
+    #lexer = MyMagicGrammarLexer(char_stream)
+    #tokens = CommonTokenStream(lexer)
+    #parser = MyMagicGrammarParser(tokens)
 
     rules = None
 
     if isinstance(obj, EffectObject):
-        rules = parser.effectRules()
+        rules = magic_parser("effectRules", text)
     elif "artifact" in obj.state.types or "creature" in obj.state.types: 
-        rules = parser.permanentRules()
+        rules = magic_parser("permanentRules", text)
     elif "enchantment" in obj.state.types:
-        rules = parser.enchantmentRules()
+        rules = magic_parser("enchantmentRules", text)
     elif "sorcery" in obj.state.types or "instant" in obj.state.types:
-        rules = parser.sorceryOrInstantRules()
+        rules = magic_parser("sorceryOrInstantRules", text)
     else:
         return g_rules[obj.state.text]
 
     assert rules is not None
-    sys.stderr.write("Parsing %s\n" % text)
-    for lexerError in lexer.myErrors:
-        sys.stderr.write(lexerError + "\n")
-    for parserError in parser.myErrors:
-        sys.stderr.write(parserError + "\n")
-    assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
+    #sys.stderr.write("Parsing %s\n" % text)
+    #for lexerError in lexer.myErrors:
+    #    sys.stderr.write(lexerError + "\n")
+    #for parserError in parser.myErrors:
+    #    sys.stderr.write(parserError + "\n")
+    #assert len(parser.myErrors) == 0 and len(lexer.myErrors) == 0
     return rules
 
 

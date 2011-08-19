@@ -17,74 +17,74 @@
 #
 # 
 
-class ASTNode:
-    pass
+class NonTerminal:
+    def __init__ (self, label):
+        self.label = label
 
-class Card(ASTNode):
-    def __init__ (self):
-        self.name = None
-        self.supertypes = []
-        self.subtypes = []
-        self.types = []
-        self.abilities = []
-        self.power = None
-        self.toughness = None
-        self.cost = None
+    def __repr__ (self):
+        return "N("+ self.label +")"
 
-def is_cost (str):
-    s = "BRGWUX"
-    for c in str:
-        if c.isdigit() or c in s:
-            pass
-        else:
-            return False
+def nt(label):
+    return NonTerminal(label)
 
-    return True
+class Rule:
+    def __init__ (self, lhs, rhs, action):
+        self.lhs = lhs
+        self.rhs = rhs
+        self.action = action
 
-def parse_type (str):
-    if "-" in str:
-        type, subtype = str.split("-", 1)
-    else:
-        # no subtype
-        subtype = ""
-        type = str
+    def __repr__ (self):
+        return `(self.lhs, self.rhs)`
 
-    types = type.split(" ")
-    subtypes = subtype.split(" ")
-    
-    super_string = ["Legendary"]
+def parse(rules, label, string):
+    stack = []
 
-    ret_supertypes = []
-    ret_types = []
-    ret_subtypes = []
+    stack.append ( (string, [(Rule("S", [nt(label)], lambda t,x:x), 0, [], "")]) )
 
-    for type in types:
-        type = type.strip()
-        if type in super_strings:
-            ret_supertypes.append (type)
-        else:
-            ret_types.append (type)
+    while len(stack) > 0:
+        c = stack.pop()
 
-    for type in subtypes:
-        type = type.strip()
-        ret_subtypes.append (type)
+        # print `c`
 
-    return (ret_supertypes, ret_types, ret_subtypes)
-
-def parse_oracle (f):
-    card = Card()
-    state = "name"
-    for line in f:
-        l = line.rstrip ()
-
-        if state == "name":
-            card.name = l
-            state = "type"
-        elif state == "type":
-            if is_cost (l):
-                card.cost = l
-            else:
-                # type
-                card.supertypes, card.types, card.subtypes = parse_types (l)
-                state = "abilities"
+        currentRule = c[1][-1][0]
+        currentRulePos = c[1][-1][1]
+        currentRuleArgs = c[1][-1][2]
+        currentRuleText = c[1][-1][3]
         
+        if len(currentRule.rhs) == currentRulePos:
+            # parsed the rule, call action and pop
+            result = currentRule.action(* ([currentRuleText] + currentRuleArgs))
+
+            if len(c[1]) == 1:
+                # touched the bottom, have we parsed the whole input?
+                if len(c[0]) == 0:
+                    #yes
+                    yield result
+                else:
+                    # no, ignore
+                    pass
+            else:
+                # pass the result to the rule below and advance
+                nextc = ( c[0], c[1][:-1] )
+                nextc[1][-1] = (nextc[1][-1][0], nextc[1][-1][1] + 1, nextc[1][-1][2] + [result], nextc[1][-1][3] + currentRuleText)
+
+                stack.append (nextc)
+
+        else:
+            # terminal or nonterminal?
+            currentRuleElement = currentRule.rhs[currentRulePos]
+            
+            if isinstance(currentRuleElement, NonTerminal):
+                for rule in rules:
+                    if rule.lhs == currentRuleElement.label:
+                        stack.append ( (c[0], c[1][:] + [(rule, 0, [], "")]) )
+
+            else:
+                if c[0].startswith(currentRuleElement):
+                    nextc = (c[0][len(currentRuleElement):], c[1][:])
+                    nextc[1][-1] = (nextc[1][-1][0], nextc[1][-1][1] + 1, nextc[1][-1][2], nextc[1][-1][3] + currentRuleElement)
+
+                    stack.append (nextc)
+
+
+

@@ -211,6 +211,10 @@ class OpponentSelector(Selector):
             if player.get_id() != context.get_state().controller_id:
                 yield player
 
+    def slots(self):
+        return ["that player"]
+
     def __str__ (self):
         return "opponent"
+
 
