@@ -225,4 +225,54 @@ class OpponentSelector(Selector):
     def __str__ (self):
         return "opponent"
 
+class EachOtherPlayerSelector(Selector):
+    def all(self, game, context):
+        for player in game.players:
+            if player.get_id() != context.get_state().controller_id:
+                yield player
+
+    def slots(self):
+        return ["that player"]
+
+    def __str__ (self):
+        return "each other player"
+
+
+class CardSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            yield item
+    def __str__ (self):
+        return "card"
+
+class CreatureCardSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "creature" in obj.state.types:
+                yield item
+
+    def __str__ (self):
+        return "creature card"
+
+class BasicLandCardSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "land" in item.state.types and "basic" in item.state.supertypes:
+                yield item
+
+    def __str__ (self):
+        return "basic land card"
+
+class SubTypeCardSelector(Selector):
+    def __init__ (self, type):
+        self.type = type
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if self.type in item.state.subtypes:
+                yield item
+
+    def __str__ (self):
+        return "%s card" % (self.type)
+
 

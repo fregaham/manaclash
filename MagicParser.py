@@ -39,6 +39,8 @@ discard = N("discard")
 color = N("color")
 number = N("number")
 numberOfCards = N("numberOfCards")
+manaCost = N("manaCost")
+basicLand = N("basicLand")
 
 NUMBER = N("NUMBER")
 
@@ -80,6 +82,7 @@ r = [
     R("continuousAbility", ["flying"], lambda t:TagAbility("flying")),
     R("continuousAbility", ["fear"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["fear (this creature can't be blocked except by artifact creatures and/or black creatures.)"], lambda t:TagAbility("fear")),
+    R("ability", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),
 
     R("triggeredAbility", [N("whenXComesIntoPlayDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsDamageToYDoEffectAbility")], id),
@@ -159,11 +162,21 @@ r = [
 
     R("targetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard", ["target ", selector, " reveals his or her hand. you choose ", selector, " from it. that player discards that card."], lambda t,x,y: TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(x, y)),
 
+    R("effect", [selector, " may put ", selector, " from your hand onto the battlefield."], lambda t, x, y: XMayPutYFromHandIntoPlay(x, y, False)),
+    R("effect", [selector, " may put ", selector, " from your hand onto the battlefield tapped."], lambda t, x, y: XMayPutYFromHandIntoPlay(x, y, True)),
+    R("effect", [selector, " may put ", selector, " from his or her hand onto the battlefield."], lambda t, x, y: XMayPutYFromHandIntoPlay(x, y, False)),
+    R("effect", [selector, " may put ", selector, " from his or her hand onto the battlefield tapped."], lambda t, x, y: XMayPutYFromHandIntoPlay(x, y, True)),
+
+    R("effect", ["search your library for ", selector, " and put that card onto the battlefield. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, False)),
+
+    R("effect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
+
     R("selectorText", [selector], lambda t,x:t),
 
     R("selector", ["player"], lambda t:AllPlayersSelector()),
     R("selector", ["a player"], lambda t:AllPlayersSelector()),
     R("selector", ["each player"], lambda t:AllPlayersSelector()),
+    R("selector", ["each other player"], lambda t:EachOtherPlayerSelector()),
     R("selector", ["that player"], lambda t:ThatPlayerSelector()),
     R("selector", ["you"], lambda t:YouSelector()),
     R("selector", ["SELF"], lambda t:SelfSelector()),
@@ -178,7 +191,11 @@ r = [
     R("selector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
     R("selector", ["opponent"], lambda t:OpponentSelector()),
     R("selector", ["an opponent"], lambda t:OpponentSelector()),
-    R("selector", ["a card"], lambda t:AllSelector()),
+    R("selector", ["a card"], lambda t:CardSelector()),
+    R("selector", ["a creature card"], lambda t:CreatureCardSelector()),
+    R("selector", ["a basic land card"], lambda t:BasicLandCardSelector()),
+    R("selector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
+
 
     R("numberOfCards", ["a card"], lambda t:1),
 
@@ -186,6 +203,11 @@ r = [
     R("manaCost", [N("manaCostElement")], lambda t,e: e),
 
     R("manaCostElement", ["{", NUMBER, "}"], lambda t,n: n),
+    R("manaCostElement", ["{g}"], lambda t: "G"),
+    R("manaCostElement", ["{r}"], lambda t: "R"),
+    R("manaCostElement", ["{b}"], lambda t: "B"),
+    R("manaCostElement", ["{w}"], lambda t: "W"),
+    R("manaCostElement", ["{u}"], lambda t: "U"),
 
     R("number", [NUMBER], lambda t,n: int(n)),
     R("number", ['x'], lambda t: 'X'),
@@ -199,6 +221,12 @@ r = [
     R("color", ["blue"], lambda t:t),
     R("color", ["white"], lambda t:t),
     R("color", ["black"], lambda t:t),
+
+    R("basicLand", ["island"], lambda t:t),
+    R("basicLand", ["forest"], lambda t:t),
+    R("basicLand", ["swamp"], lambda t:t),
+    R("basicLand", ["plains"], lambda t:t),
+    R("basicLand", ["mountain"], lambda t:t),
 
     R("NUMBER", ["0"], lambda t:t),
     R("NUMBER", ["1"], lambda t:t),

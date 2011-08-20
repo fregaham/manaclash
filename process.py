@@ -619,32 +619,51 @@ def process_step_combat_damage (game):
                 # unblocked creature deal damage to the defending player
                 damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
 
-            elif len(b_ids) == 1:
-                # blocked by one creature deal all damage to that creature
-                b_id = b_ids[0]
-                b_lki = id2lki[b_id]
-                damage.append ( (a_lki, b_lki, a_state.power) )
             else:
-                # damage to assign
-                d = a_state.power
 
-                while d > 0:
-                    # attacking player choose how to assign damage
+                if "x-sneaky" in a_lki.get_state().tags:
                     actions = []
+                    _yes = Action()
+                    _yes.text = "Yes"
+                    actions.append (_yes)
 
-                    for b_id in b_ids:
-                        _p = Action ()
-                        _p.object = id2lki[b_id].get_object()
-                        _p.text = str(_p.object)
-                        actions.append (_p)
+                    _no = Action()
+                    _no.text = "No" 
+                    actions.append (_no)
 
-                    _as = ActionSet (game, game.get_attacking_player(), "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
+                    _as = ActionSet (game, game.get_attacking_player(), "Assign %s combat damage as though it wasn't blocked" % (a_lki.get_object()), actions)
                     a = game.input.send (_as)
 
-                    b_lki = id2lki[a.object.id]
-                    damage.append ( (a_lki, b_lki, 1) )
+                    if a.text == "Yes":
+                        damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
+                        continue
 
-                    d -= 1
+                if len(b_ids) == 1:
+                    # blocked by one creature deal all damage to that creature
+                    b_id = b_ids[0]
+                    b_lki = id2lki[b_id]
+                    damage.append ( (a_lki, b_lki, a_state.power) )
+                else:
+                    # damage to assign
+                    d = a_state.power
+
+                    while d > 0:
+                        # attacking player choose how to assign damage
+                        actions = []
+
+                        for b_id in b_ids:
+                            _p = Action ()
+                            _p.object = id2lki[b_id].get_object()
+                            _p.text = str(_p.object)
+                            actions.append (_p)
+
+                        _as = ActionSet (game, game.get_attacking_player(), "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
+                        a = game.input.send (_as)
+
+                        b_lki = id2lki[a.object.id]
+                        damage.append ( (a_lki, b_lki, 1) )
+
+                        d -= 1
 
         # damage by the blocked creatures
         for b_id in b_ids:

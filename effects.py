@@ -349,4 +349,81 @@ class TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(SingleTargetOne
     def __str__ (self):
         return "TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(%s, %s)" % (self.targetSelector, self.cardSelector)
 
+class XMayPutYFromHandIntoPlay(OneShotEffect):
+    def __init__ (self, x_selector, y_selector, tapped = False):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.tapped = tapped
+
+    def resolve(self, game, obj):
+
+        for player in self.x_selector.all(game, obj):
+            actions = []
+            for card in game.get_hand(player).objects:
+                if self.y_selector.contains(game, obj, card):
+                    _p = Action ()
+                    _p.object = card
+                    _p.text = "Put " + card.state.title + " into play"
+                    actions.append (_p)
+
+            if len(actions) > 0:
+
+                _pass = PassAction (player)
+                _pass.text = "Pass"
+
+                actions = [_pass] + actions
+
+                _as = ActionSet (game, player, "Choose a card to put into play", actions)
+                a = game.input.send (_as)
+ 
+                a.object.tapped = self.tapped
+                game.doZoneTransfer (a.object, game.get_in_play_zone())
+
+    def __str__ (self):
+        return "XMayPutYFromHandIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
+
+class AddXToYourManaPool(OneShotEffect):
+    def __init__ (self, mana):
+        self.mana = mana
+
+    def resolve(self, game, obj):
+        game.objects[obj.get_state().controller_id].manapool += self.mana
+
+    def __str__ (self):
+        return "AddXToYourManaPool(%s)" % self.mana
+
+class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
+    def __init__ (self, x_selector, y_selector, tapped = False):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.tapped = tapped
+
+    def resolve(self, game, obj):
+
+        for player in self.x_selector.all(game, obj):
+            actions = []
+            for card in game.get_library(player).objects:
+                if self.y_selector.contains(game, obj, card):
+                    _p = Action ()
+                    _p.object = card
+                    _p.text = "Put " + card.state.title + " into play"
+                    actions.append (_p)
+
+            if len(actions) > 0:
+
+                _pass = PassAction (player)
+                _pass.text = "Pass"
+
+                actions = [_pass] + actions
+
+                _as = ActionSet (game, player, "Choose a card to put into play", actions)
+                a = game.input.send (_as)
+ 
+                a.object.tapped = self.tapped
+                game.doZoneTransfer (a.object, game.get_in_play_zone())
+
+                game.doShuffle(game.get_library(player))
+
+    def __str__ (self):
+        return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 

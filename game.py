@@ -251,6 +251,9 @@ class Game:
     def get_attacking_player(self):
         return self.objects.get(self.attacking_player_id)
 
+    def doShuffle(self, zone):
+        random.shuffle(zone.objects)
+
     def doZoneTransfer (self, object, zone):
         object.damage = 0
         zone_from = self.objects[object.zone_id]
