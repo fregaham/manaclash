@@ -89,6 +89,9 @@ class SelfSelector(Selector):
     def all(self, game, context):
         yield context.get_source_lki()
 
+    def slots(self):
+        return ["it"]
+
     def __str__(self):
         return "SELF"
         
@@ -100,6 +103,15 @@ class ThatPlayerSelector(Selector):
 
     def __str__ (self):
         return "that player"
+
+class ItSelector(Selector):
+    def all(self, game, context):
+        it_lki = context.get_slot("it")
+        assert it is not None
+        yield it
+
+    def __str__ (self):
+        return "it"
 
 class ThatCreatureSelector(Selector):
     def all(self, game, context):
@@ -132,6 +144,45 @@ class CreatureSelector(Selector):
                 yield item
     def __str__ (self):
         return "creature"
+
+class CreatureWithFlyingSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types and "flying" in item.state.tags:
+                yield item
+    def __str__ (self):
+        return "creature with flying"
+
+class ArtifactSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "artifact" in item.state.types:
+                yield item
+    def __str__ (self):
+        return "artifact"
+
+class EnchantmentSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "enchantment" in item.state.types:
+                yield item
+    def __str__ (self):
+        return "enchantment"
+
+class OrSelector(Selector):
+    def __init__ (self, x, y):
+        self.x_selector = x
+        self.y_selector = y
+
+    def all(self, game, context):
+        for item in self.x_selector.all(game, context):
+            yield item
+
+        for item in self.y_selector.all(game, context):
+            yield item
+
+    def __str__ (self):
+        return "%s or %s" % (self.x_selector, self.y_selector)
 
 class CreatureYouControlSelector(Selector):
     def all(self, game, context):

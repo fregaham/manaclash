@@ -310,10 +310,25 @@ class Game:
 
                 self.raise_event("post_deal_damage", a, b, n)
 
+    def doRegenerate(self, obj):
+        obj = obj.get_object()
+        print "doRegenerate %s" % (obj)
+        obj.regenerated = True 
 
     def doDestroy(self, obj):
         obj = obj.get_object()
         print "doDestroy %s" % (obj)
+
+        if obj.regenerated:
+            obj.tapped = True
+            obj.damage = 0
+            obj.regenerated = False
+        else:
+            self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
+    def doSacrifice(self, obj):
+        obj = obj.get_object()
+        print "doSacrifice %s" % (obj)
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
     def doBury(self, obj):

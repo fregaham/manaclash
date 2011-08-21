@@ -65,6 +65,7 @@ class Object:
         self.targets = {}
         self.x = None
         self.enchanted_id = None
+        self.regenerated = False
 
     def get_id(self):
         return self.id
@@ -106,6 +107,7 @@ class Object:
         self.targets = src.targets.copy()
         self.x = src.x
         self.enchanted_id = src.enchanted_id
+        self.regenerated = src.regenerated
 
     def __str__ (self):
 

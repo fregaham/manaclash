@@ -241,6 +241,18 @@ class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXGetsNNUntilEndOfTurn(%s, %s, %s)" % (self.targetSelector, self.power, self.toughness)
 
+class XGetsNNUntilEndOfTurn(OneShotEffect):
+    def __init__(self, selector, power, toughness):
+        self.selector = selector
+        self.power = power
+        self.toughness = toughness
+
+    def resolve(self, game, obj):
+        game.until_end_of_turn_effects.append ( (obj, XGetsNN(self.selector, power, toughness)))
+
+    def __str__ (self):
+        return "XGetsNNUntilEndOfTurn(%s, %s, %s)" % (self.selector, self.power, self.toughness)
+
 class DestroyTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -392,6 +404,17 @@ class AddXToYourManaPool(OneShotEffect):
     def __str__ (self):
         return "AddXToYourManaPool(%s)" % self.mana
 
+class RegenerateX(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            game.doRegenerate(o)
+
+    def __str__ (self):
+        return "RegenerateX(%s)" % self.selector
+
 class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
     def __init__ (self, x_selector, y_selector, tapped = False):
         self.x_selector = x_selector
@@ -426,4 +449,31 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
 
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
+
+class SacrificeXUnlessYouCost(OneShotEffect):
+    def __init__ (self, selector, costs):
+        self.selector = selector
+        self.costs = costs
+
+    def resolve(self, game, obj):
+        controller = game.objects[obj.get_state().controller_id]
+        _pay = Action(controller)
+        _pay.text = "Pay %s" % str(map(str, self.costs))
+        
+        _notpay = Action(game.objects[obj.get_state().controller_id])
+        _notpay.text = "Sacrifice %s" % self.selector
+
+        _as = ActionSet (game, controller, "Choose", [_pay, _notpay])
+        a = game.inout.send(_as)
+
+        if a == _pay:
+            if process_pay_cost(game, obj, self.costs):
+                return
+            # else, sacrifice...
+             
+        for o in self.selector.all(game, obj):
+            game.doSacrifice(o)
+        
+    def __str__ (self):
+        return "SacrificeXUnlessYouCost(%s, %s)" % (self.selector, str(map(str,self.costs)))
 

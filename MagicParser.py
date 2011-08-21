@@ -22,6 +22,7 @@ from abilities import *
 from effects import *
 from selectors import *
 from rules import *
+from cost import *
 from Parser import *
 
 def R(lhs, rhs, action):
@@ -41,6 +42,7 @@ number = N("number")
 numberOfCards = N("numberOfCards")
 manaCost = N("manaCost")
 basicLand = N("basicLand")
+costs = N("costs")
 
 NUMBER = N("NUMBER")
 
@@ -112,11 +114,13 @@ r = [
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
 
-    R("tappingActivatedAbility", [N("manaCost"), ", {t}: ", N("effectText")], lambda t, m, e: TapCostDoEffectAbility(m, e)),
-    R("tappingActivatedAbility", [N("manaCost"), ", {t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, m, e: SelfTurnTapCostDoEffectAbility(m, e)),
+    R("tappingActivatedAbility", [costs, ", {t}: ", N("effectText")], lambda t, c, e: TapCostDoEffectAbility(c, e)),
+    R("tappingActivatedAbility", [costs, ", {t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, c, e: SelfTurnTapCostDoEffectAbility(c, e)),
 
-    R("tappingActivatedAbility", ["{t}: ", N("effectText")], lambda t, e: TapCostDoEffectAbility("", e)),
-    R("tappingActivatedAbility", ["{t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, e: SelfTurnTapCostDoEffectAbility("", e)),
+    R("tappingActivatedAbility", ["{t}: ", N("effectText")], lambda t, e: TapCostDoEffectAbility([], e)),
+    R("tappingActivatedAbility", ["{t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, e: SelfTurnTapCostDoEffectAbility([], e)),
+
+    R("ability", [costs, ": ", N("effectText")], lambda t, c, e: CostDoEffectAbility(c, e)),
 
     R("lose", ["lose"], lambda t:t),
     R("lose", ["loses"], lambda t:t),
@@ -137,6 +141,7 @@ r = [
     R("get", ["get"], lambda t:t),
     R("get", ["gets"], lambda t:t),
     R("targetXGetsNNUntilEndOfTurn", ["target ", N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:TargetXGetsNNUntilEndOfTurn(x, a, b)),
+    R("effect", [N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:XGetsNNUntilEndOfTurn(x, a, b)),
 
     R("dontUntapDuringItsControllersUntapStep", [N("selector"), " doesn't untap during its controller's untap step."], lambda t,x:XDontUntapDuringItsControllersUntapStep(x)),
 
@@ -168,35 +173,56 @@ r = [
     R("effect", [selector, " may put ", selector, " from his or her hand onto the battlefield tapped."], lambda t, x, y: XMayPutYFromHandIntoPlay(x, y, True)),
 
     R("effect", ["search your library for ", selector, " and put that card onto the battlefield. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, False)),
+    R("effect", ["search your library for ", selector, " and put that card onto the battlefield tapped. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, True)),
 
     R("effect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
 
+    R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeXUnlessYouCost(s, c)),
+
+    R("effect", ["regenerate ", selector, ". (the next time this creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),
+
+    R("costs", [N("cost")], lambda t, c: [c]),
+    R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),
+    R("costs", ["sacrifice ", number, " ", selector], lambda t,n,s: ([SacrificeSelectorCost(s)] * n)),
+
+    R("cost", [N("manaCost")], lambda t, m: ManaCost(m)),
+    R("cost", ["tap an untapped ", selector], lambda t, s: TapSelectorCost(s)),
+    R("cost", ["sacrifice ", selector], lambda t, s: SacrificeSelectorCost(s)),
+
     R("selectorText", [selector], lambda t,x:t),
 
-    R("selector", ["player"], lambda t:AllPlayersSelector()),
-    R("selector", ["a player"], lambda t:AllPlayersSelector()),
-    R("selector", ["each player"], lambda t:AllPlayersSelector()),
-    R("selector", ["each other player"], lambda t:EachOtherPlayerSelector()),
-    R("selector", ["that player"], lambda t:ThatPlayerSelector()),
-    R("selector", ["you"], lambda t:YouSelector()),
-    R("selector", ["SELF"], lambda t:SelfSelector()),
-    R("selector", ["creature"], lambda t:CreatureSelector()),
-    R("selector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
-    R("selector", ["that creature"], lambda t:ThatCreatureSelector()),
-    R("selector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
-    R("selector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
-    R("selector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
-    R("selector", ["creature attacking you"], lambda t:CreatureAttackingYouSelector()),
-    R("selector", ["non", color, " creature"], lambda t,c:NonColorCreatureSelector(c)),
-    R("selector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
-    R("selector", ["opponent"], lambda t:OpponentSelector()),
-    R("selector", ["an opponent"], lambda t:OpponentSelector()),
-    R("selector", ["a card"], lambda t:CardSelector()),
-    R("selector", ["a creature card"], lambda t:CreatureCardSelector()),
-    R("selector", ["a basic land card"], lambda t:BasicLandCardSelector()),
-    R("selector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
+    R("selector", [N("basicSelector"), " or ", selector], lambda t,x,y:OrSelector(x,y)),
+    R("selector", [N("basicSelector")], id),
 
-
+    R("basicSelector", ["player"], lambda t:AllPlayersSelector()),
+    R("basicSelector", ["a player"], lambda t:AllPlayersSelector()),
+    R("basicSelector", ["each player"], lambda t:AllPlayersSelector()),
+    R("basicSelector", ["each other player"], lambda t:EachOtherPlayerSelector()),
+    R("basicSelector", ["that player"], lambda t:ThatPlayerSelector()),
+    R("basicSelector", ["you"], lambda t:YouSelector()),
+    R("basicSelector", ["it"], lambda t:ItSelector()),
+    R("basicSelector", ["SELF"], lambda t:SelfSelector()),
+    R("basicSelector", ["creature"], lambda t:CreatureSelector()),
+    R("basicSelector", ["creature with flying"], lambda t:CreatureWithFlyingSelector()),
+    R("basicSelector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
+    R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),
+    R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
+    R("basicSelector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
+    R("basicSelector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
+    R("basicSelector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
+    R("basicSelector", ["creature attacking you"], lambda t:CreatureAttackingYouSelector()),
+    R("basicSelector", ["non", color, " creature"], lambda t,c:NonColorCreatureSelector(c)),
+    R("basicSelector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
+    R("basicSelector", ["opponent"], lambda t:OpponentSelector()),
+    R("basicSelector", ["an opponent"], lambda t:OpponentSelector()),
+    R("basicSelector", ["a card"], lambda t:CardSelector()),
+    R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
+    R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
+    R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
+    R("basicSelector", [basicLand], lambda t,x:SubTypeCardSelector(x)),
+    R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
+    R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
+    
     R("numberOfCards", ["a card"], lambda t:1),
 
     R("manaCost", [N("manaCostElement"), N("manaCost")], lambda t,e,c: e + c),
@@ -208,6 +234,16 @@ r = [
     R("manaCostElement", ["{b}"], lambda t: "B"),
     R("manaCostElement", ["{w}"], lambda t: "W"),
     R("manaCostElement", ["{u}"], lambda t: "U"),
+
+    R("number", ["one"], lambda t: 1),
+    R("number", ["two"], lambda t: 2),
+    R("number", ["three"], lambda t: 3),
+    R("number", ["four"], lambda t: 4),
+    R("number", ["five"], lambda t: 5),
+    R("number", ["six"], lambda t: 6),
+    R("number", ["seven"], lambda t: 7),
+    R("number", ["eight"], lambda t: 8),
+    R("number", ["nine"], lambda t: 9),
 
     R("number", [NUMBER], lambda t,n: int(n)),
     R("number", ['x'], lambda t: 'X'),
@@ -227,6 +263,12 @@ r = [
     R("basicLand", ["swamp"], lambda t:t),
     R("basicLand", ["plains"], lambda t:t),
     R("basicLand", ["mountain"], lambda t:t),
+
+    R("basicLand", ["islands"], lambda t:t),
+    R("basicLand", ["forests"], lambda t:t),
+    R("basicLand", ["swamps"], lambda t:t),
+    R("basicLand", ["plains"], lambda t:t),
+    R("basicLand", ["mountains"], lambda t:t),
 
     R("NUMBER", ["0"], lambda t:t),
     R("NUMBER", ["1"], lambda t:t),

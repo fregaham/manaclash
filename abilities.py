@@ -127,8 +127,8 @@ class ContinuousEffectStaticAbility(StaticAbility):
         return "ContinuousEffectStaticAbility(%s)" % str(self.effect)
 
 class TapCostDoEffectAbility(ActivatedAbility):
-    def __init__ (self, manacost, effect):
-        self.manacost = manacost
+    def __init__ (self, costs, effect):
+        self.costs = costs
         self.effect = effect
 
     def canActivate(self, game, obj, player):
@@ -140,20 +140,44 @@ class TapCostDoEffectAbility(ActivatedAbility):
         process_activate_tapping_ability(game, self, player, obj, self.effect)
 
     def get_text(self, game, obj):
-        return "Activate \"%s\" [T %s]" % (self.effect, self.manacost)
+        return "Activate \"%s\" [T %s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        if self.manacost != "":
-            c = ManaCost(self.manacost)
-            return [c]
-        return []
+        #if self.manacost != "":
+        #    c = ManaCost(self.manacost)
+        #    return [c]
+        return self.costs
 
     def __str__ (self):
-        return "TapCostDoEffectAbility(%s, %s)" % (str(self.manacost), str(self.effect))
+        return "TapCostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
+
+class CostDoEffectAbility(ActivatedAbility):
+    def __init__ (self, costs, effect):
+        self.costs = costs
+        self.effect = effect
+
+    def canActivate(self, game, obj, player):
+        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
+
+    def activate(self, game, obj, player):
+        from process import process_activate_ability
+        process_activate_ability(game, self, player, obj, self.effect)
+
+    def get_text(self, game, obj):
+        return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
+
+    def determineCost(self, game, obj, player):
+        #if self.manacost != "":
+        #    c = ManaCost(self.manacost)
+        #    return [c]
+        return self.costs
+
+    def __str__ (self):
+        return "CostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
 
 class SelfTurnTapCostDoEffectAbility(ActivatedAbility):
-    def __init__ (self, manacost, effect):
-        self.manacost = manacost
+    def __init__ (self, costs, effect):
+        self.costs = costs
         self.effect = effect
 
     def canActivate(self, game, obj, player):
@@ -165,16 +189,13 @@ class SelfTurnTapCostDoEffectAbility(ActivatedAbility):
         process_activate_tapping_ability(game, self, player, obj, self.effect)
 
     def get_text(self, game, obj):
-        return "Activate \"%s\" [T %s]" % (self.effect, self.manacost)
+        return "Activate \"%s\" [T %s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        if self.manacost != "":
-            c = ManaCost(self.manacost)
-            return [c]
-        return []
+        return self.costs
 
     def __str__ (self):
-        return "SelfTurnTapCostDoEffectAbility(%s, %s)" % (str(self.manacost), str(self.effect))
+        return "SelfTurnTapCostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
 
 class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def __init__(self, selector, effect):

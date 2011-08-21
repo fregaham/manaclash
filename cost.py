@@ -31,6 +31,9 @@ class Cost:
     def canPay(self, game, obj, player):
         return True
 
+    def __str__ (self):
+        return "Cost"
+
 def mana_parse(m):
     cs = "WGRUB"
     ret = {}
@@ -132,10 +135,81 @@ class ManaCost(Cost):
     def canPay(self, game, obj, player):
         return mana_greater_than(player.manapool, self.manacost)
 
+    def __str__ (self):
+        return self.manacost
+
 class TapCost(Cost):
     def __init__ (self, obj_id):
         Cost.__init__(self)
 
+    def __str__ (self):
+        return "T"
+
+class TapSelectorCost(Cost):
+    def __init__ (self, selector):
+        Cost.__init__ (self)
+        self.selector = selector
+
+    def get_text(self, game, obj, player):
+        return "Tap %s" % self.selector
+
+    def pay(self, game, obj, player):
+        actions = []
+        for o in self.selector.all(game, obj):
+
+            if o.tapped:
+                continue
+
+            _p = Action ()
+            _p.object = o
+            _p.text = "Tap %s" + o
+            actions.append (_p)
+
+        if len(actions) > 0:
+            _as = ActionSet (game, player, "Choose %s to tap" % self.selector, actions)
+            a = game.input.send (_as)
+
+            game.doTap(a.object)
+
+            return True
+        else:
+            return False
+
+    def canPay(self, game, obj, player):
+        os = [x for x in self.selector.all(game, obj)]
+        return len(os) > 0
+
+    def __str__ (self):
+        return "tap %s" % self.selector
 
 
+class SacrificeSelectorCost(Cost):
+    def __init__ (self, selector):
+        Cost.__init__ (self)
+        self.selector = selector
+
+    def get_text(self, game, obj, player):
+        return "Sacrifice %s" % self.selector
+
+    def pay(selg, game, obj, player):
+        actions = []
+        for o in self.selector.all(game, obj):
+
+            _p = Action ()
+            _p.object = o
+            _p.text = "Sacrifice %s" + o
+            actions.append (_p)
+
+        if len(actions) > 0:
+            _as = ActionSet (game, player, "Choose %s to sacrifice" % self.selector, actions)
+            a = game.input.send (_as)
+
+            game.doSacrifice(a.object)
+
+            return True
+        else:
+            return False
+
+    def __str__ (self):
+        return "sacrifice %s" % self.selector
 

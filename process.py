@@ -239,7 +239,30 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
             return
 
     game.doTap(obj)
- 
+
+def process_activate_ability(game, ability, player, obj, effect):
+
+    e = game.create_effect_object (LastKnownInformation(game, obj), player, effect, {})
+
+    stack = game.get_stack_zone()
+    e.zone_id = stack.id
+    stack.objects.append (e)
+
+    evaluate(game)
+
+    if not e.rules.selectTargets(game, player, e):
+        game.delete(e)
+        return
+
+    costs = ability.determineCost(game, obj, player)
+    # cost = ability.get_cost(game, player, obj)
+    if len(costs) > 0:
+        if not process_pay_cost(game, player, obj, costs):
+
+            print "not payed, returning to previous state"
+            game.delete(e)
+            return
+
 
 def process_priority_succession (game, player):
 
@@ -805,10 +828,6 @@ def process_step_cleanup(game):
                 process_discard_a_card(game, game.get_active_player())
 
 
-        selector = AllPermanentSelector ()
-        for permanent in selector.all (game, None):
-            permanent.damage = 0
-
         game.get_active_player().land_played = 0
 
         if len(game.triggered_abilities) > 0:
@@ -817,6 +836,12 @@ def process_step_cleanup(game):
             repeat = False
 
         process_step_post(game)
+
+
+    selector = AllSelector ()
+    for permanent in selector.all (game, None):
+        permanent.damage = 0
+        permanent.regenerated = False
 
     game.until_end_of_turn_effects = []
 
