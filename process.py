@@ -485,6 +485,15 @@ def is_valid_block(game, attacker, blocker):
         print "%s cannot block %s because of the fear evasion rule" % (blocker, attacker)
         return False
 
+    # lure
+    # warning, this can turn into a recursive hell, if not taken care
+    if "lure" not in attacker.get_state().tags:
+        for a2 in game.declared_attackers:
+            if "lure" in a2.get_state().tags:
+                if is_valid_block(game, a2, blocker):
+                    print "%s cannot block %s because there is a valid lure %s" % (blocker, attacker, a2)
+                    return False
+
     return True
 
 def validate_block(game, blockers, blockers_map):
@@ -494,6 +503,16 @@ def validate_block(game, blockers, blockers_map):
 
         if not is_valid_block(game, attacker, blocker):
             return False
+
+    # check for lures and that all creature able to block are blocking them are blocking something
+    for attacker in game.declared_attackers:
+        if "lure" in attacker.get_state().tags:
+            selector = PermanentPlayerControlsSelector(game.get_defending_player())
+            for permanent in selector.all(game, None):
+                if "creature" in permanent.state.types and not permanent.tapped and permanent not in blockers:
+                    if is_valid_block(game, attacker, permanent):
+                        print "Invalid block, %s not blocking a lure" % permanent
+                        return False
 
     return True
 

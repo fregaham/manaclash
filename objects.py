@@ -252,4 +252,6 @@ class LastKnownInformation(Object):
     def is_moved(self):
         return self.moved
 
+    def __str__ (self):
+        return str(self.object)
 
