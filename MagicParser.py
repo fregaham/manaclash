@@ -79,6 +79,7 @@ r = [
     R("effect", [N("targetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard")], id),
 
     R("enchantmentRules", ["enchant ", selector, ";", effect], lambda t,s,e:EnchantPermanentRules(s, ContinuousEffectStaticAbility(e))),
+    R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", effect], lambda t,s,s2,s3,e:EnchantPermanentRules(s, ContinuousEffectStaticAbility(e))),
     R("enchantmentRules", [N("abilities")], lambda t,a:BasicPermanentRules(a)),
 
     R("continuousAbility", ["flying"], lambda t:TagAbility("flying")),
@@ -180,6 +181,8 @@ r = [
     R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeXUnlessYouCost(s, c)),
 
     R("effect", ["regenerate ", selector, ". (the next time this creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),
+    
+    R("effect", ["all creatures able to block ", selector, " do so."], lambda t,s: XGetsTag(s, "lure")),
 
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),

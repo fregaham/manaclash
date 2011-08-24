@@ -218,6 +218,18 @@ class XGetsNN(ContinuousEffect):
     def __str__ (self):
         return "XGetsNN(%s, %s, %s)" % (self.selector, self.power, self.toughness)
 
+class XGetsTag(ContinuousEffect):
+    def __init__ (self, selector, tag):
+        self.selector = selector
+        self.tag = tag
+
+    def apply(self, game, obj):
+        for o in self.selector.all(game, obj):
+            o.state.tags.add (self.tag)
+
+    def __str__ (self):
+        return "XGetsTag(%s, %s)" % (self.selector, self.tag)
+
 class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, power, toughness):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -252,6 +264,7 @@ class XGetsNNUntilEndOfTurn(OneShotEffect):
 
     def __str__ (self):
         return "XGetsNNUntilEndOfTurn(%s, %s, %s)" % (self.selector, self.power, self.toughness)
+
 
 class DestroyTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):

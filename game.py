@@ -342,4 +342,5 @@ class Game:
         obj.zone_id = None
         del self.objects[obj.id]
 
-
+    def isInPlay(self, obj):
+        return obj.zone_id == self.get_in_play_zone().id

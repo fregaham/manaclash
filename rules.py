@@ -50,7 +50,9 @@ class BasicPermanentRules(ObjectRules):
 
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
-        obj.state.abilities.extend (self.abilities)
+
+        if game.isInPlay(obj):
+            obj.state.abilities.extend (self.abilities)
 
     def resolve(self, game, obj):
         print "resolving permanenet %s" % obj.state.title
@@ -100,7 +102,9 @@ class EnchantPermanentRules(ObjectRules):
 
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
-        obj.state.abilities.append(self.ability)
+
+        if game.isInPlay(obj):
+            obj.state.abilities.append(self.ability)
 
     def resolve(self, game, obj):
         from process import process_validate_target
