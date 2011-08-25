@@ -800,7 +800,7 @@ def process_discard_a_card(game, player):
     for card in game.get_hand(player).objects:
         _p = Action ()
         _p.object = card
-        _p.text = "Discard " + card.state.title
+        _p.text = "Discard " + str(card)
         actions.append (_p)
 
     _as = ActionSet (game, player, "Discard a card", actions)
@@ -817,7 +817,7 @@ def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, 
         if cardSelector.contains(game, context, card):
             _p = Action ()
             _p.object = card
-            _p.text = "Choose " + card.state.title
+            _p.text = "Choose " + str(card)
             actions.append (_p)
 
     _as = ActionSet (game, chooser, "Choose a card", actions)

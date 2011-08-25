@@ -299,7 +299,7 @@ class CardSelector(Selector):
 class CreatureCardSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():
-            if "creature" in obj.state.types:
+            if "creature" in item.state.types:
                 yield item
 
     def __str__ (self):

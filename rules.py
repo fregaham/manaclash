@@ -138,6 +138,17 @@ g_rules["damage assignment"] = DamageAssignmentRules()
 g_rules[""] = ObjectRules()
 g_rules[None] = ObjectRules()
 
+g_ruleCache = {}
+
+def caching_magic_parser(what, text):
+    
+    if (what, text) in g_ruleCache:
+        return g_ruleCache[(what, text)]
+
+    from MagicParser import magic_parser
+    g_ruleCache[(what,text)] = magic_parser(what, text)
+    return g_ruleCache[(what,text)]
+
 def parse(obj):
 
     text = obj.state.text
@@ -146,18 +157,18 @@ def parse(obj):
 
     from MagicParser import magic_parser
 
-    print "parsing %s" % text
+    #print "parsing %s" % text
 
     rules = None
 
     if isinstance(obj, EffectObject):
-        rules = magic_parser("effectRules", text)
+        rules = caching_magic_parser("effectRules", text)
     elif "artifact" in obj.state.types or "creature" in obj.state.types: 
-        rules = magic_parser("permanentRules", text)
+        rules = caching_magic_parser("permanentRules", text)
     elif "enchantment" in obj.state.types:
-        rules = magic_parser("enchantmentRules", text)
+        rules = caching_magic_parser("enchantmentRules", text)
     elif "sorcery" in obj.state.types or "instant" in obj.state.types:
-        rules = magic_parser("sorceryOrInstantRules", text)
+        rules = caching_magic_parser("sorceryOrInstantRules", text)
     else:
         return g_rules[obj.state.text]
 

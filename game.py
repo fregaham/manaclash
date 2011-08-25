@@ -17,6 +17,8 @@
 #
 # 
 
+import random
+
 from objects import *
 
 class Game:
@@ -269,6 +271,9 @@ class Game:
             object.enchanted_id = None
 
         print "post zone transfer %s to %s" % (object, object.zone_id)
+
+        from process import evaluate
+        evaluate(self)
 
         # objects moving into play have summoning sickness tag applied to them
         if zone == self.get_in_play_zone():

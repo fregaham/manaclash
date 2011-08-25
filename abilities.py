@@ -73,7 +73,7 @@ class PlayLandAbility(ActivatedAbility):
         player.land_played += 1
 
     def get_text(self, game, obj):
-        return "Play " + obj.state.title
+        return "Play " + str(obj)
 
     def __str__ (self):
         return "PlayLandAbility()"
@@ -87,7 +87,7 @@ class PlaySpell(ActivatedAbility):
         process_play_spell (game, self, player, obj)
 
     def get_text(self, game, obj):
-        return "Play " + obj.state.title + " [%s]" % (obj.state.manacost)
+        return "Play " + str(obj) + " [%s]" % (obj.state.manacost)
 
     def determineCost(self, game, obj, player):
 

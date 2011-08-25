@@ -19,6 +19,7 @@
 
 from objects import  *
 from selectors import *
+from actions import *
 
 class Effect:
     def setText(self):
@@ -388,7 +389,7 @@ class XMayPutYFromHandIntoPlay(OneShotEffect):
                 if self.y_selector.contains(game, obj, card):
                     _p = Action ()
                     _p.object = card
-                    _p.text = "Put " + card.state.title + " into play"
+                    _p.text = "Put " + str(card) + " into play"
                     actions.append (_p)
 
             if len(actions) > 0:
@@ -442,7 +443,7 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
                 if self.y_selector.contains(game, obj, card):
                     _p = Action ()
                     _p.object = card
-                    _p.text = "Put " + card.state.title + " into play"
+                    _p.text = "Put " + str(card) + " into play"
                     actions.append (_p)
 
             if len(actions) > 0:
@@ -470,10 +471,10 @@ class SacrificeXUnlessYouCost(OneShotEffect):
 
     def resolve(self, game, obj):
         controller = game.objects[obj.get_state().controller_id]
-        _pay = Action(controller)
+        _pay = Action()
         _pay.text = "Pay %s" % str(map(str, self.costs))
         
-        _notpay = Action(game.objects[obj.get_state().controller_id])
+        _notpay = Action()
         _notpay.text = "Sacrifice %s" % self.selector
 
         _as = ActionSet (game, controller, "Choose", [_pay, _notpay])
