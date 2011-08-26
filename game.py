@@ -263,10 +263,18 @@ class Game:
         print "pre zone transfer %s from %s" % (object, object.zone_id)
 
         self.raise_event ("pre_zone_transfer", object, zone_from, zone)
+
+        # also move enchantments to graveyard
+        enchantments = []
+        if zone_from.id == self.get_in_play_zone().id:
+            for obj in self.objects.values():
+                if obj.enchanted_id == object.id:
+                    self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
         object.zone_id = zone.id
         zone_from.objects.remove(object)
         zone.objects.append (object)
-   
+
         if zone.id != self.get_in_play_zone().id:
             object.enchanted_id = None
 

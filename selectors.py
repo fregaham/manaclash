@@ -107,8 +107,8 @@ class ThatPlayerSelector(Selector):
 class ItSelector(Selector):
     def all(self, game, context):
         it_lki = context.get_slot("it")
-        assert it is not None
-        yield it
+        assert it_lki is not None
+        yield it_lki
 
     def __str__ (self):
         return "it"
@@ -326,4 +326,15 @@ class SubTypeCardSelector(Selector):
     def __str__ (self):
         return "%s card" % (self.type)
 
+class SubTypeSelector(Selector):
+    def __init__ (self, type):
+        self.type = type
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and self.type in item.state.subtypes:
+                yield item
+
+    def __str__ (self):
+        return "%s" % (self.type)
 

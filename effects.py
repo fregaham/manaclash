@@ -478,10 +478,11 @@ class SacrificeXUnlessYouCost(OneShotEffect):
         _notpay.text = "Sacrifice %s" % self.selector
 
         _as = ActionSet (game, controller, "Choose", [_pay, _notpay])
-        a = game.inout.send(_as)
+        a = game.input.send(_as)
 
         if a == _pay:
-            if process_pay_cost(game, obj, self.costs):
+            from process import process_pay_cost
+            if process_pay_cost(game, controller, obj, self.costs):
                 return
             # else, sacrifice...
              

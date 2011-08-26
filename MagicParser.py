@@ -222,7 +222,7 @@ r = [
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
-    R("basicSelector", [basicLand], lambda t,x:SubTypeCardSelector(x)),
+    R("basicSelector", [basicLand], lambda t,x:SubTypeSelector(x)),
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     
@@ -267,11 +267,11 @@ r = [
     R("basicLand", ["plains"], lambda t:t),
     R("basicLand", ["mountain"], lambda t:t),
 
-    R("basicLand", ["islands"], lambda t:t),
-    R("basicLand", ["forests"], lambda t:t),
-    R("basicLand", ["swamps"], lambda t:t),
-    R("basicLand", ["plains"], lambda t:t),
-    R("basicLand", ["mountains"], lambda t:t),
+    R("basicLand", ["islands"], lambda t:"island"),
+    R("basicLand", ["forests"], lambda t:"forest"),
+    R("basicLand", ["swamps"], lambda t:"swamp"),
+    R("basicLand", ["plains"], lambda t:"plains"),
+    R("basicLand", ["mountains"], lambda t:"mountain"),
 
     R("NUMBER", ["0"], lambda t:t),
     R("NUMBER", ["1"], lambda t:t),

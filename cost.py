@@ -17,6 +17,7 @@
 #
 # 
 
+from actions import *
 
 class Cost:
     def __init__ (self):
@@ -162,7 +163,7 @@ class TapSelectorCost(Cost):
 
             _p = Action ()
             _p.object = o
-            _p.text = "Tap %s" + o
+            _p.text = "Tap %s" % str(o)
             actions.append (_p)
 
         if len(actions) > 0:
@@ -191,13 +192,13 @@ class SacrificeSelectorCost(Cost):
     def get_text(self, game, obj, player):
         return "Sacrifice %s" % self.selector
 
-    def pay(selg, game, obj, player):
+    def pay(self, game, obj, player):
         actions = []
         for o in self.selector.all(game, obj):
 
             _p = Action ()
             _p.object = o
-            _p.text = "Sacrifice %s" + o
+            _p.text = "Sacrifice %s" % str(o)
             actions.append (_p)
 
         if len(actions) > 0:
