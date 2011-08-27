@@ -83,6 +83,8 @@ r = [
     R("enchantmentRules", [N("abilities")], lambda t,a:BasicPermanentRules(a)),
 
     R("continuousAbility", ["flying"], lambda t:TagAbility("flying")),
+    R("continuousAbility", ["flying (this creature can't be blocked except by creatures with flying or reach.)"], lambda t:TagAbility("flying")),
+
     R("continuousAbility", ["fear"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["fear (this creature can't be blocked except by artifact creatures and/or black creatures.)"], lambda t:TagAbility("fear")),
     R("ability", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),

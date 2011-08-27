@@ -157,8 +157,6 @@ def parse(obj):
 
     from MagicParser import magic_parser
 
-    #print "parsing %s" % text
-
     rules = None
 
     if isinstance(obj, EffectObject):

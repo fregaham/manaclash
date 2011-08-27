@@ -142,6 +142,7 @@ if __name__ == "__main__":
         #print obj.state.title
 
         try:
+            print "parsing %s" % obj.state.text
         #if True:
             rules = parse(obj)
             if rules is not None:
