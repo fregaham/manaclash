@@ -727,7 +727,7 @@ def process_step_combat_damage (game):
     for (a,b), n in merged.iteritems():
         damage.append ( (a, b, n) )
 
-    damage_object = game.create_damage_assignment(damage)
+    damage_object = game.create_damage_assignment(damage, True)
     game.stack_push(damage_object)
     for ability in game.triggered_abilities:
         game.stack_push (ability)

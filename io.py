@@ -21,6 +21,8 @@ from objects import *
 from abilities import *
 from actions import *
 
+import random
+
 greeting = """ManaClash  Copyright (C) 2011  Marek Schmidt
     This program comes with ABSOLUTELY NO WARRANTY; for details type `warranty'
     This is free software, and you are welcome to redistribute it
@@ -100,6 +102,10 @@ class NullOutput(Output):
 
 def input_generator ():
 
+    seed = random.randint(0,2**64)
+
+    random.seed(seed)
+
     print greeting
 
     _as = yield None
@@ -146,6 +152,7 @@ def input_generator ():
                     _input = raw_input()
 
                 if _input == "log":
+                    print "seed: %d" % seed
                     print `log`
                 if _input == "exit":
                     return
