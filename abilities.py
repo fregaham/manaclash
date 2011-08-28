@@ -268,6 +268,26 @@ class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXDealsCombatDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
 
+class WhenXAttacksDoEffectAbility(TriggeredAbility):
+    def __init__(self, selector, effect):
+        self.selector = selector
+        self.effect = effect
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("attacks", partial(self.onAttacks, game, obj))
+
+    def onAttacks(self, game, SELF, attacker):
+        from process import process_trigger_effect
+        if self.selector.contains(game, SELF, attacker):
+            slots = {}
+            for slot in self.selector.slots():
+                slots[slot] = attacker
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXAttacksDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
+
 class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):
         self.x_selector = x_selector

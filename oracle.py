@@ -132,6 +132,9 @@ if __name__ == "__main__":
     g = Game(ig, o)
     g.create()
 
+    parsed = 0
+    total = 0
+
     for card in parseOracle(sys.stdin):
 
         # create_card (u"Hasty Moggie Bird", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying",u"haste"]), "when SELF comes into play, each player loses 1 life.", 1, 1)
@@ -141,14 +144,19 @@ if __name__ == "__main__":
 
         #print obj.state.title
 
+        total += 1
+
         try:
             rules = parse(obj)
             if rules is not None:
                 print obj.state.title 
                 print obj.state.text
                 print rules
+
+                parsed += 1
         except Exception, x:
             # print `x`
             print (u"Cannot parse %s\n%s" % (obj.state.title, obj.state.text)).encode("utf8")
 
+    print "Parsed %d/%d" % (parsed, total)
 

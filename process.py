@@ -455,6 +455,10 @@ def process_step_declare_attackers (game):
         if "vigilance" not in a.get_state().tags:
             game.doTap(a.get_object())
 
+    # attacks event
+    for a in game.declared_attackers:
+        game.raise_event("attacks", a)
+
     for ability in game.triggered_abilities:
         game.stack_push (ability)
     game.triggered_abilities = []
@@ -932,7 +936,7 @@ def _is_valid_target(game, source, target):
     # TODO: protections and stuff 
     return True
 
-def process_select_target(game, player, source, selector):
+def process_select_target(game, player, source, selector, optional=False):
     actions = []
 
     _pass = PassAction (player)
@@ -946,8 +950,8 @@ def process_select_target(game, player, source, selector):
             _p.text = "Target " + str(obj)
             actions.append (_p)
 
-    if len(actions) == 0:
-        actions.append (_pass)
+    if len(actions) == 0 or optional:
+        actions = [_pass] + actions
 
     _as = ActionSet (game, player, "Choose a target for " + str(source), actions)
     a = game.input.send (_as)

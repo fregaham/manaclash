@@ -142,8 +142,9 @@ class XDealNDamageToY(OneShotEffect):
 
 class SingleTargetOneShotEffect(OneShotEffect):
 
-    def __init__ (self, targetSelector):
+    def __init__ (self, targetSelector, optional = False):
         self.targetSelector = targetSelector    
+        self.optional = optional
 
     def resolve(self, game, obj):
         if self.validateTargets(game, obj):
@@ -156,7 +157,7 @@ class SingleTargetOneShotEffect(OneShotEffect):
 
     def selectTargets(self, game, player, obj):
         from process import process_select_target
-        target = process_select_target(game, player, obj, self.targetSelector)
+        target = process_select_target(game, player, obj, self.targetSelector, self.optional)
         if target == None:
             return False
 
@@ -407,6 +408,16 @@ class XMayPutYFromHandIntoPlay(OneShotEffect):
 
     def __str__ (self):
         return "XMayPutYFromHandIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
+
+class YouMayTapTargetX(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, True)
+
+    def doResolve(self, game, obj, target):
+        game.doTap(target.get_object())
+
+    def __str__ (self):
+        return "YouMayTapTargetX(%s)" % self.targetSelector
 
 class AddXToYourManaPool(OneShotEffect):
     def __init__ (self, mana):
