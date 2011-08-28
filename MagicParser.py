@@ -52,6 +52,7 @@ r = [
     R("permanentRules", [N("abilities")], lambda t, x:BasicPermanentRules(x)),
     R("permanentRules", [""], lambda t:BasicPermanentRules([])),
     R("abilities", [N("ability"), ";", N("abilities")], lambda t,x,y:[x] + y),
+    R("abilities", [N("ability"), ", ", N("abilities")], lambda t,x,y:[x] + y),
     R("abilities", [N("ability")], lambda t,x:[x]),
 
     R("ability", [N("continuousAbility")], id),
@@ -88,6 +89,9 @@ r = [
     R("continuousAbility", ["fear"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["fear (this creature can't be blocked except by artifact creatures and/or black creatures.)"], lambda t:TagAbility("fear")),
     R("ability", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),
+
+    R("ability", ["first strike (this creature deals combat damage before creatures without first strike.)"], lambda t:TagAbility("first strike")),
+    R("ability", ["vigilance"], lambda t:TagAbility("vigilance")),
 
     R("triggeredAbility", [N("whenXComesIntoPlayDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsDamageToYDoEffectAbility")], id),
@@ -275,16 +279,18 @@ r = [
     R("basicLand", ["plains"], lambda t:"plains"),
     R("basicLand", ["mountains"], lambda t:"mountain"),
 
-    R("NUMBER", ["0"], lambda t:t),
-    R("NUMBER", ["1"], lambda t:t),
-    R("NUMBER", ["2"], lambda t:t),
-    R("NUMBER", ["3"], lambda t:t),
-    R("NUMBER", ["4"], lambda t:t),
-    R("NUMBER", ["5"], lambda t:t),
-    R("NUMBER", ["6"], lambda t:t),
-    R("NUMBER", ["7"], lambda t:t),
-    R("NUMBER", ["8"], lambda t:t),
-    R("NUMBER", ["9"], lambda t:t)
+    R("NUMERAL", ["0"], lambda t:t),
+    R("NUMERAL", ["1"], lambda t:t),
+    R("NUMERAL", ["2"], lambda t:t),
+    R("NUMERAL", ["3"], lambda t:t),
+    R("NUMERAL", ["4"], lambda t:t),
+    R("NUMERAL", ["5"], lambda t:t),
+    R("NUMERAL", ["6"], lambda t:t),
+    R("NUMERAL", ["7"], lambda t:t),
+    R("NUMERAL", ["8"], lambda t:t),
+    R("NUMERAL", ["9"], lambda t:t),
+    R("NUMBER", [N("NUMERAL")], lambda t,n:n),
+    R("NUMBER", [N("NUMERAL"),N("NUMBER")], lambda t,n,m:n+m)
 ]
 
 def magic_parser(label, text):

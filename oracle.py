@@ -142,26 +142,13 @@ if __name__ == "__main__":
         #print obj.state.title
 
         try:
-            print "parsing %s" % obj.state.text
-        #if True:
             rules = parse(obj)
             if rules is not None:
                 print obj.state.title 
                 print obj.state.text
                 print rules
-            #else:
-            #    print u"cannot parse %s" % obj.state.title
         except Exception, x:
             # print `x`
-            print u"Cannot parse %s" % obj.state.title
+            print (u"Cannot parse %s\n%s" % (obj.state.title, obj.state.text)).encode("utf8")
 
-
-        #print card.name
-        #print `card.supertypes`
-        #print `card.types`
-        #print `card.subtypes`
-        #print card.rules
-        #print
-
-   
 

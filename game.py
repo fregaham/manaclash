@@ -336,6 +336,9 @@ class Game:
             obj.tapped = True
             obj.damage = 0
             obj.regenerated = False
+
+            # remove from combat
+            self.doRemoveFromCombat(obj)
         else:
             self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
@@ -348,6 +351,18 @@ class Game:
         obj = obj.get_object()
         print "doBury %s" % (obj)
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
+    def doRemoveFromCombat(self, obj):
+        id = obj.get_id()
+        for a in self.declared_attackers:
+            if a.get_id() == id:
+                self.declared_attackers.remove (a)
+                return
+
+        for b in self.declared_blockers:
+            if b.get_id() == id:
+                self.declared_attackers.remove (b)
+                return
 
     def delete(self, obj):
         print "deleting object %s" % obj

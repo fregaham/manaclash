@@ -452,7 +452,8 @@ def process_step_declare_attackers (game):
 
     # tap attacking creatures
     for a in game.declared_attackers:
-        game.doTap(a.get_object())
+        if "vigilance" not in a.get_state().tags:
+            game.doTap(a.get_object())
 
     for ability in game.triggered_abilities:
         game.stack_push (ability)
@@ -612,7 +613,7 @@ def process_raise_blocking_events(game):
 
         game.raise_event("blocks", obj, blocked_lki)
 
-def process_step_combat_damage (game):
+def process_step_combat_damage (game, firstStrike):
     game.current_step = "combat damage"
     process_step_pre (game)
 
@@ -655,7 +656,7 @@ def process_step_combat_damage (game):
         a_state = id2lki[a_id].get_state()
         
         # only creatures deal combat damage
-        if not a_lki.is_moved() and "creature" in a_state.types:
+        if not a_lki.is_moved() and "creature" in a_state.types and ((firstStrike and "first strike" in a_lki.get_state().tags) or (not firstStrike and "first strike" not in a_lki.get_state().tags) or (firstStrike and "double strike" in a_lki.get_state().tags)):
 
             if len(b_ids) == 0:
                 # unblocked creature deal damage to the defending player
@@ -715,7 +716,7 @@ def process_step_combat_damage (game):
             b_lki = id2lki[b_id]
             b_obj = id2lki[b_id].get_object()
             b_state = id2lki[b_id].get_state()
-            if not b_lki.is_moved() and "creature" in b_state.types:
+            if not b_lki.is_moved() and "creature" in b_state.types and ((firstStrike and "first strike" in b_lki.get_state().tags) or (not firstStrike and "first strike" not in b_lki.get_state().tags) or (firstStrike and "double strike" in b_lki.get_state().tags)):
                 damage.append ( (b_lki, a_lki, b_state.power) )
 
     merged = {}
@@ -773,7 +774,20 @@ def process_phase_combat (game):
     # 308.5
     if len(game.declared_attackers) != 0:
         process_step_declare_blockers (game)
-        process_step_combat_damage (game)
+
+        # any first or double strikers?
+        firstStrike = False
+        for a in game.declared_attackers:
+            if "first strike" in a.get_state().tags or "double strike" in a.get_state().tags:
+                firstStrike = True
+
+        for b in game.declared_blockers:
+            if "first strike" in b.get_state().tags or "double strike" in b.get_state().tags:
+                firstStrike = True
+
+        if firstStrike:
+            process_step_combat_damage (game, True)
+        process_step_combat_damage (game, False)
 
     process_step_end_of_combat (game)
 
