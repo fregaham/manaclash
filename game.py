@@ -277,6 +277,9 @@ class Game:
 
         if zone.id != self.get_in_play_zone().id:
             object.enchanted_id = None
+            object.damage = 0
+            object.regenerated = False
+            object.preventNextDamage = 0
 
         print "post zone transfer %s to %s" % (object, object.zone_id)
 
@@ -305,6 +308,15 @@ class Game:
         print "doDealDamage"
         for a, b, n in list:
             if not b.is_moved():
+
+                ndiff = b.get_object().preventNextDamage
+                if ndiff > n:
+                    ndiff = n
+                n -= ndiff
+                b.get_object().preventNextDamage -= ndiff
+
+                if n == 0:
+                    continue
 
                 if combat:
                      self.raise_event("pre_deal_combat_damage", a, b, n)
@@ -363,6 +375,9 @@ class Game:
             if b.get_id() == id:
                 self.declared_attackers.remove (b)
                 return
+
+    def doPreventNextDamage(self, obj, n):
+        obj.preventNextDamage += n
 
     def delete(self, obj):
         print "deleting object %s" % obj

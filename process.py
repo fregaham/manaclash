@@ -882,6 +882,7 @@ def process_step_cleanup(game):
     for permanent in selector.all (game, None):
         permanent.damage = 0
         permanent.regenerated = False
+        permanent.preventNextDamage = 0
 
     game.until_end_of_turn_effects = []
 

@@ -78,6 +78,8 @@ class PlayerGainLifeEffect(OneShotEffect):
     def __str__ (self):
         return "PlayerGainLifeEffect(%s, %s)" % (self.selector, self.count)
 
+
+
 class PlayerGainLifeForEachXEffect(OneShotEffect):
     def __init__ (self, playerSelector, count, eachSelector):
         self.selector = playerSelector
@@ -419,6 +421,20 @@ class YouMayTapTargetX(SingleTargetOneShotEffect):
     def __str__ (self):
         return "YouMayTapTargetX(%s)" % self.targetSelector
 
+class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, n):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, True)
+        self.n = n
+
+    def doResolve(self, game, obj, target):
+        n = self.n
+        if n == "X":
+            n = obj.x
+        game.doPreventNextDamge(target.get_object(), n)
+
+    def __str__ (self):
+        return "PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(%s, %s)" % (self.targetSelector, str(self.n))
+
 class AddXToYourManaPool(OneShotEffect):
     def __init__ (self, mana):
         self.mana = mana
@@ -502,4 +518,70 @@ class SacrificeXUnlessYouCost(OneShotEffect):
         
     def __str__ (self):
         return "SacrificeXUnlessYouCost(%s, %s)" % (self.selector, str(map(str,self.costs)))
+
+
+class ChooseEffect(Effect):
+
+    def __init__ (self, effect1text, effect2text):
+        self.effect1text = effect1text
+        self.effect2text = effect2text
+
+        from rules import effectRules
+        self.effect1 = effectRules(effect1text).effect
+        self.effect2 = effectRules(effect2text).effect
+
+    def resolve(self, game, obj):
+        if obj.modal == 1:
+            return self.effect1.resolve(game, obj)
+        elif obj.modal == 2:
+            return self.effect2.resolve(game, obj)
+        else:
+            raise Exception("Not modal")
+
+    def selectTargets(self, game, player, obj):
+
+        _option1 = Action()
+        _option1.text = str(self.effect1text)
+        
+        _option2 = Action()
+        _option2.text = str(self.effect2text)
+
+        _as = ActionSet (game, player, "Choose", [_option1, option2])
+        a = game.input.send(_as)
+
+        if a == _option1:
+            obj.modal = 1
+            effect = self.effect1
+        else:
+            obj.modal = 2
+            effect = self.effect2
+
+        return effect.selectTargets(game, player, obj)
+
+    def validateTargets(self, game, obj):
+        if obj.modal == 1:
+            return self.effect1.validateTargets(game, obj)
+        elif obj.modal == 2:
+            return self.effect2.validateTargets(game, obj)
+        else:
+            raise Exception("Not modal")
+
+    def __str__ (self):
+        return "ChooseEffect(%s, %s)" % (self.effect1text, self.effect2text)
+
+class TargetXGainLife(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, count):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.count = count
+    
+    def doResolve(self, game, obj, target):
+        if self.count == "X":
+            count = obj.x
+        else:
+            count = self.count
+
+        game.doGainLife(target.get_object(), count)
+
+    def __str__ (self):
+        return "TargetXGainLife(%s, %d)" % (self.targetSelector, self.count)
 

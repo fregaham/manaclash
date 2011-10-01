@@ -173,4 +173,7 @@ def parse(obj):
     assert rules is not None
     return rules
 
+def effectRules(text):
+    return caching_magic_parser("effectRules", text)
+
 

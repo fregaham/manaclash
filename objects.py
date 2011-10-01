@@ -66,6 +66,9 @@ class Object:
         self.x = None
         self.enchanted_id = None
         self.regenerated = False
+        self.preventNextDamage = 0
+        # chosen modal options
+        self.modal = None
 
     def get_id(self):
         return self.id
@@ -108,6 +111,8 @@ class Object:
         self.x = src.x
         self.enchanted_id = src.enchanted_id
         self.regenerated = src.regenerated
+        self.preventNextDamage = src.preventNextDamage
+        self.modal = src.modal
 
     def __str__ (self):
 

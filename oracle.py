@@ -138,7 +138,7 @@ if __name__ == "__main__":
     for card in parseOracle(sys.stdin):
 
         # create_card (u"Hasty Moggie Bird", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying",u"haste"]), "when SELF comes into play, each player loses 1 life.", 1, 1)
-        r = card.rules.lower().replace(card.name.lower(), u"SELF").replace("\n", ";")
+        r = card.rules.lower().replace(card.name.lower(), u"SELF").replace("\n", ";").replace(u"—", "-")
         obj = g.create_card(card.name, card.cost, card.supertypes, card.types, card.subtypes, set(), r, card.power, card.toughness)
         obj.state = obj.initial_state.copy()
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
                 parsed += 1
         except Exception, x:
-            # print `x`
+            print `x`
             print (u"Cannot parse %s\n%s" % (obj.state.title, obj.state.text)).encode("utf8")
 
     print "Parsed %d/%d" % (parsed, total)

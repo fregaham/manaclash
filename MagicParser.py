@@ -194,6 +194,11 @@ r = [
 
     R("effect", ["you may tap target ", selector, "."], lambda t,s: YouMayTapTargetX(s)),
 
+    R("effect", ["target ", selector, " ", N("gain"), " ", N("number"), " life."], lambda t,x,l,n: TargetXGainLife(x, n)),
+
+    R("effect", ["prevent the next ", number, " damage that would be dealt to target ", selector, " this turn."], lambda t,n,s: PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(s, n)),
+    R("effect", ["choose one - target player gains ", number, " life; or prevent the next ", number, " damage that would be dealt to target creature or player this turn."], lambda t,n1,n2: ChooseEffect("target player gains " + str(n1) + " life.", "prevent the next " + str(n2) +" damage that would be dealt to target creature or player this turn.")),
+
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),
     R("costs", ["sacrifice ", number, " ", selector], lambda t,n,s: ([SacrificeSelectorCost(s)] * n)),
