@@ -69,6 +69,8 @@ class PlayerGainLifeEffect(OneShotEffect):
     def resolve(self, game, obj):
         if self.count == "X":
             count = obj.x
+        elif self.count == "that much":
+            count = obj.slots["that much"]
         else:
             count = self.count
 

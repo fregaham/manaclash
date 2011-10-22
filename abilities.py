@@ -243,6 +243,29 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXDealsDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
 
+class WhenXDealsDamageDoEffectAbility(TriggeredAbility):
+    def __init__(self, x_selector, effect):
+        self.x_selector = x_selector
+        self.effect = effect
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("post_deal_damage", partial(self.onPostDealDamage, game, obj))
+
+    def onPostDealDamage(self, game, SELF, source, dest, n):
+        if self.x_selector.contains(game, SELF, source):
+            from process import process_trigger_effect
+
+            slots = {}
+            for slot in self.x_selector.slots():
+                slots[slot] = source
+
+            slots["that much"] = n
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXDealsDamageDoEffectAbility(%s, %s)" % (str(self.x_selector), str(self.effect))
+
 class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):
         self.x_selector = x_selector

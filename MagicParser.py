@@ -81,6 +81,10 @@ r = [
 
     R("enchantmentRules", ["enchant ", selector, ";", effect], lambda t,s,e:EnchantPermanentRules(s, ContinuousEffectStaticAbility(e))),
     R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", effect], lambda t,s,s2,s3,e:EnchantPermanentRules(s, ContinuousEffectStaticAbility(e))),
+
+    R("enchantmentRules", ["enchant ", selector, ";", N("ability")], lambda t,s,a:EnchantPermanentRules(s, a)),
+    R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", N("ability")], lambda t,s,s2,s3,a:EnchantPermanentRules(s, a)),
+
     R("enchantmentRules", [N("abilities")], lambda t,a:BasicPermanentRules(a)),
 
     R("continuousAbility", ["flying"], lambda t:TagAbility("flying")),
@@ -112,6 +116,7 @@ r = [
 
     R("whenXDealsCombatDamageToYDoEffectAbility", [N("when"), " ", selector, " ", N("deal"), " combat damage to ", selector, ", ", N("effectText")], lambda t,w,x,d,y,e:WhenXDealsCombatDamageToYDoEffectAbility(x,y,e)),
 
+    R("ability", [N("when"), " ", selector, " ", N("deal"), " damage, ", N("effectText")], lambda t,w,x,d,e:WhenXDealsDamageDoEffectAbility(x,e)),
 
     R("a", ["a"], lambda t:t),
     R("a", ["an"], lambda t:t),
@@ -269,6 +274,7 @@ r = [
     R("number", ['-x'], lambda t: '-X'),
     R("number", ['+', NUMBER], lambda t,n: int(n)),
     R("number", ['+x'], lambda t: '+X'),
+    R("number", ["that much"], lambda t: "that much"),
 
     R("color", ["red"], lambda t:t),
     R("color", ["green"], lambda t:t),
