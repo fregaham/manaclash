@@ -86,6 +86,7 @@ r = [
     R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", N("ability")], lambda t,s,s2,s3,a:EnchantPermanentRules(s, a)),
 
     R("enchantmentRules", [N("abilities")], lambda t,a:BasicPermanentRules(a)),
+    R("enchantmentRules", [N("effect")], lambda t,e:BasicPermanentRules([ContinuousEffectStaticAbility(e)])),
 
     R("continuousAbility", ["flying"], lambda t:TagAbility("flying")),
     R("continuousAbility", ["flying (this creature can't be blocked except by creatures with flying or reach.)"], lambda t:TagAbility("flying")),
@@ -231,6 +232,7 @@ r = [
     R("basicSelector", ["creature with flying"], lambda t:CreatureWithFlyingSelector()),
     R("basicSelector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),
+    R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
     R("basicSelector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
     R("basicSelector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
