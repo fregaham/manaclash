@@ -431,7 +431,7 @@ def process_step_declare_attackers (game):
 
             selector = PermanentPlayerControlsSelector(game.get_attacking_player())
             for permanent in selector.all(game, None):
-                if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent not in attackers:
+                if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent not in attackers and "can't attack" not in permanent.state.tags and "can't attack or block" not in permanent.state.tags:
                     _p = Action ()
                     _p.object = permanent
                     _p.player = game.get_attacking_player()
@@ -488,6 +488,9 @@ def is_valid_block(game, attacker, blocker):
 
     if "fear" in attacker.get_state().tags and "artifact" not in blocker.get_state().types and "black" not in blocker.get_state().tags:
         print "%s cannot block %s because of the fear evasion rule" % (blocker, attacker)
+        return False
+
+    if "can't block" in blocker.get_state().tags or "can't attack or block" in blocker.get_state().tags:
         return False
 
     # lure
