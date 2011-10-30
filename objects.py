@@ -202,6 +202,7 @@ class EffectObject(Object):
         self.controller_id = controller_id
         self.initial_state.title = "Effect"
         self.initial_state.text = text
+        self.initial_state.tags.add ("effect")
 
         self.slots = slots
 

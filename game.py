@@ -387,3 +387,10 @@ class Game:
 
     def isInPlay(self, obj):
         return obj.zone_id == self.get_in_play_zone().id
+
+    def onResolve(self, resolvable):
+        self.raise_event ("resolve", resolvable)
+
+    def onPlay(self, spell):
+        self.raise_event ("play", spell)
+

@@ -56,13 +56,16 @@ class BasicPermanentRules(ObjectRules):
 
     def resolve(self, game, obj):
         print "resolving permanenet %s" % obj.state.title
+        game.onResolve(obj)
         game.doZoneTransfer(obj, game.get_in_play_zone())
+        return True
 
     def __str__(self):
         return "BasicPermanentRules(" + (",".join(map(str, self.abilities))) + ")"
 
 class DamageAssignmentRules(ObjectRules):
     def resolve(self, game, obj):
+        game.onResolve(obj)
         game.doDealDamage(obj.damage_assignment_list, obj.combat)
         game.delete(obj)
 
@@ -73,8 +76,12 @@ class EffectRules(ObjectRules):
     def __init__(self, effect):
         self.effect = effect
     def resolve(self, game, obj):
-        self.effect.resolve(game, obj)
+        ret = self.effect.resolve(game, obj)
+        if ret:
+            game.onResolve(obj)
         game.delete(obj)
+        return ret
+
     def selectTargets(self, game, player, obj):
         return self.effect.selectTargets(game, player, obj)
 
@@ -87,8 +94,15 @@ class BasicNonPermanentRules(ObjectRules):
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
     def resolve(self, game, obj):
-        self.effect.resolve(game, obj)
+        ret = self.effect.resolve(game, obj)
+
+        if ret:
+            game.onResolve(obj)
+
         game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
+
+        return ret
+
     def selectTargets(self, game, player, obj):
         return self.effect.selectTargets(game, player, obj)
 
@@ -110,9 +124,12 @@ class EnchantPermanentRules(ObjectRules):
         from process import process_validate_target
         if process_validate_target(game, obj, self.selector, obj.targets["target"]):
             obj.enchanted_id = obj.targets["target"].get_id()
+            game.onResolve(obj)
             game.doZoneTransfer(obj, game.get_in_play_zone())
+            return True
         else:
             game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
+            return False
 
     def selectTargets(self, game, player, obj):
         from process import process_select_target

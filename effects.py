@@ -59,6 +59,8 @@ class PlayerLooseLifeEffect(OneShotEffect):
         for player in self.selector.all(game, obj):
             game.doLoseLife(player, count)
 
+        return True
+
     def __str__ (self):
         return "PlayerLooseLifeEffect(%s, %s)" % (str(self.selector), str(self.count))
 
@@ -76,6 +78,8 @@ class PlayerGainLifeEffect(OneShotEffect):
 
         for player in self.selector.all(game, obj):
             game.doGainLife(player, count)
+
+        return True
 
     def __str__ (self):
         return "PlayerGainLifeEffect(%s, %s)" % (self.selector, self.count)
@@ -98,6 +102,8 @@ class PlayerGainLifeForEachXEffect(OneShotEffect):
             eachcount = len([x for x in self.eachSelector.all(game, obj)])
             game.doGainLife(player, count * eachcount)
 
+        return True
+
     def __str__ (self):
         return "PlayerGainLifeForEachXEffect(%s, %s, %s)" % (self.selector, self.count, self.eachSelector)
 
@@ -112,6 +118,8 @@ class PlayerDiscardsCardEffect(OneShotEffect):
             for i in range(self.count):
                 from process import process_discard_a_card
                 process_discard_a_card(game, player.get_object())
+
+        return True
 
     def __str__ (self):
         return "PlayerDiscardsCardEffect(%s, %s)" % (self.selector, self.count)
@@ -141,6 +149,8 @@ class XDealNDamageToY(OneShotEffect):
 
         game.doDealDamage(damage)
 
+        return True
+
     def __str__ (self):
         return "XDealNDamageToY(%s, %s, %s)" % (self.x_selector, self.y_selector, self.count)
 
@@ -154,6 +164,10 @@ class SingleTargetOneShotEffect(OneShotEffect):
         if self.validateTargets(game, obj):
             target = obj.targets["target"]
             self.doResolve(game, obj, target)
+
+            return True
+
+        return False
 
     def validateTargets(self, game, obj):
         from process import process_validate_target
@@ -330,6 +344,8 @@ class DoXAtEndOfCombat(OneShotEffect):
         e = game.create_effect_object(obj.get_source_lki(), obj.get_controller_id(), self.effect, obj.get_slots())
         game.end_of_combat_triggers.append (e)
 
+        return True
+
     def __str__ (self):
         return "DoXAtEndOfCombat(%s)" % self.effect
 
@@ -340,6 +356,8 @@ class DestroyX(OneShotEffect):
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
             game.doDestroy(o)
+
+        return True
 
     def __str__ (self):
         return "DestroyX(%s)" % self.selector
@@ -410,6 +428,8 @@ class XMayPutYFromHandIntoPlay(OneShotEffect):
                 a.object.tapped = self.tapped
                 game.doZoneTransfer (a.object, game.get_in_play_zone())
 
+        return True
+
     def __str__ (self):
         return "XMayPutYFromHandIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 
@@ -444,6 +464,8 @@ class AddXToYourManaPool(OneShotEffect):
     def resolve(self, game, obj):
         game.objects[obj.get_state().controller_id].manapool += self.mana
 
+        return True
+
     def __str__ (self):
         return "AddXToYourManaPool(%s)" % self.mana
 
@@ -454,6 +476,8 @@ class RegenerateX(OneShotEffect):
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
             game.doRegenerate(o)
+
+        return True
 
     def __str__ (self):
         return "RegenerateX(%s)" % self.selector
@@ -490,6 +514,8 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
 
                 game.doShuffle(game.get_library(player))
 
+        return True
+
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 
@@ -517,6 +543,8 @@ class SacrificeXUnlessYouCost(OneShotEffect):
              
         for o in self.selector.all(game, obj):
             game.doSacrifice(o)
+
+        return True
         
     def __str__ (self):
         return "SacrificeXUnlessYouCost(%s, %s)" % (self.selector, str(map(str,self.costs)))

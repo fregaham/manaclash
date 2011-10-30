@@ -215,6 +215,8 @@ def process_play_spell (game, ability, player, obj):
             zone_from.objects.insert(zone_index, obj)
             return
 
+    game.onPlay(obj)
+
 def process_activate_tapping_ability(game, ability, player, obj, effect):
 
     e = game.create_effect_object (LastKnownInformation(game, obj), player, effect, {})
@@ -239,6 +241,7 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
             return
 
     game.doTap(obj)
+    game.onPlay(obj)
 
 def process_activate_ability(game, ability, player, obj, effect):
 
@@ -262,6 +265,8 @@ def process_activate_ability(game, ability, player, obj, effect):
             print "not payed, returning to previous state"
             game.delete(e)
             return
+
+    game.onPlay(obj)
 
 
 def process_priority_succession (game, player):
