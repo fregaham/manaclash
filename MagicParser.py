@@ -113,6 +113,9 @@ r = [
     R("deal", ["deal"], lambda t:t),
     R("deal", ["deals"], lambda t:t),
 
+    R("cast", ["casts"], lambda t:t),
+    R("cast", ["cast"], lambda t:t),
+
     R("whenXDealsDamageToYDoEffectAbility", [N("when"), " ", selector, " ", N("deal"), " damage to ", selector, ", ", N("effectText")], lambda t,w,x,d,y,e:WhenXDealsDamageToYDoEffectAbility(x,y,e)),
 
     R("whenXDealsCombatDamageToYDoEffectAbility", [N("when"), " ", selector, " ", N("deal"), " combat damage to ", selector, ", ", N("effectText")], lambda t,w,x,d,y,e:WhenXDealsCombatDamageToYDoEffectAbility(x,y,e)),
@@ -126,6 +129,8 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " attacks, ", N("effectText")], lambda t,w,s,e: WhenXAttacksDoEffectAbility(s,e)),
 
     R("whenXDiscardsACardDoEffectAbility", [N("when"), " ", N("selector"), " discards a card, ", N("effectText")], lambda t,w,x,e:WhenXDiscardsACardDoEffectAbility(x,e)),
+
+    R("triggeredAbility", [N("when"), " ", selector, " ", N("cast"), " ", selector, ", ", N("effectText")], lambda t,w,x,c,y,e:WhenXCastsYDoEffectAbility(x,y,e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
 
@@ -207,11 +212,14 @@ r = [
 
     R("effect", [selector, " can't attack or block."], lambda t,s:XGetsTag(s, "can't attack or block")),
 
+    R("effect", ["you may ", costs, ". if you do, ", N("effectText")], lambda t,c,e: YouMayPayCostIfYouDoY(c, e)),
+
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),
     R("costs", ["sacrifice ", number, " ", selector], lambda t,n,s: ([SacrificeSelectorCost(s)] * n)),
 
     R("cost", [N("manaCost")], lambda t, m: ManaCost(m)),
+    R("cost", ["pay ", N("manaCost")], lambda t, m: ManaCost(m)),
     R("cost", ["tap an untapped ", selector], lambda t, s: TapSelectorCost(s)),
     R("cost", ["sacrifice ", selector], lambda t, s: SacrificeSelectorCost(s)),
 
@@ -249,6 +257,7 @@ r = [
     R("basicSelector", [basicLand], lambda t,x:SubTypeSelector(x)),
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
+    R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
     
     R("numberOfCards", ["a card"], lambda t:1),
 

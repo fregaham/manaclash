@@ -338,3 +338,16 @@ class SubTypeSelector(Selector):
     def __str__ (self):
         return "%s" % (self.type)
 
+class ColorSpellSelector(Selector):
+    def __init__ (self, color):
+        self.color = color
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "spell" in item.get_state().tags and self.color in item.get_state().tags:
+                yield item
+
+    def __str__ (self):
+        return "%s spell" % (self.color)
+
+            

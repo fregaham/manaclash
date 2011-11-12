@@ -356,4 +356,26 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXDiscardsACardDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
 
+class WhenXCastsYDoEffectAbility(TriggeredAbility):
+    def __init__(self, x_selector, y_selector, effect):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.effect = effect
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("play", partial(self.onPlay, game, obj))
+
+    def onPlay(self, game, SELF, spell):
+        from process import process_trigger_effect
+
+        if self.x_selector.contains(game, SELF, game.objects[spell.get_controller_id()]) and self.y_selector.contains(game, SELF, spell):
+
+            slots = {}
+            for slot in self.y_selector.slots():
+                slots[slot] = spell
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXCastsYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
 

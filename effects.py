@@ -443,6 +443,37 @@ class YouMayTapTargetX(SingleTargetOneShotEffect):
     def __str__ (self):
         return "YouMayTapTargetX(%s)" % self.targetSelector
 
+class YouMayPayCostIfYouDoY(OneShotEffect):
+    def __init__ (self, cost, effectText):
+        self.cost = cost
+
+        from rules import effectRules
+
+        self.effectText = effectText
+
+        self.effect = effectRules(effectText).effect
+
+    def resolve(self, game, obj):
+        controller = game.objects[obj.get_state().controller_id]
+        _pay = Action()
+        _pay.text = "Yes"
+        
+        _notpay = Action()
+        _notpay.text = "No"
+
+        _as = ActionSet (game, controller, ("Pay %s to %s?" % (self.cost, self.effectText)), [_pay, _notpay])
+        a = game.input.send(_as)
+
+        if a == _pay:
+            from process import process_pay_cost
+            if process_pay_cost(game, controller, obj, self.costs):
+                process_trigger_effect(game, obj, self.effect, {})                 
+     
+        return True
+
+    def __str__ (self):
+        return "YouMayPayCostIfYouDoY(%s, %s)" % (self.cost, self.effect)
+
 class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, n):
         SingleTargetOneShotEffect.__init__(self, targetSelector, True)

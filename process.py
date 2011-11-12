@@ -69,6 +69,10 @@ def evaluate (game):
         if object.zone_id == game.get_in_play_zone().id:
             object.state.tags.add("permanent")
 
+        # card on stack is a spell, unless it's an effect (therefore not a card)
+        if object.zone_id == game.get_stack_zone().id and "effect" not in object.state.tags:
+            object.state.tags.add("spell")
+
         # use the controller and owner property directly on the object to allow "stable" controller switch in addition to modification by effects
         object.state.controller_id = object.controller_id
         object.state.owner_id = object.owner_id
