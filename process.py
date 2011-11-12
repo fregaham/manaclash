@@ -172,7 +172,7 @@ def process_pay_cost (game, player, obj, costs):
             if cost.canPay(game, obj, player):
                 actions.append (PayCostAction(player, cost, cost.get_text(game, obj, player)))
 
-        _as = ActionSet (game, game.current_player_priority, "Play Mana Abilities", actions)
+        _as = ActionSet (game, player, "Play Mana Abilities", actions)
         a = game.input.send (_as)
 
         if a == _pass:

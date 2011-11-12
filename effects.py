@@ -451,8 +451,6 @@ class YouMayPayCostIfYouDoY(OneShotEffect):
 
         self.effectText = effectText
 
-        self.effect = effectRules(effectText).effect
-
     def resolve(self, game, obj):
         controller = game.objects[obj.get_state().controller_id]
         _pay = Action()
@@ -461,18 +459,18 @@ class YouMayPayCostIfYouDoY(OneShotEffect):
         _notpay = Action()
         _notpay.text = "No"
 
-        _as = ActionSet (game, controller, ("Pay %s to %s?" % (self.cost, self.effectText)), [_pay, _notpay])
+        _as = ActionSet (game, controller, ("Pay %s to %s?" % (", ".join(map(str, self.cost)), self.effectText)), [_pay, _notpay])
         a = game.input.send(_as)
 
         if a == _pay:
-            from process import process_pay_cost
-            if process_pay_cost(game, controller, obj, self.costs):
-                process_trigger_effect(game, obj, self.effect, {})                 
+            from process import process_pay_cost, process_trigger_effect
+            if process_pay_cost(game, controller, obj, self.cost):
+                process_trigger_effect(game, obj, self.effectText, {})
      
         return True
 
     def __str__ (self):
-        return "YouMayPayCostIfYouDoY(%s, %s)" % (self.cost, self.effect)
+        return "YouMayPayCostIfYouDoY(%s, %s)" % (self.cost, self.effectText)
 
 class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, n):
