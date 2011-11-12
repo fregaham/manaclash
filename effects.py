@@ -607,7 +607,7 @@ class ChooseEffect(Effect):
         _option2 = Action()
         _option2.text = str(self.effect2text)
 
-        _as = ActionSet (game, player, "Choose", [_option1, option2])
+        _as = ActionSet (game, player, "Choose", [_option1, _option2])
         a = game.input.send(_as)
 
         if a == _option1:
