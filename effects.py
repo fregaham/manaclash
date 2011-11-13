@@ -644,3 +644,66 @@ class TargetXGainLife(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXGainLife(%s, %d)" % (self.targetSelector, self.count)
 
+class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
+    def __init__ (self, n):
+        self.n = n
+
+    def resolve(self, game, obj):
+        player = game.objects[obj.get_controller_id()]
+        library = game.get_library(player)
+
+        if self.n == "X":
+            n = obj.x
+        else:
+            n = self.n
+
+        n = int(n)
+
+        cards = []
+        for i in range(n):
+           if len(library.objects) > 0:
+                cards.append(library.objects.pop())
+
+        while len(cards) > 0:
+            options = []
+            for card in cards:
+                _option = Action()
+                _option.text = str(card)
+                _option.object = card
+        
+            _as = ActionSet (game, player, "Put card on top of your library", options)
+            a = game.input.send(_as)
+
+            cards.remove (a.object)
+            library.objects.append(a.object)
+
+    def __str__ (self):
+        return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n
+
+class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, costs):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.costs = costs
+    
+    def doResolve(self, game, obj, target):
+
+        controller = game.objects[target.get_state().controller_id]
+        _pay = Action()
+        _pay.text = "Pay %s" % str(map(str, self.costs))
+        
+        _notpay = Action()
+        _notpay.text = "Counter %s" % target
+
+        _as = ActionSet (game, controller, "Choose", [_pay, _notpay])
+        a = game.input.send(_as)
+
+        if a == _pay:
+            from process import process_pay_cost
+            if process_pay_cost(game, controller, obj, self.costs):
+                return
+            # else, counter.
+        game.doCounter(target)
+
+    def __str__ (self):
+        return "CounterTargetXUnlessItsControllerPaysCost(%s, %s)" % (self.targetSelector, self.costs)
+

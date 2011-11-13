@@ -214,12 +214,17 @@ r = [
 
     R("effect", ["you may ", costs, ". if you do, ", N("effectText")], lambda t,c,e: YouMayPayCostIfYouDoY(c, e)),
 
+    R("effect", ["look at the top ", number, " cards of your library, then put them back in any order."], lambda t,n: LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(n)),
+
+    R("effect", ["counter target ", selector, " unless its controller ", costs, "."], lambda t,x,c: CounterTargetXUnlessItsControllerPaysCost(x,c)),
+
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),
     R("costs", ["sacrifice ", number, " ", selector], lambda t,n,s: ([SacrificeSelectorCost(s)] * n)),
 
     R("cost", [N("manaCost")], lambda t, m: ManaCost(m)),
     R("cost", ["pay ", N("manaCost")], lambda t, m: ManaCost(m)),
+    R("cost", ["pays ", N("manaCost")], lambda t, m: ManaCost(m)),
     R("cost", ["tap an untapped ", selector], lambda t, s: TapSelectorCost(s)),
     R("cost", ["sacrifice ", selector], lambda t, s: SacrificeSelectorCost(s)),
 
@@ -258,6 +263,7 @@ r = [
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
+    R("basicSelector", ["spell"], lambda t:SpellSelector()),
     
     R("numberOfCards", ["a card"], lambda t:1),
 

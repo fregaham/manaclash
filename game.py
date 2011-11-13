@@ -354,6 +354,11 @@ class Game:
         else:
             self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
+    def doCounter(self, obj):
+        obj = obj.get_object()
+        print "doCounter %s" % (obj)
+        self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
     def doSacrifice(self, obj):
         obj = obj.get_object()
         print "doSacrifice %s" % (obj)
