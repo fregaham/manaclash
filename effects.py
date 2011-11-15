@@ -707,3 +707,19 @@ class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
     def __str__ (self):
         return "CounterTargetXUnlessItsControllerPaysCost(%s, %s)" % (self.targetSelector, self.costs)
 
+class ReturnXToOwnerHands(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            owner = game.objects[o.get_object().owner_id]
+            hand = game.get_hand(owner)
+            game.doZoneTransfer(o.get_object(), hand)
+
+        return True
+
+    def __str__ (self):
+        return "ReturnXToOwnerHands(%s)" % self.selector
+       
+ 
