@@ -181,6 +181,9 @@ class SingleTargetOneShotEffect(OneShotEffect):
 
         obj.targets["target"] = LastKnownInformation(game, target)
 
+        return self.doModal(game, player, obj)
+    
+    def doModal(self, game, player, obj):
         return True
 
     def doResolve(self, game, obj, target):
@@ -722,4 +725,37 @@ class ReturnXToOwnerHands(OneShotEffect):
     def __str__ (self):
         return "ReturnXToOwnerHands(%s)" % self.selector
        
- 
+class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+        if obj.modal == "tap":
+            game.doTap(target)
+        elif obj.modal == "untap":
+            game.doUntap(target)
+
+    def doModal(self, game, player, obj):
+        _pass = PassAction(player)
+
+        _tap = Action()
+        _tap.text = "Tap"
+
+        _untap = Action()
+        _untap.text = "Untap"
+        
+        _as = ActionSet (game, player, "You may tap or untap target", [_pass, _tap, _untap])
+        a = game.input.send(_as)
+
+        if a.text == "Tap":
+            obj.modal = "tap"
+        elif a.text == "Untap":
+            obj.modal = "untap"
+        else:
+            return False
+
+        return True
+
+    def __str__ (self):
+        return "YouMayTapOrUntapTargetX(%s)" % (self.targetSelector)
+

@@ -225,12 +225,18 @@ class Game:
         return self.objects[player.graveyard_id]
 
     def doTap (self, object):
-        self.raise_event ("pre_tap", object)
-        object.tapped = True
-        self.raise_event ("post_tap", object)
+
+        if object.tapped == False:
+            self.raise_event ("pre_tap", object)
+            object.tapped = True
+            self.raise_event ("post_tap", object)
 
     def doUntap (self, object):
-        object.tapped = False
+
+        if object.tapped == True:
+            self.raise_event ("pre_untap", object)
+            object.tapped = False
+            self.raise_event ("post_untap", object)
 
     def doAddMana (self, player, source, mana):
         player.manapool += mana
