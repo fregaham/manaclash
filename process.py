@@ -502,6 +502,9 @@ def is_valid_block(game, attacker, blocker):
     if "can't block" in blocker.get_state().tags or "can't attack or block" in blocker.get_state().tags:
         return False
 
+    if "unblockable" in attacker.get_state().tags:
+        return False
+
     # lure
     # warning, this can turn into a recursive hell, if not taken care
     if "lure" not in attacker.get_state().tags:

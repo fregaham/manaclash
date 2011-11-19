@@ -97,6 +97,7 @@ r = [
 
     R("ability", ["first strike (this creature deals combat damage before creatures without first strike.)"], lambda t:TagAbility("first strike")),
     R("ability", ["vigilance"], lambda t:TagAbility("vigilance")),
+    R("ability", ["SELF is unblockable."], lambda t:TagAbility("unblockable")),
 
     R("triggeredAbility", [N("whenXComesIntoPlayDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsDamageToYDoEffectAbility")], id),
@@ -129,6 +130,8 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " attacks, ", N("effectText")], lambda t,w,s,e: WhenXAttacksDoEffectAbility(s,e)),
 
     R("whenXDiscardsACardDoEffectAbility", [N("when"), " ", N("selector"), " discards a card, ", N("effectText")], lambda t,w,x,e:WhenXDiscardsACardDoEffectAbility(x,e)),
+
+    R("triggeredAbility", [N("when"), " ", selector, " is put into a graveyard from the battlefield, ", N("effectText")], lambda t,w,x,e:WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(x,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " ", N("cast"), " ", selector, ", ", N("effectText")], lambda t,w,x,c,y,e:WhenXCastsYDoEffectAbility(x,y,e)),
 
@@ -221,6 +224,9 @@ r = [
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
 
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
+
+    R("effect", ["you may draw a card."], lambda t: YouMayDrawACard()),
+    R("effect", ["draw a card."], lambda t: DrawACard()),
 
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),

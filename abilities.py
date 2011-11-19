@@ -218,6 +218,27 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXComesIntoPlayDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
 
+class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
+    def __init__(self, selector, effect):
+        self.selector = selector
+        self.effect = effect
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
+
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
+        if self.selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play":
+            from process import process_trigger_effect
+
+            slots = {}
+            for slot in self.selector.slots():
+                slots[slot] = obj
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
+
 class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):
         self.x_selector = x_selector
