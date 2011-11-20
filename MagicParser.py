@@ -165,6 +165,7 @@ r = [
     R("get", ["gets"], lambda t:t),
     R("targetXGetsNNUntilEndOfTurn", ["target ", N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:TargetXGetsNNUntilEndOfTurn(x, a, b)),
     R("effect", [N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:XGetsNNUntilEndOfTurn(x, a, b)),
+    R("effect", [N("selector"), " gains flying until end of turn."], lambda t,x:XGetsTagUntilEndOfTurn(x, "flying")),
 
     R("dontUntapDuringItsControllersUntapStep", [N("selector"), " doesn't untap during its controller's untap step."], lambda t,x:XDontUntapDuringItsControllersUntapStep(x)),
 
@@ -266,6 +267,7 @@ r = [
     R("basicSelector", ["opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["an opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["a card"], lambda t:CardSelector()),
+    R("basicSelector", ["a land"], lambda t:LandSelector()),
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),

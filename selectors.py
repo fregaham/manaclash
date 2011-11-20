@@ -145,6 +145,14 @@ class CreatureSelector(Selector):
     def __str__ (self):
         return "creature"
 
+class LandSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "land" in item.state.types:
+                yield item
+    def __str__ (self):
+        return "land"
+
 class CreatureWithFlyingSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():

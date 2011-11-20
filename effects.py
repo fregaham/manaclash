@@ -283,11 +283,21 @@ class XGetsNNUntilEndOfTurn(OneShotEffect):
         self.toughness = toughness
 
     def resolve(self, game, obj):
-        game.until_end_of_turn_effects.append ( (obj, XGetsNN(self.selector, power, toughness)))
+        game.until_end_of_turn_effects.append ( (obj, XGetsNN(self.selector, self.power, self.toughness)))
 
     def __str__ (self):
         return "XGetsNNUntilEndOfTurn(%s, %s, %s)" % (self.selector, self.power, self.toughness)
 
+class XGetsTagUntilEndOfTurn(OneShotEffect):
+    def __init__ (self, selector, tag):
+        self.selector = selector
+        self.tag = tag
+
+    def resolve(self, game, obj):
+        game.until_end_of_turn_effects.append ( (obj, XGetsTag(self.selector, self.tag)) )
+
+    def __str__ (self):
+        return "XGetsTagUntilEndOfTurn(%s, %s)" % (self.selector, self.tag)
 
 class DestroyTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):
