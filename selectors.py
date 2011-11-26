@@ -358,6 +358,17 @@ class SpellSelector(Selector):
     def __str__ (self):
         return "spell"
 
+class CreatureSpellSelector(Selector):
+    def __init__ (self):
+        pass
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "spell" in item.get_state().tags and "creature" in item.get_state().types:
+                yield item
+
+    def __str__ (self):
+        return "creature spell"
 
 class ColorSpellSelector(Selector):
     def __init__ (self, color):

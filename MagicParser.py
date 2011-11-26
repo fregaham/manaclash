@@ -221,6 +221,7 @@ r = [
     R("effect", ["look at the top ", number, " cards of your library, then put them back in any order."], lambda t,n: LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(n)),
 
     R("effect", ["counter target ", selector, " unless its controller ", costs, "."], lambda t,x,c: CounterTargetXUnlessItsControllerPaysCost(x,c)),
+    R("effect", ["counter target ", selector, "."], lambda t,x: CounterTargetX(x)),
 
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
@@ -277,7 +278,8 @@ r = [
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
-    
+    R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
+
     R("numberOfCards", ["a card"], lambda t:1),
 
     R("manaCost", [N("manaCostElement"), N("manaCost")], lambda t,e,c: e + c),

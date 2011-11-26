@@ -718,7 +718,17 @@ class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
         game.doCounter(target)
 
     def __str__ (self):
-        return "CounterTargetXUnlessItsControllerPaysCost(%s, %s)" % (self.targetSelector, self.costs)
+        return "CounterTargetXUnlessItsControllerPaysCost(%s, %s)" % (self.targetSelector, str(map(str,self.costs)))
+
+class CounterTargetX(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+        game.doCounter(target)
+
+    def __str__ (self):
+        return "CounterTargetX(%s)" % (self.targetSelector)
 
 class ReturnXToOwnerHands(OneShotEffect):
     def __init__ (self, selector):
