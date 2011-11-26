@@ -91,6 +91,9 @@ r = [
     R("continuousAbility", ["flying"], lambda t:TagAbility("flying")),
     R("continuousAbility", ["flying (this creature can't be blocked except by creatures with flying or reach.)"], lambda t:TagAbility("flying")),
 
+    R("continuousAbility", ["haste"], lambda t:TagAbility("haste")),
+    R("continuousAbility", ["haste (this creature can attack and {t} as soon as it comes under your control.)"], lambda t:TagAbility("haste")),
+
     R("continuousAbility", ["fear"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["fear (this creature can't be blocked except by artifact creatures and/or black creatures.)"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),
@@ -282,7 +285,9 @@ r = [
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
+    R("basicSelector", ["a spell"], lambda t:SpellSelector()),
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
+    R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
 
     R("numberOfCards", ["a card"], lambda t:1),
 

@@ -132,7 +132,7 @@ class TapCostDoEffectAbility(ActivatedAbility):
         self.effect = effect
 
     def canActivate(self, game, obj, player):
-        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
+        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags or "haste" in obj.state.tags))
 
     def activate(self, game, obj, player):
         from process import process_activate_tapping_ability
@@ -181,7 +181,7 @@ class SelfTurnTapCostDoEffectAbility(ActivatedAbility):
         self.effect = effect
 
     def canActivate(self, game, obj, player):
-        return (player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
+        return (player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags or "haste" in obj.state.tags))
 
     def activate(self, game, obj, player):
         from process import process_activate_tapping_ability
