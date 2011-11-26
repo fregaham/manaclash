@@ -21,6 +21,11 @@ import random
 
 from objects import *
 
+class DamageReplacement:
+    def __init__ (self, list, combat):
+        self.list = list
+        self.combat = combat
+
 class Game:
     def __init__ (self, input, output):
         self.zones = []
@@ -312,7 +317,11 @@ class Game:
 
     def doDealDamage(self, list, combat=False):
         print "doDealDamage"
-        for a, b, n in list:
+
+        dr = DamageReplacement(list, combat)
+        self.raise_event("damage_replacement", dr)
+
+        for a, b, n in dr.list:
             if not b.is_moved():
 
                 ndiff = b.get_object().preventNextDamage

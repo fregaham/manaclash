@@ -93,7 +93,8 @@ r = [
 
     R("continuousAbility", ["fear"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["fear (this creature can't be blocked except by artifact creatures and/or black creatures.)"], lambda t:TagAbility("fear")),
-    R("ability", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),
+    R("continuousAbility", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),
+    R("continuousAbility", [effect], lambda t,e:BasicPermanentRules([ContinuousEffectStaticAbility(e)])),
 
     R("ability", ["first strike (this creature deals combat damage before creatures without first strike.)"], lambda t:TagAbility("first strike")),
     R("ability", ["vigilance"], lambda t:TagAbility("vigilance")),
@@ -231,6 +232,8 @@ r = [
     R("effect", ["you may draw a card."], lambda t: YouMayDrawACard()),
     R("effect", ["draw a card."], lambda t: DrawACard()),
 
+    R("effect", ["if ", selector, " would deal damage to ", selector,", prevent ", number, " of that damage."], lambda t,x,y,n:IfXWouldDealDamageToYPreventNOfThatDamage(x,y,n)),
+
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),
     R("costs", ["sacrifice ", number, " ", selector], lambda t,n,s: ([SacrificeSelectorCost(s)] * n)),
@@ -248,6 +251,7 @@ r = [
 
     R("basicSelector", ["player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["a player"], lambda t:AllPlayersSelector()),
+    R("basicSelector", ["a source"], lambda t:AllSelector()),
     R("basicSelector", ["each player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["each other player"], lambda t:EachOtherPlayerSelector()),
     R("basicSelector", ["that player"], lambda t:ThatPlayerSelector()),

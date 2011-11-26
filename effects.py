@@ -253,6 +253,35 @@ class XGetsTag(ContinuousEffect):
     def __str__ (self):
         return "XGetsTag(%s, %s)" % (self.selector, self.tag)
 
+class IfXWouldDealDamageToYPreventNOfThatDamage(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector, n):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.n = n
+
+    def apply(self, game, obj):
+
+        n = obj.n
+        if self.n == "X":
+            n = obj.x
+
+        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, game, obj, int(n)))
+
+    def onDamageReplacement(game, ctx, n, dr):
+        list = []
+        for source, dest, on in dr.list:
+            if self.x_selector.contains(game, ctx, source) and self.y_selector.contains(game, ctx, dest):
+                nn = on - n
+                if nn > 0:
+                    list.append ( (source, dest, nn) )
+            else:
+                list.append ( (source, dest, on) )
+
+        dr.list = list
+
+    def __str__ (self):
+        return "IfXWouldDealDamageToYPreventNOfThatDamage(%s, %s, %s)" % (self.x_selector, self.y_selector, self.n)
+
 class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, power, toughness):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
