@@ -734,7 +734,19 @@ class ReturnXToOwnerHands(OneShotEffect):
 
     def __str__ (self):
         return "ReturnXToOwnerHands(%s)" % self.selector
-       
+
+class ReturnTargetXToOwnerHands(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+        owner = game.objects[target.get_object().owner_id]
+        hand = game.get_hand(owner)
+        game.doZoneTransfer(target.get_object(), hand)
+
+    def __str__ (self):
+        return "ReturnTargetXToOwnerHands(%s)" % self.targetSelector
+      
 class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)

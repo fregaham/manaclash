@@ -223,6 +223,7 @@ r = [
     R("effect", ["counter target ", selector, " unless its controller ", costs, "."], lambda t,x,c: CounterTargetXUnlessItsControllerPaysCost(x,c)),
 
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
+    R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
 
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
 
