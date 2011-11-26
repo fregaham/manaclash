@@ -291,6 +291,7 @@ class Game:
             object.damage = 0
             object.regenerated = False
             object.preventNextDamage = 0
+            object.tapped = False
 
         print "post zone transfer %s to %s" % (object, object.zone_id)
 

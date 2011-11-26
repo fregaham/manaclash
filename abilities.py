@@ -157,7 +157,7 @@ class CostDoEffectAbility(ActivatedAbility):
         self.effect = effect
 
     def canActivate(self, game, obj, player):
-        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags))
+        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id)
 
     def activate(self, game, obj, player):
         from process import process_activate_ability
@@ -224,7 +224,7 @@ class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
         self.effect = effect
 
     def register(self, game, obj):
-        game.add_volatile_event_handler("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
+        game.add_volatile_event_handler("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play":

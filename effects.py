@@ -712,6 +712,7 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
                 _option = Action()
                 _option.text = str(card)
                 _option.object = card
+                options.append (_option)
         
             _as = ActionSet (game, player, "Put card on top of your library", options)
             a = game.input.send(_as)
