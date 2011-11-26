@@ -505,6 +505,26 @@ def is_valid_block(game, attacker, blocker):
     if "unblockable" in attacker.get_state().tags:
         return False
 
+    if "mountainwalk" in attacker.get_state().tags:
+        if not SubtypeYouControlSelector("mountain").empty(game, blocker):
+            return False
+
+    if "forestwalk" in attacker.get_state().tags:
+        if not SubtypeYouControlSelector("forest").empty(game, blocker):
+            return False
+
+    if "plainswalk" in attacker.get_state().tags:
+        if not SubtypeYouControlSelector("plains").empty(game, blocker):
+            return False
+
+    if "islandwalk" in attacker.get_state().tags:
+        if not SubtypeYouControlSelector("island").empty(game, blocker):
+            return False
+
+    if "swampwalk" in attacker.get_state().tags:
+        if not SubtypeYouControlSelector("swamp").empty(game, blocker):
+            return False
+
     # lure
     # warning, this can turn into a recursive hell, if not taken care
     if "lure" not in attacker.get_state().tags:

@@ -43,6 +43,7 @@ numberOfCards = N("numberOfCards")
 manaCost = N("manaCost")
 basicLand = N("basicLand")
 costs = N("costs")
+tag = N("tag")
 
 NUMBER = N("NUMBER")
 
@@ -93,15 +94,21 @@ r = [
 
     R("continuousAbility", ["haste"], lambda t:TagAbility("haste")),
     R("continuousAbility", ["haste (this creature can attack and {t} as soon as it comes under your control.)"], lambda t:TagAbility("haste")),
+    R("continuousAbility", ["haste (this creature can attack the turn it comes under your control.)"], lambda t:TagAbility("haste")),
 
     R("continuousAbility", ["fear"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["fear (this creature can't be blocked except by artifact creatures and/or black creatures.)"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),
     R("continuousAbility", [effect], lambda t,e:BasicPermanentRules([ContinuousEffectStaticAbility(e)])),
 
+    R("continuousAbility", ["SELF can't block."], lambda t:TagAbility("can't block")),
+
     R("ability", ["first strike (this creature deals combat damage before creatures without first strike.)"], lambda t:TagAbility("first strike")),
-    R("ability", ["vigilance"], lambda t:TagAbility("vigilance")),
+    R("ability", [tag], lambda t,tag:TagAbility(tag)),
     R("ability", ["SELF is unblockable."], lambda t:TagAbility("unblockable")),
+
+    R("abilities", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " and have ", tag, "."], lambda t,x,g,a,b,tag:[ContinuousEffectStaticAbility(XGetsNN(x,a,b)), ContinuousEffectStaticAbility(XGetsTag(x, tag))]),
+    R("abilities", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " and have ", tag, ". (they're unblockable as long as defending player controls ", selector, ".)"], lambda t,x,g,a,b,tag,s:[ContinuousEffectStaticAbility(XGetsNN(x,a,b)), ContinuousEffectStaticAbility(XGetsTag(x, tag))]),
 
     R("triggeredAbility", [N("whenXComesIntoPlayDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsDamageToYDoEffectAbility")], id),
@@ -281,6 +288,7 @@ r = [
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
     R("basicSelector", [basicLand], lambda t,x:SubTypeSelector(x)),
+    R("basicSelector", ["a ", basicLand], lambda t,x:SubTypeSelector(x)),
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
@@ -288,6 +296,7 @@ r = [
     R("basicSelector", ["a spell"], lambda t:SpellSelector()),
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
+    R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
 
     R("numberOfCards", ["a card"], lambda t:1),
 
@@ -348,7 +357,16 @@ r = [
     R("NUMERAL", ["8"], lambda t:t),
     R("NUMERAL", ["9"], lambda t:t),
     R("NUMBER", [N("NUMERAL")], lambda t,n:n),
-    R("NUMBER", [N("NUMERAL"),N("NUMBER")], lambda t,n,m:n+m)
+    R("NUMBER", [N("NUMERAL"),N("NUMBER")], lambda t,n,m:n+m),
+
+    R("tag", ["mountainwalk"], lambda t:t),
+    R("tag", ["forestwalk"], lambda t:t),
+    R("tag", ["islandwalk"], lambda t:t),
+    R("tag", ["plainswalk"], lambda t:t),
+    R("tag", ["swampwalk"], lambda t:t),
+    R("tag", ["vigilance"], lambda t:t),
+
+    R("creatureType", ["goblin"], lambda t:t)
 ]
 
 def magic_parser(label, text):

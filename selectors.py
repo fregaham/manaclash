@@ -29,6 +29,10 @@ class Selector:
     def slots(self):
         return []
 
+    def empty(self, game, context):
+        list = [x for x in self.all(game, context)]
+        return len(list) == 0
+
     def __str__(self):
         return "selector"
 
@@ -51,6 +55,18 @@ class AllTypeSelector(Selector):
 
     def __str__ (self):
         return "all %s" % self.type
+
+class SubtypeYouControlSelector(Selector):
+    def __init__ (self, subtype):
+        self.subtype = subtype
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and self.subtype in item.state.subtypes and item.state.controller_id == context.get_state().controller_id:
+                yield item
+
+    def __str__ (self):
+        return "%s subtype you control" % (self.subtype)
 
 class AllPermanentSelector(Selector):
     def all(self, game, context):
@@ -144,6 +160,19 @@ class CreatureSelector(Selector):
                 yield item
     def __str__ (self):
         return "creature"
+
+class OtherXCreaturesSelector(Selector):
+
+    def __init__ (self, creatureType):
+        self.creatureType = creatureType
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types and self.creatureType in item.state.subtypes and context.get_id() != item.get_id():
+                yield item
+
+    def __str__ (self):
+        return "other %s creatures" % (self.creatureType)
 
 class LandSelector(Selector):
     def all(self, game, context):
