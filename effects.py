@@ -261,7 +261,7 @@ class IfXWouldDealDamageToYPreventNOfThatDamage(ContinuousEffect):
 
     def apply(self, game, obj):
 
-        n = obj.n
+        n = self.n
         if self.n == "X":
             n = obj.x
 

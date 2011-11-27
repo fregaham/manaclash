@@ -129,9 +129,11 @@ def evaluate (game):
     for object in _as.all(game, None):
         for ability in object.state.abilities:
             if isinstance(ability, TriggeredAbility):
-                ability.register(game, object)
+                if ability.isActive(game, object):
+                    ability.register(game, object)
             elif isinstance(ability, StaticAbility):
-                ability.evaluate(game, object)
+                if ability.isActive(game, object):
+                    ability.evaluate(game, object)
 
     # static abilities
     for source, effect in game.volatile_effects:

@@ -50,9 +50,7 @@ class BasicPermanentRules(ObjectRules):
 
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
-
-        if game.isInPlay(obj):
-            obj.state.abilities.extend (self.abilities)
+        obj.state.abilities.extend (self.abilities)
 
     def resolve(self, game, obj):
         print "resolving permanenet %s" % obj.state.title
@@ -89,10 +87,14 @@ class EffectRules(ObjectRules):
         return "EffectRules(%s)" % str(self.effect)
 
 class BasicNonPermanentRules(ObjectRules):
-    def __init__(self, effect):
+    def __init__(self, effect, abilities = []):
         self.effect = effect
+        self.abilities = abilities
+
     def evaluate(self, game, obj):
         obj.state.abilities.append (PlaySpell())
+        obj.state.abilities.extend (self.abilities)
+
     def resolve(self, game, obj):
         ret = self.effect.resolve(game, obj)
 
@@ -107,7 +109,7 @@ class BasicNonPermanentRules(ObjectRules):
         return self.effect.selectTargets(game, player, obj)
 
     def __str__ (self):
-        return "BasicNonPermanentRules(%s)" % str(self.effect)
+        return "BasicNonPermanentRules(%s, %s)" % (str(self.effect), ",".join(map(str, self.abilities)))
 
 class EnchantPermanentRules(ObjectRules):
     def __init__(self, selector, ability):
