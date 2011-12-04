@@ -99,7 +99,7 @@ r = [
     R("continuousAbility", ["fear"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["fear (this creature can't be blocked except by artifact creatures and/or black creatures.)"], lambda t:TagAbility("fear")),
     R("continuousAbility", ["you may have SELF assign its combat damage as though it weren't blocked."], lambda t:TagAbility("x-sneaky")),
-    R("continuousAbility", [effect], lambda t,e:BasicPermanentRules([ContinuousEffectStaticAbility(e)])),
+    R("continuousAbility", [effect], lambda t,e:ContinuousEffectStaticAbility(e)),
 
     R("continuousAbility", ["SELF can't block."], lambda t:TagAbility("can't block")),
 

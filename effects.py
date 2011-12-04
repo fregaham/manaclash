@@ -20,6 +20,7 @@
 from objects import  *
 from selectors import *
 from actions import *
+from functools import partial
 
 class Effect:
     def setText(self):
@@ -267,7 +268,7 @@ class IfXWouldDealDamageToYPreventNOfThatDamage(ContinuousEffect):
 
         game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, game, obj, int(n)))
 
-    def onDamageReplacement(game, ctx, n, dr):
+    def onDamageReplacement(self, game, ctx, n, dr):
         list = []
         for source, dest, on in dr.list:
             if self.x_selector.contains(game, ctx, source) and self.y_selector.contains(game, ctx, dest):
