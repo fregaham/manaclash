@@ -849,7 +849,7 @@ def process_step_end_of_turn(game):
 
     process_step_post (game)
 
-def process_discard_a_card(game, player):
+def process_discard_a_card(game, player, cause = None):
 
     if len(game.get_hand(player).objects) == 0:
         return
@@ -864,7 +864,7 @@ def process_discard_a_card(game, player):
     _as = ActionSet (game, player, "Discard a card", actions)
     a = game.input.send (_as)
 
-    game.doDiscard(player, a.object)
+    game.doDiscard(player, a.object, cause)
 
 def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, context):
     if len(game.get_hand(player).objects) == 0:
@@ -881,7 +881,7 @@ def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, 
     _as = ActionSet (game, chooser, "Choose a card", actions)
     a = game.input.send (_as)
 
-    game.doDiscard(player, a.object)
+    game.doDiscard(player, a.object, context)
 
 def process_step_cleanup(game):
 

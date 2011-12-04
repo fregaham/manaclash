@@ -411,4 +411,16 @@ class ColorSpellSelector(Selector):
     def __str__ (self):
         return "%s spell" % (self.color)
 
-            
+class SpellOrAbilityAnOpponentControls(Selector):
+    def __init__ (self):
+        pass
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            # TODO: opponent != any other player
+            if ("effect" in item.get_state().tags or "spell" in item.get_state().tags) and item.get_controller_id() != context.get_controller_id():
+                yield item
+
+    def __str__ (self):
+        return "spell or ability an opponent controls"
+

@@ -118,7 +118,7 @@ class PlayerDiscardsCardEffect(OneShotEffect):
             assert player is not None
             for i in range(self.count):
                 from process import process_discard_a_card
-                process_discard_a_card(game, player.get_object())
+                process_discard_a_card(game, player.get_object(), obj)
 
         return True
 
@@ -424,7 +424,7 @@ class TargetXDiscardsACard(SingleTargetOneShotEffect):
     def doResolve(self, game, obj, target):
         from process import process_discard_a_card
         for i in range(self.count):
-            process_discard_a_card(game, target.get_object())
+            process_discard_a_card(game, target.get_object(), obj)
 
     def __str__ (self):
         return "TargetXDiscardsACard(%s, %d)" % (self.targetSelector, self.count)

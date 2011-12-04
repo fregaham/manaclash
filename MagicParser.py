@@ -49,6 +49,8 @@ NUMBER = N("NUMBER")
 
 r = [
     R("sorceryOrInstantRules", [effect], lambda t, x:BasicNonPermanentRules(x)),
+    R("sorceryOrInstantRules", [effect, ";", N("abilities")], lambda t, e, ax:BasicNonPermanentRules(e, ax)),
+
     R("effectRules", [effect], lambda t, x:EffectRules(x)),
     R("permanentRules", [N("abilities")], lambda t, x:BasicPermanentRules(x)),
     R("permanentRules", [""], lambda t:BasicPermanentRules([])),
@@ -145,6 +147,8 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " is put into a graveyard from the battlefield, ", N("effectText")], lambda t,w,x,e:WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(x,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " ", N("cast"), " ", selector, ", ", N("effectText")], lambda t,w,x,c,y,e:WhenXCastsYDoEffectAbility(x,y,e)),
+
+    R("triggeredAbility", [N("when"), " ", selector, " causes ", selector, " to discard ", selector, ", ", N("effectText")], lambda t,w,x,y,z,e:WhenXCausesYToDiscardZ(x,y,z,e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
 
@@ -297,6 +301,7 @@ r = [
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
+    R("basicSelector", ["a spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
 
     R("numberOfCards", ["a card"], lambda t:1),
 

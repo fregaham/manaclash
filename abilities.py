@@ -404,7 +404,7 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
     def register(self, game, obj):
         game.add_volatile_event_handler("post_discard", partial(self.onDiscard, game, obj))
 
-    def onDiscard(self, game, SELF, player, card):
+    def onDiscard(self, game, SELF, player, card, cause):
         from process import process_trigger_effect
         if self.x_selector.contains(game, SELF, player):
             slots = {}
@@ -414,6 +414,36 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
        
     def __str__ (self):
         return "WhenXDiscardsACardDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
+
+class WhenXCausesYToDiscardZ(TriggeredAbility):
+    def __init__ (self, x_selector, y_selector, z_selector, effect):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.z_selector = z_selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return isinstance(self.x_selector, SelfSelector) or isinstance(self.z_selector, SelfSelector) or game.isInPlay(obj)
+
+    def register(self, game, obj):
+         game.add_volatile_event_handler("post_discard", partial(self.onDiscard, game, obj))
+
+    def onDiscard(self, game, SELF, player, card, cause):
+        from process import process_trigger_effect
+        if self.x_selector.contains(game, SELF, cause) and self.y_selector.contains(game, SELF, player) and self.z_selector.contains(game, SELF, card):
+            slots = {}
+            for slot in self.x_selector.slots():
+                slots[slot] = cause
+            for slot in self.y_selector.slots():
+                slots[slot] = player
+            for slot in self.z_selector.slots():
+                slots[slot] = card
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXCausesYToDiscardZ(%s, %s, %s, %s)" % (self.x_selector, self.y_selector, self.z_selector, self.effect)
+
 
 class WhenXCastsYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):
