@@ -196,6 +196,10 @@ class SacrificeSelectorCost(Cost):
         actions = []
         for o in self.selector.all(game, obj):
 
+            # we can't sacrifice something we don't control
+            if o.get_controller_id() != player.get_id():
+                continue
+
             _p = Action ()
             _p.object = o
             _p.text = "Sacrifice %s" % str(o)

@@ -146,7 +146,8 @@ class XDealNDamageToY(OneShotEffect):
 
         damage = []
         for y in self.y_selector.all(game, obj):
-            damage.append ( (source, y, count) )
+            if not y.is_moved():
+                damage.append ( (source, y, count) )
 
         game.doDealDamage(damage)
 
@@ -236,8 +237,9 @@ class XGetsNN(ContinuousEffect):
             toughness = - obj.x
 
         for o in self.selector.all(game, obj):
-            o.state.power += power
-            o.state.toughness += toughness
+            if not o.is_moved():
+                o.get_state().power += power
+                o.get_state().toughness += toughness
 
     def __str__ (self):
         return "XGetsNN(%s, %s, %s)" % (self.selector, self.power, self.toughness)
@@ -249,7 +251,8 @@ class XGetsTag(ContinuousEffect):
 
     def apply(self, game, obj):
         for o in self.selector.all(game, obj):
-            o.state.tags.add (self.tag)
+            if not o.is_moved():
+                o.get_state().tags.add (self.tag)
 
     def __str__ (self):
         return "XGetsTag(%s, %s)" % (self.selector, self.tag)
@@ -398,7 +401,8 @@ class DestroyX(OneShotEffect):
 
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
-            game.doDestroy(o)
+            if not o.is_moved():
+                game.doDestroy(o)
 
         return True
 
@@ -411,7 +415,8 @@ class XDontUntapDuringItsControllersUntapStep(ContinuousEffect):
 
     def apply(self, game, obj):
         for o in self.selector.all(game, obj):
-            o.state.tags.add ("does not untap")
+            if not o.is_moved():
+                o.get_state().tags.add ("does not untap")
 
     def __str__ (self):
         return "XDontUntapDuringItsControllersUntapStep(%s)" % self.selector
@@ -547,7 +552,8 @@ class RegenerateX(OneShotEffect):
 
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
-            game.doRegenerate(o)
+            if not o.is_moved():
+                game.doRegenerate(o)
 
         return True
 
@@ -767,9 +773,10 @@ class ReturnXToOwnerHands(OneShotEffect):
 
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
-            owner = game.objects[o.get_object().owner_id]
-            hand = game.get_hand(owner)
-            game.doZoneTransfer(o.get_object(), hand)
+            if not o.is_moved():
+                owner = game.objects[o.get_object().owner_id]
+                hand = game.get_hand(owner)
+                game.doZoneTransfer(o.get_object(), hand)
 
         return True
 
