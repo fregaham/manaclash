@@ -153,6 +153,8 @@ r = [
     R("activatedAbility", [N("tappingActivatedAbility")], id),
 
     R("tappingActivatedAbility", [costs, ", {t}: ", N("effectText")], lambda t, c, e: TapCostDoEffectAbility(c, e)),
+    R("tappingActivatedAbility", [costs, ", {t}, ", costs, ": ", N("effectText")], lambda t, c1, c2, e: TapCostDoEffectAbility(c1 + c2, e)),
+
     R("tappingActivatedAbility", [costs, ", {t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, c, e: SelfTurnTapCostDoEffectAbility(c, e)),
 
     R("tappingActivatedAbility", ["{t}: ", N("effectText")], lambda t, e: TapCostDoEffectAbility([], e)),
@@ -273,6 +275,7 @@ r = [
     R("basicSelector", ["it"], lambda t:ItSelector()),
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
+    R("basicSelector", ["a creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["creature with flying"], lambda t:CreatureWithFlyingSelector()),
     R("basicSelector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),
