@@ -245,8 +245,12 @@ r = [
 
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
 
+    R("draw", ["draw"], lambda t:t),
+    R("draw", ["draws"], lambda t:t),
+
     R("effect", ["you may draw a card."], lambda t: YouMayDrawACard()),
-    R("effect", ["draw a card."], lambda t: DrawACard()),
+    R("effect", ["draw ", N("numberOfCards"), "."], lambda t,n: DrawCards(YouSelector(), n)),
+    R("effect", [selector, " ", N("draw"), " ", N("numberOfCards"), " and ", selector, " ", N("lose"), " ", N("number"), " life."], lambda t,x,d,n,y,l,m: XAndY(DrawCards(x,n), PlayerLooseLifeEffect(y, m))),
 
     R("effect", ["if ", selector, " would deal damage to ", selector,", prevent ", number, " of that damage."], lambda t,x,y,n:IfXWouldDealDamageToYPreventNOfThatDamage(x,y,n)),
 
@@ -308,6 +312,7 @@ r = [
     R("basicSelector", ["a spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
 
     R("numberOfCards", ["a card"], lambda t:1),
+    R("numberOfCards", [N("number"), " cards"], lambda t,n:n),
 
     R("manaCost", [N("manaCostElement"), N("manaCost")], lambda t,e,c: e + c),
     R("manaCost", [N("manaCostElement")], lambda t,e: e),

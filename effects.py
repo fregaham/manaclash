@@ -852,16 +852,35 @@ class YouMayDrawACard(OneShotEffect):
     def __str__ (self):
         return "YouMayDrawACard()"
 
-class DrawACard(OneShotEffect):
-    def __init__ (self):
-        pass
+class DrawCards(OneShotEffect):
+    def __init__ (self, selector, n):
+        self.selector = selector
+        self.n = n
 
     def resolve(self, game, obj):
-        controller = game.objects[obj.get_state().controller_id]
-        game.doDrawCard(controller)
+
+        if self.n == "X":
+            n = int(obj.x)
+        else:
+            n = int(self.n)
+
+        for o in self.selector.all(game, obj):
+            for i in range(n):
+                game.doDrawCard(controller)
+
         return True
 
     def __str__ (self):
-        return "DrawACard()"
+        return "DrawCards(%s, %s)" % (self.selector, str(self.n))
 
+class XAndY(OneShotEffect):
+    def __init__ (self, x, y):
+        self.x = x
+        self.y = y
+
+    def resolve(self, game, obj):
+        return self.x.resolve(game, obj) or self.y.resolve(game, obj)
+
+    def __str__(self):
+        return "XAndY(%s, %s)" % (self.x, self.y)
 
