@@ -379,6 +379,7 @@ r = [
     R("tag", ["plainswalk"], lambda t:t),
     R("tag", ["swampwalk"], lambda t:t),
     R("tag", ["vigilance"], lambda t:t),
+    R("tag", ["first strike"], lambda t:t),
 
     R("creatureType", ["goblin"], lambda t:t)
 ]
