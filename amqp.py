@@ -17,6 +17,7 @@
 #
 # 
 
+from io import Output
 from qpid.messaging import *
 
 class AMQPOutput(Output):
@@ -69,7 +70,7 @@ def amqp_input_generator(session, send, recv):
 
         print msg
 
-        send.send(Message(content=["status", msg]))
+        send.send(Message(content={"type":"status", "text":msg}))
 
         action = None
         while action == None:
@@ -83,7 +84,7 @@ def amqp_input_generator(session, send, recv):
                 i += 1
 
             try:
-                send.send(Message(content=["reqans", opts]))
+                send.send(Message(content={"type":"reqans", "opts":opts}))
 
                 msg = recv.fetch()
                 _input = msg.content

@@ -39,14 +39,16 @@ if __name__ == "__main__":
 
         session.acknowledge()
        
-        #print `msg.content`
+        # print `msg.content`
 
-        if msg.content[0] == "status":
-            print msg.content[1]
+        type = msg.content["type"]
 
-        elif msg.content[0] == "reqans":
+        if type == "status":
+            print msg.content["text"]
 
-            for opt in msg.content[1]:
+        elif type == "reqans":
+
+            for opt in msg.content["opts"]:
                 print "%d: %s" % (opt[0], opt[1])
 
             ans = Message(raw_input())
