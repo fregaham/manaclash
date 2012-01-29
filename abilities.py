@@ -266,7 +266,7 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
         self.effect = effect
 
     def isActive(self, game, obj):
-        return isinstance(self.x_selector, SelfSelector) or isinstance(self.x_selector, SelfSelector) or game.isInPlay(obj)
+        return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
     def register(self, game, obj):
         game.add_volatile_event_handler("post_deal_damage", partial(self.onPostDealDamage, game, obj))
