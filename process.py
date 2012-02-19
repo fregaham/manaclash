@@ -39,7 +39,7 @@ def do_action (game, player, a):
     if isinstance(a, AbilityAction):
         a.ability.activate(game, a.object, player)
     else:
-        raise Exception("cannot do action " + `a`)
+        raise Exception("cannot do action " + repr(a))
 
 def resolve (game, resolvable):
     evaluate(game)
@@ -213,7 +213,7 @@ def process_play_spell (game, ability, player, obj):
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
 
-            print "not payed, returning to previous state"
+            print("not payed, returning to previous state")
 
             # return the state of the game...
             obj.zone_id = zone_from.id
@@ -242,7 +242,7 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
 
-            print "not payed, returning to previous state"
+            print("not payed, returning to previous state")
             game.delete(e)
             return
 
@@ -268,7 +268,7 @@ def process_activate_ability(game, ability, player, obj, effect):
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
 
-            print "not payed, returning to previous state"
+            print("not payed, returning to previous state")
             game.delete(e)
             return
 
@@ -330,7 +330,7 @@ def process_phase_post (game):
         converted_mana = mana_converted_cost(player.manapool)
         if converted_mana > 0:
             howmuch = converted_mana
-            print "manaburn %d" % (howmuch)
+            print("manaburn %d" % (howmuch))
             player.manapool = ""
             game.doLoseLife(player, howmuch)
 
@@ -494,11 +494,11 @@ def validate_attack(game, attackers):
 # per rules, only the whole set of blocks is validated, not individual blocks.
 def is_valid_block(game, attacker, blocker):
     if "flying" in attacker.get_state().tags and "flying" not in blocker.get_state().tags and "reach" not in blocker.get_state().tags:
-        print "%s cannot block %s because of the flying evasion rule" % (blocker, attacker)
+        print("%s cannot block %s because of the flying evasion rule" % (blocker, attacker))
         return False
 
     if "fear" in attacker.get_state().tags and "artifact" not in blocker.get_state().types and "black" not in blocker.get_state().tags:
-        print "%s cannot block %s because of the fear evasion rule" % (blocker, attacker)
+        print("%s cannot block %s because of the fear evasion rule" % (blocker, attacker))
         return False
 
     if "can't block" in blocker.get_state().tags or "can't attack or block" in blocker.get_state().tags:
@@ -533,7 +533,7 @@ def is_valid_block(game, attacker, blocker):
         for a2 in game.declared_attackers:
             if "lure" in a2.get_state().tags:
                 if is_valid_block(game, a2, blocker):
-                    print "%s cannot block %s because there is a valid lure %s" % (blocker, attacker, a2)
+                    print("%s cannot block %s because there is a valid lure %s" % (blocker, attacker, a2))
                     return False
 
     return True
@@ -553,7 +553,7 @@ def validate_block(game, blockers, blockers_map):
             for permanent in selector.all(game, None):
                 if "creature" in permanent.state.types and not permanent.tapped and permanent not in blockers:
                     if is_valid_block(game, attacker, permanent):
-                        print "Invalid block, %s not blocking a lure" % permanent
+                        print("Invalid block, %s not blocking a lure" % permanent)
                         return False
 
     return True

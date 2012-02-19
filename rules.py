@@ -53,7 +53,7 @@ class BasicPermanentRules(ObjectRules):
         obj.state.abilities.extend (self.abilities)
 
     def resolve(self, game, obj):
-        print "resolving permanenet %s" % obj.state.title
+        print("resolving permanenet %s" % obj.state.title)
         game.onResolve(obj)
         game.doZoneTransfer(obj, game.get_in_play_zone())
         return True

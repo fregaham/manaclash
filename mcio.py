@@ -64,22 +64,22 @@ copy of the Program in return for a fee.
 
 class Output:
     def deleteObject(self, obj):
-        print "Deleting %s" % obj
+        print("Deleting %s" % obj)
 
     def createPlayer(self, id):
-        print "Creating player %d" % id
+        print("Creating player %d" % id)
 
     def createCard(self, id):
-        print "Creating card %d" % id
+        print("Creating card %d" % id)
 
     def createZone(self, id, owner, name):
-        print "Creating zone %d %s %s" % (id, str(owner), name)
+        print("Creating zone %d %s %s" % (id, str(owner), name))
 
     def createEffectObject(self, id):
-        print "Creating effect %d" % id
+        print("Creating effect %d" % id)
 
     def createDamageAssignment(self, id):
-        print "Creating damage assignment %d" % id
+        print("Creating damage assignment %d" % id)
 
 class NullOutput(Output):
     def deleteObject(self, obj):
@@ -106,7 +106,7 @@ def input_generator ():
 
     random.seed(seed)
 
-    print greeting
+    print(greeting)
 
     _as = yield None
 
@@ -130,7 +130,7 @@ def input_generator ():
                     print ("%d: %s"  % (i, a.text))
                     i += 1
             elif isinstance(_as, QueryNumber):
-                print "Enter number: "
+                print("Enter number: ")
 
 
             try:
@@ -149,23 +149,23 @@ def input_generator ():
                 if autopass:
                     _input = "0"
                 else:
-                    _input = raw_input()
+                    _input = input()
 
                 if _input == "log":
-                    print "seed: %d" % seed
-                    print `log`
+                    print("seed: %d" % seed)
+                    print(repr(log))
                 if _input == "exit":
                     return
                 if _input == "warranty":
-                    print warranty
+                    print(warranty)
                 if _input == "license":
                     lf = open("LICENSE.txt", "r")
                     for line in lf:
-                        print line.rstrip()
+                        print(line.rstrip())
                     lf.close()
                 selected = int(_input)
                 log.append(selected)
-            except ValueError, x:
+            except ValueError:
                 selected = -1
 
             if isinstance(_as, ActionSet):
@@ -178,9 +178,9 @@ def input_generator ():
 
 
 def test_input_generator (sequence):
-    print "pre first yield"
+    print("pre first yield")
     _as = yield None
-    print "post first yield: " + `_as`
+    print("post first yield: " + repr(_as))
 
     while True:
         print ("player %s: %s" % (_as.player.name, _as.text))
@@ -205,9 +205,9 @@ def test_input_generator (sequence):
                     return
 
                 selected = sequence[0]
-                print "selecting #%d" % selected
+                print("selecting #%d" % selected)
                 sequence = sequence[1:]
-            except ValueError, x:
+            except ValueError:
                 selected = -1
 
             if selected >= 0 and selected < len(_as.actions):

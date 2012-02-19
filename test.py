@@ -20,7 +20,7 @@
 from ManaClash import *
 from game import *
 from process import *
-from io import *
+from mcio import *
 
 import unittest
 

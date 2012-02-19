@@ -34,7 +34,7 @@ class Rule:
         self.action = action
 
     def __repr__ (self):
-        return `(self.lhs, self.rhs)`
+        return (repr((self.lhs, self.rhs)))
 
 def parse(rules, label, string, debug=False):
     stack = []
@@ -45,7 +45,7 @@ def parse(rules, label, string, debug=False):
         c = stack.pop()
 
         if debug:
-            print `c`
+            print(repr(c))
 
         currentRule = c[1][-1][0]
         currentRulePos = c[1][-1][1]

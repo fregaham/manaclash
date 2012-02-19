@@ -23,8 +23,8 @@
 from ManaClash import *
 from game import *
 from process import *
-from io import *
 from rules import *
+from mcio import *
 
 import sys
 
@@ -47,7 +47,7 @@ def parseOracle(f):
     rules = ""
 
     for line in f:
-        line = line.decode("utf8")
+        #line = line.decode("utf8")
         n += 1
         if state == 0:
             if line.startswith("Name:"):
@@ -66,8 +66,8 @@ def parseOracle(f):
         elif state == 2:
             if line.startswith("Type:"):
                 types = line[len("Type:"):].strip().lower()
-                if u"—" in types:
-                    types, subtypes = types.split(u"—", 1)
+                if "—" in types:
+                    types, subtypes = types.split("—", 1)
                     typesSplit = types.split()
                     if len(typesSplit) == 1:
                         card.types = set([typesSplit[0]])
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     for card in parseOracle(sys.stdin):
 
         # create_card (u"Hasty Moggie Bird", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying",u"haste"]), "when SELF comes into play, each player loses 1 life.", 1, 1)
-        r = card.rules.lower().replace(card.name.lower(), u"SELF").replace("\n", ";").replace(u"—", "-")
+        r = card.rules.lower().replace(card.name.lower(), "SELF").replace("\n", ";").replace("—", "-")
         obj = g.create_card(card.name, card.cost, card.supertypes, card.types, card.subtypes, set(), r, card.power, card.toughness)
         obj.state = obj.initial_state.copy()
 
@@ -149,14 +149,14 @@ if __name__ == "__main__":
         try:
             rules = parse(obj)
             if rules is not None:
-                print obj.state.title 
-                print obj.state.text
-                print rules
+                print(obj.state.title)
+                print(obj.state.text)
+                print(rules)
 
                 parsed += 1
-        except Exception, x:
-            print `x`
-            print (u"Cannot parse %s\n%s" % (obj.state.title, obj.state.text)).encode("utf8")
+        except Exception as x:
+            print (repr(x))
+            print (("Cannot parse %s\n%s" % (obj.state.title, obj.state.text)).encode("utf8"))
 
-    print "Parsed %d/%d" % (parsed, total)
+    print ("Parsed %d/%d" % (parsed, total))
 

@@ -271,7 +271,7 @@ class Game:
         object.damage = 0
         zone_from = self.objects[object.zone_id]
 
-        print "pre zone transfer %s from %s" % (object, object.zone_id)
+        print("pre zone transfer %s from %s" % (object, object.zone_id))
 
         self.raise_event ("pre_zone_transfer", object, zone_from, zone)
 
@@ -293,7 +293,7 @@ class Game:
             object.preventNextDamage = 0
             object.tapped = False
 
-        print "post zone transfer %s to %s" % (object, object.zone_id)
+        print("post zone transfer %s to %s" % (object, object.zone_id))
 
         from process import evaluate
         evaluate(self)
@@ -317,7 +317,7 @@ class Game:
         player.life += count
 
     def doDealDamage(self, list, combat=False):
-        print "doDealDamage"
+        print("doDealDamage")
 
         dr = DamageReplacement(list, combat)
         self.raise_event("damage_replacement", dr)
@@ -340,10 +340,10 @@ class Game:
                 self.raise_event("pre_deal_damage", a, b, n)
 
                 if "player" in b.get_state().types:
-                    print "%d damage to player %s " % (n, b.get_object())
+                    print("%d damage to player %s " % (n, b.get_object()))
                     b.get_object().life -= n
                 else:
-                    print "%d damage to %s" % (n, b.get_object())
+                    print("%d damage to %s" % (n, b.get_object()))
                     b.get_object().damage += n
 
                 if combat:
@@ -353,12 +353,12 @@ class Game:
 
     def doRegenerate(self, obj):
         obj = obj.get_object()
-        print "doRegenerate %s" % (obj)
+        print("doRegenerate %s" % (obj))
         obj.regenerated = True 
 
     def doDestroy(self, obj):
         obj = obj.get_object()
-        print "doDestroy %s" % (obj)
+        print("doDestroy %s" % (obj))
 
         if obj.regenerated:
             obj.tapped = True
@@ -372,17 +372,17 @@ class Game:
 
     def doCounter(self, obj):
         obj = obj.get_object()
-        print "doCounter %s" % (obj)
+        print("doCounter %s" % (obj))
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
     def doSacrifice(self, obj):
         obj = obj.get_object()
-        print "doSacrifice %s" % (obj)
+        print("doSacrifice %s" % (obj))
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
     def doBury(self, obj):
         obj = obj.get_object()
-        print "doBury %s" % (obj)
+        print("doBury %s" % (obj))
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
     def doRemoveFromCombat(self, obj):
@@ -401,7 +401,7 @@ class Game:
         obj.preventNextDamage += n
 
     def delete(self, obj):
-        print "deleting object %s" % obj
+        print("deleting object %s" % obj)
         self.objects[obj.zone_id].objects.remove(obj)
         obj.zone_id = None
         del self.objects[obj.id]

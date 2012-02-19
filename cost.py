@@ -128,9 +128,9 @@ class ManaCost(Cost):
         return "Pay " + self.manacost
 
     def pay(self, game, obj, player):
-        print "paying cost, manapool: %s, manacost: %s" % (player.manapool, self.manacost)
+        print("paying cost, manapool: %s, manacost: %s" % (player.manapool, self.manacost))
         player.manapool = mana_diff (player.manapool, self.manacost)
-        print "after payed: manapool: %s" % (player.manapool)
+        print("after payed: manapool: %s" % (player.manapool))
         return True
 
     def canPay(self, game, obj, player):
