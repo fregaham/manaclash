@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="autobahn.min.js"></script>
+        <script src="jquery-1.7.2.js"></script>
+        <script>
+        // WAMP session object
+        var sess;
+        var wsuri;
+
+        window.onload = function() {
+
+            if (window.location.protocol === "file:") {
+                wsuri = "ws://localhost:9000";
+            } else {
+                wsuri = "ws://" + window.location.hostname + ":9000";
+            }
+
+            // connect to WAMP server
+            ab.connect(wsuri,
+
+               // WAMP session was established
+               function (session) {
+
+                  sess = session;
+                  console.log("Connected!");
+
+                  sess.subscribe("http://manaclash.org/users", onUsers);
+               },
+
+               // WAMP session is gone
+               function (code, reason) {
+
+                  sess = null;
+                  alert(reason);
+               }
+            );
+         };
+
+         function onUsers(topicUri, users) {
+            $("#userlist").empty();
+            for (var i = 0; i < users.length; i++) {
+                $("#userlist").append ("<p>" + users[i] + "</p>");
+            }
+         }
+
+         function login() {
+            // sess.publish("http://manaclash.org/login", $("#username").val());
+            sess.call("http://manaclash.org/login", $("#username").val(), $("#password").val()).then(
+                function(){  },
+                function(){ alert("failed to login!"); }
+            );
+         }
+    </script>
+    </head>
+    <body>
+        <h1>ManaClash</h1>
+
+        <div id="userlist"></div>
+
+        <div id="login">
+            Username: <input id="username" name="username"/>
+            Password: <input id="password" name="password" type="password"/>
+            <button onclick="login();">Login</button>
+        </div>
+    </body>
+</html>
