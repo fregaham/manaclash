@@ -26,6 +26,7 @@
                   console.log("Connected!");
 
                   sess.subscribe("http://manaclash.org/users", onUsers);
+                  sess.subscribe("http://manaclash.org/games", onGames);
                },
 
                // WAMP session is gone
@@ -44,24 +45,50 @@
             }
          }
 
+         function onGames(gamesUri, games) {
+            $("#gameslist").empty();
+            for (var i = 0; i < games.length; i++) {
+                var gameElement = $("<div>" + games[i].id + "</div>").appendTo($("#gameslist"));
+                for (var j = 0; j < games[i].players.length; j++) {
+                    var playerElement = $("<div>" + games[i].players[j].login + " (" + games[i].players[j].role + ")</div>").appendTo(gameElement);
+                }
+            }
+         }
+
          function login() {
-            // sess.publish("http://manaclash.org/login", $("#username").val());
             sess.call("http://manaclash.org/login", $("#username").val(), $("#password").val()).then(
-                function(){  },
+                function(result) {
+                     if(!result) {
+                        alert("Login failed!");
+                     }
+                },
                 function(){ alert("failed to login!"); }
             );
          }
+
+         function creategame() {
+            sess.call("http://manaclash.org/game/create");
+         }
+
     </script>
     </head>
     <body>
         <h1>ManaClash</h1>
 
+        <h3>Users</h3>
         <div id="userlist"></div>
+
+        <h3>Games</h3>
+        <div id="gameslist"></div>
 
         <div id="login">
             Username: <input id="username" name="username"/>
             Password: <input id="password" name="password" type="password"/>
             <button onclick="login();">Login</button>
+        </div>
+
+        <div>
+            <button onclick="creategame();">Create Game</button>
         </div>
     </body>
 </html>

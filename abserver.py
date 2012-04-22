@@ -32,6 +32,8 @@ from autobahn.wamp import exportRpc, \
                           WampClientFactory, \
                           WampClientProtocol
 
+Context = threading.local()
+
 class Game:
     def __init__ (self, id):
         self.id = id
@@ -41,13 +43,13 @@ class Game:
         self.players.remove(player)
         player.user.players.remove(player)
 
-        threading.local().current_protocol.dispatch("http://manaclash.org/game/" + self.id + "/remove", (player.user.login, player.role))
+        Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.id) + "/remove", (player.user.login, player.role))
 
     def add(self, player):
         self.players.append(player)
         player.user.players.append(player)
 
-        threading.local().current_protocol.dispatch("http://manaclash.org/game/" + self.id + "/add", (player.user.login, player.role))
+        Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.id) + "/add", (player.user.login, player.role))
 
 class Player:
     def __init__ (self, user, game, role):
@@ -60,11 +62,11 @@ class Player:
 
         # publish a message about player going offline
         if self.session_id is not None and session_id is None:
-            threading.local().current_protocol.dispatch("http://manaclash.org/game/" + self.game.id + "/player/offline", (self.user.login, self.role))
+            Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.game.id) + "/player/offline", (self.user.login, self.role))
 
         # publish a messasge about player online
         if self.session_id is None and session_id is not None:
-            threading.local().current_protocol.dispatch("http://manaclash.org/game/" + self.game.id + "/player/online", (self.user.login, self.role))
+            Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.game.id) + "/player/online", (self.user.login, self.role))
 
         self.session_id = session_id
 
@@ -91,6 +93,7 @@ client_map = {}
 user_map = {}
 game_map = {}
 
+last_game_id = 0
 
 class MyServerProtocol(WampServerProtocol):
 
@@ -109,19 +112,31 @@ class MyServerProtocol(WampServerProtocol):
     def onSessionOpen(self):
         ## register a single, fixed URI as PubSub topic
         self.registerForPubSub("http://manaclash.org/users")
+        self.registerForPubSub("http://manaclash.org/games")
 
         self.registerMethodForRpc("http://manaclash.org/login", self, MyServerProtocol.onLogin)
+        self.registerMethodForRpc("http://manaclash.org/game/create", self, MyServerProtocol.onGameCreate)
 
         self.registerHandlerForSub("http://manaclash.org/users", self, MyServerProtocol.onUsersSub, prefixMatch=False)
-        #self.registerHandlerForPub("http://manaclash.org/login", self, MyServerProtocol.onLoginPub, prefixMatch=False)
+        self.registerHandlerForSub("http://manaclash.org/games", self, MyServerProtocol.onGamesSub, prefixMatch=False)
+
+        self.registerHandlerForPub("http://manaclash.org/users", self, MyServerProtocol.noPub, prefixMatch=False)
+        self.registerHandlerForPub("http://manaclash.org/games", self, MyServerProtocol.noPub, prefixMatch=False)
+
+    def noPub(self, url, foo, message):
+        return False
 
     def onUsersSub(self, url, foo):
         # send a list of current users to the client subscribing for http://manaclash.org/users
         reactor.callLater(0, self.dispatchUsers, [], [self])
         return True
 
+    def onGamesSub(self, url, foo):
+        reactor.callLater(0, self.dispatchGames, [], [self])
+        return True
+
     def onLogin(self, login, password):
-        threading.local().current_protocol = self
+        Context.current_protocol = self
         #print self.session_id
         #print "onPub " + `url` + ", " + `foo` + ", " + `message`
         print "client ", self.session_id, " is ", login, ", password: ", password
@@ -150,8 +165,50 @@ class MyServerProtocol(WampServerProtocol):
 
         return client.user is not None
 
+    def onGameCreate(self):
+        Context.current_protocol = self
+
+        global last_game_id
+
+        client = client_map.get(self.session_id)
+        if client is not None and client.user is not None:
+            last_game_id += 1
+
+            game_id = last_game_id
+            game = Game(game_id)
+
+            player = Player(client.user, game, "player1")
+            player.setSessionId(self.session_id)
+
+            game.add(player)
+
+            game_map[game_id] = game
+
+            self.dispatchGames()
+            return game_id
+
+        return None
+
     def dispatchUsers(self, exclude=[], eligible=None):
         self.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
+
+    def dispatchGames(self, exclude=[], eligible=None):
+        message = []
+        for game in game_map.values():
+            gm = {}
+            gm["id"] = game.id
+
+            players = []
+            for p in game.players:
+                pm = {}
+                pm["login"] = p.user.login
+                pm["role"] = p.role
+                players.append(pm)
+
+            gm["players"] = players
+
+            message.append(gm)
+        self.dispatch("http://manaclash.org/games", message, exclude, eligible)
 
 #class MyClientProtocol(WampClientProtocol):
 
