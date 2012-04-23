@@ -31,7 +31,6 @@
 
                // WAMP session is gone
                function (code, reason) {
-
                   sess = null;
                   alert(reason);
                }
@@ -47,10 +46,28 @@
 
          function onGames(gamesUri, games) {
             $("#gameslist").empty();
+
             for (var i = 0; i < games.length; i++) {
                 var gameElement = $("<div>" + games[i].id + "</div>").appendTo($("#gameslist"));
+
+                var players = 0;
                 for (var j = 0; j < games[i].players.length; j++) {
+                    if (games[i].players[j].role == "player1" || games[i].players[j].role == "player2") {
+                        ++players;
+                    }
                     var playerElement = $("<div>" + games[i].players[j].login + " (" + games[i].players[j].role + ")</div>").appendTo(gameElement);
+                }
+
+                if (players < 2) {
+                    $("<button>Join</button>").appendTo(gameElement).click({"game_id":games[i].id}, function(event) {
+                        sess.call("http://manaclash.org/games/join", event.data.game_id, "player2").then(
+                            function(uri) {
+                                if(uri != null) {
+                                    sess.subscribe(uri, onGame);
+                                }
+                            }
+                        );
+                    });
                 }
             }
          }
@@ -67,7 +84,10 @@
          }
 
          function creategame() {
-            sess.call("http://manaclash.org/game/create");
+            var uri = sess.call("http://manaclash.org/games/create");
+            if (uri != null) {
+                sess.subscribe(uri, onGame);
+            }
          }
 
     </script>
