@@ -19,7 +19,20 @@
 
 import sys
 
+# TEMPORARY
+import mc
+
+
+
+from mcio import Output
+from game import Game
+from process import process_game
+from oracle import parseOracle
+from actions import *
+
+import random
 import threading
+from Queue import Queue
 from twisted.python import log
 from twisted.internet import reactor
 from twisted.web.server import Site
@@ -34,6 +47,13 @@ from autobahn.wamp import exportRpc, \
 
 Context = threading.local()
 g_factory = None
+
+# read the oracle
+g_cards = {}
+oracleFile = open("oracle/8th_edition.txt", "r")
+for card in parseOracle(oracleFile):
+    g_cards[card.name] = card
+oracleFile.close()
 
 def player_to_role(game, player):
     for i in range(len(game.players)):
@@ -59,7 +79,7 @@ def zone_to_list(game, zone):
         ret.append (object_to_map(game, o))
     return ret
 
-def ab_input_generator():
+def ab_input_generator(ab_game):
     seed = random.randint(0,2**64)
     random.seed(seed)
 
@@ -68,6 +88,8 @@ def ab_input_generator():
     while True:
 
         # send the game state
+
+
         state = {}
         state["player"] = player_to_role(_as.game, _as.player)
         state["text"] = _as.text
@@ -103,7 +125,7 @@ def ab_input_generator():
                 if a.object is not None:
                     am["object"] = a.object.id
                 if a.ability is not None:
-                    am["ability"] = a.ability.get_text(a.object)
+                    am["ability"] = a.ability.get_text(_as.game, a.object)
                 if a.player is not None:
                     am["player"] = player_to_role(_as.game, a.player)
                 actions.append(am)
@@ -114,64 +136,37 @@ def ab_input_generator():
         state["actions"] = actions
         state["query"] = query
 
+        # Get the current ab_player by the role
+        ab_game.current_player = None
+        for ab_player in ab_game.players:
+            if ab_player.role == state["player"]:
+                ab_game.current_player = ab_player
+
         action = None
         while action == None:
             i = 0
 
-            if isinstance(_as, ActionSet):
-                for a in _as.actions:
-                    print ("%d: %s"  % (i, a.text))
-                    i += 1
-            elif isinstance(_as, QueryNumber):
-                print("Enter number: ")
+            g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/state", state)
 
+            client_player, client_message = ab_game.queue.get()
 
-            try:
-                # automatically pass if only mana abilities possible in a
-                # priority
-
-                autopass = True
-                if _as.text != "You have priority":
-                    autopass = False
+            # is the message from the proper client?
+            if client_player == current_ab_player and client_message is not None:
                 if isinstance(_as, ActionSet):
-                    for a in _as.actions:
-                        if a.text != "Pass" and not isinstance(a.ability, BasicManaAbility):
-                            autopass = False
+                    if client_message >= 0 and client_message < len(_as.actions):
+                        action = _as.actions[client_message]
+                elif isinstance(_as, QueryNumber):
+                    action = client_message
 
-                if autopass:
-                    _input = "0"
-                else:
-                    _input = input()
-
-                if _input == "log":
-                    print("seed: %d" % seed)
-                    print(repr(log))
-                if _input == "exit":
-                    return
-                if _input == "warranty":
-                    print(warranty)
-                if _input == "license":
-                    lf = open("LICENSE.txt", "r")
-                    for line in lf:
-                        print(line.rstrip())
-                    lf.close()
-                selected = int(_input)
-                log.append(selected)
-            except ValueError:
-                selected = -1
-
-            if isinstance(_as, ActionSet):
-                if selected >= 0 and selected < len(_as.actions):
-                    action = _as.actions[selected]
-            elif isinstance(_as, QueryNumber):
-                action = selected
-
+        ab_game.current_player = None
         _as = yield action
 
-class Game:
+class ABGame:
     def __init__ (self, id):
         self.id = id
         self.players = []
+        self.current_player = None
+        self.queue = Queue()
 
     def remove(self, player):
         self.players.remove(player)
@@ -186,9 +181,25 @@ class Game:
         Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.id) + "/add", (player.user.login, player.role))
 
     def start(self):
-        pass
+        output = Output()
+        ig = ab_input_generator(self)
 
-class Player:
+        n = ig.next()
+        g = Game(ig, output)
+        g.create()
+
+        c1 = mc.red_deck(g, g_cards)
+        random.shuffle(c1)
+        g.create_player("Alice", c1)
+
+        c2 = mc.blue_deck(g, g_cards)
+        random.shuffle(c2)
+        g.create_player("Bob", c2)
+
+        process_game(g)
+        
+
+class ABPlayer:
     def __init__ (self, user, game, role):
         self.user = user
         self.game = game
@@ -207,13 +218,13 @@ class Player:
 
         self.session_id = session_id
 
-class User:
+class ABUser:
     def __init__ (self, login, password):
         self.login = login
         self.password = password
         self.players = []
 
-class Client:
+class ABClient:
     def __init__ (self, session_id):
         self.session_id = session_id
         self.user = None
@@ -262,6 +273,8 @@ class MyServerProtocol(WampServerProtocol):
         self.registerHandlerForPub("http://manaclash.org/users", self, MyServerProtocol.noPub, prefixMatch=False)
         self.registerHandlerForPub("http://manaclash.org/games", self, MyServerProtocol.noPub, prefixMatch=False)
 
+        self.registerHandlerForPub("http://manaclash.org/game/", self, MyServerProtocol.onGamePrefixPub, prefixMatch=True)
+
     def noPub(self, url, foo, message):
         return False
 
@@ -274,6 +287,16 @@ class MyServerProtocol(WampServerProtocol):
         reactor.callLater(0, self.dispatchGames, [], [self])
         return True
 
+    def onGamePrefixPub(self, url, foo, message):
+        game_id = url[len("http://manaclash.org/game/"):]
+        game = game_map.get(game_id)
+        if game is not None:
+            if game.current_player is not None:
+                if game.current_player.session_id == self.session_id:
+                    # send the message to the game
+                    game.queue.put( (game.current_player, message) )
+                    return message
+
     def onLogin(self, login, password):
         Context.current_protocol = self
         #print self.session_id
@@ -282,7 +305,7 @@ class MyServerProtocol(WampServerProtocol):
 
         client = client_map.get(self.session_id)
         if client is None:
-            client = Client(self.session_id)
+            client = ABClient(self.session_id)
             client_map[self.session_id] = client
         else:
             # disconnect 
@@ -291,7 +314,7 @@ class MyServerProtocol(WampServerProtocol):
         # create a new user or check password if such user exists
         user = user_map.get(login)
         if user is None:
-            user = User(login, password)
+            user = ABUser(login, password)
             user_map[login] = user
         else:
             if user.password != password:
@@ -314,9 +337,9 @@ class MyServerProtocol(WampServerProtocol):
             last_game_id += 1
 
             game_id = last_game_id
-            game = Game(game_id)
+            game = ABGame(game_id)
 
-            player = Player(client.user, game, "player1")
+            player = ABPlayer(client.user, game, "player1")
             player.setSessionId(self.session_id)
 
             game.add(player)
@@ -337,14 +360,24 @@ class MyServerProtocol(WampServerProtocol):
         if client is not None and client.user is not None and client.player is None:
             game = game_map.get(game_id)
             if game is not None and len(game.players) < 2:
-                player = Player(client.user, game, "player2")
+                player = ABPlayer(client.user, game, "player2")
                 player.setSessionId(self.session_id)
 
                 game.add(player)
                 self.dispatchGames()
+
+                reactor.callLater(5, self.startGame, game.id)
+
                 return "http://manaclash.org/game/" + str(game.id)
 
         return False
+
+    def startGame(self, game_id):
+        game = game_map.get(game_id)
+        if game is not None:
+            t = threading.Thread(target=game.start)
+            t.daemon = True
+            t.start()
 
     def dispatchUsers(self, exclude=[], eligible=None):
         self.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)

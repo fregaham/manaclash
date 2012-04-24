@@ -23,7 +23,7 @@ from objects import *
 from selectors import *
 
 class Ability:
-    def get_text(self, obj):
+    def get_text(self, game, obj):
         return ""
 
 class TriggeredAbility(Ability):
