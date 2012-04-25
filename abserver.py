@@ -29,6 +29,7 @@ from game import Game
 from process import process_game
 from oracle import parseOracle
 from actions import *
+from abilities import BasicManaAbility
 
 import random
 import threading
@@ -70,6 +71,11 @@ def object_to_map(game, o):
     ret["id"] = o.id
     ret["title"] = o.get_state().title
     ret["text"] = o.get_state().text
+
+    if o.get_state().controller_id != None:
+        ret["controller"] = player_to_role(game, game.objects[o.get_state().controller_id])
+    else:
+        ret["controller"] = None
 
     return ret
 
@@ -126,6 +132,8 @@ def ab_input_generator(ab_game):
                     am["object"] = a.object.id
                 if a.ability is not None:
                     am["ability"] = a.ability.get_text(_as.game, a.object)
+                    if isinstance(a.ability, BasicManaAbility):
+                        am["manaability"] = True
                 if a.player is not None:
                     am["player"] = player_to_role(_as.game, a.player)
                 actions.append(am)
@@ -142,6 +150,8 @@ def ab_input_generator(ab_game):
             if ab_player.role == state["player"]:
                 ab_game.current_player = ab_player
 
+        ab_game.current_state = state
+
         action = None
         while action == None:
             i = 0
@@ -151,7 +161,7 @@ def ab_input_generator(ab_game):
             client_player, client_message = ab_game.queue.get()
 
             # is the message from the proper client?
-            if client_player == current_ab_player and client_message is not None:
+            if client_player == ab_game.current_player and client_message is not None:
                 if isinstance(_as, ActionSet):
                     if client_message >= 0 and client_message < len(_as.actions):
                         action = _as.actions[client_message]
@@ -166,6 +176,7 @@ class ABGame:
         self.id = id
         self.players = []
         self.current_player = None
+        self.current_state = None
         self.queue = Queue()
 
     def remove(self, player):
@@ -288,11 +299,21 @@ class MyServerProtocol(WampServerProtocol):
         return True
 
     def onGamePrefixPub(self, url, foo, message):
-        game_id = url[len("http://manaclash.org/game/"):]
+
+        print "onGamePrefixPub url='" + url + "'"
+
+        #game_id = int(url[len("http://manaclash.org/game/"):])
+        game_id = int(foo)
+
+        print "game_id: " + str(game_id)
+
         game = game_map.get(game_id)
         if game is not None:
+            print "game is not None"
             if game.current_player is not None:
+                print "game.current_player is not None"
                 if game.current_player.session_id == self.session_id:
+                    print "game.current_player.session_id == self.session_id"
                     # send the message to the game
                     game.queue.put( (game.current_player, message) )
                     return message

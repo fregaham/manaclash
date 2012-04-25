@@ -4,9 +4,13 @@
         <script src="autobahn.min.js"></script>
         <script src="jquery-1.7.2.js"></script>
         <script>
+// <![CDATA[
         // WAMP session object
         var sess;
         var wsuri;
+
+        var g_role = null;
+        var g_gameuri = null;
 
         window.onload = function() {
 
@@ -35,16 +39,20 @@
                   alert(reason);
                }
             );
-         };
+        };
 
-         function onUsers(topicUri, users) {
+        function subscribeGame(gameUri) {
+            sess.subscribe(gameUri + "/state", onGame);
+        }
+
+        function onUsers(topicUri, users) {
             $("#userlist").empty();
             for (var i = 0; i < users.length; i++) {
                 $("#userlist").append ("<p>" + users[i] + "</p>");
             }
-         }
+        }
 
-         function onGames(gamesUri, games) {
+        function onGames(gamesUri, games) {
             $("#gameslist").empty();
 
             for (var i = 0; i < games.length; i++) {
@@ -63,16 +71,18 @@
                         sess.call("http://manaclash.org/games/join", event.data.game_id, "player2").then(
                             function(uri) {
                                 if(uri != null) {
-                                    sess.subscribe(uri, onGame);
+                                    subscribeGame(uri);
+                                    g_role = "player2";
+                                    g_gameuri = uri;
                                 }
                             }
                         );
                     });
                 }
             }
-         }
+        }
 
-         function login() {
+        function login() {
             sess.call("http://manaclash.org/login", $("#username").val(), $("#password").val()).then(
                 function(result) {
                      if(!result) {
@@ -81,34 +91,188 @@
                 },
                 function(){ alert("failed to login!"); }
             );
-         }
+        }
 
-         function creategame() {
-            var uri = sess.call("http://manaclash.org/games/create");
-            if (uri != null) {
-                sess.subscribe(uri, onGame);
+        function creategame() {
+            sess.call("http://manaclash.org/games/create").then(
+                function(uri) {
+                    if (uri != null) {
+                        subscribeGame(uri);
+                        g_role = "player1";
+                        g_gameuri = uri;
+                    }
+                }
+            );
+        }
+
+        function onGame(gameUri, state) {
+            // Check the game URI
+            if (gameUri.slice(0, g_gameuri.length) == g_gameuri) {
+                var event = gameUri.slice(g_gameuri.length);
+                if (event == "/state") {
+                    onState(state);
+                }
             }
-         }
+        }
 
+        function displayZone(state_zone, div) {
+            for (var i = 0; i < state_zone.length; ++i) {
+                var obj = state_zone[i];
+
+                var objSpan = $("<span class='card' id='obj_" + obj.id + "'></span>").appendTo(div);
+                objSpan.append(obj.title);
+                objSpan.attr("title", obj.text);
+            }
+        }
+
+        function onState(state) {
+            $("#view_game").empty();
+
+            var view = $("#view_game");
+
+            // is it our turn?
+            if (g_role == state["player"]) {
+                $("<p>" + state["text"] + "</p>").appendTo(view);
+            }
+            else {
+                $("<p>Waiting on " + state["player"] + " to " + state["text"] + "</p>").appendTo(view);
+            }
+
+            $("<p>Turn: " + state["turn"] + " Phase: " + state["phase"] + " Step: " + state["step"] + "</p>").appendTo(view);
+
+
+            var in_play = [];
+            var hands = [];
+
+            var players = [];
+            players.push("player1");
+            players.push("player2");
+
+            player_divs = [];
+            
+            for (var i = 0; i < players.length; ++i) {
+                player_divs[players[i]] = $("<div><h3>" + players[i] + "</h3></div>").appendTo(view);
+            }
+
+            for (var i = 0; i < players.length; ++i) {
+                in_play[players[i]] = $("<div>In play</div>").appendTo(player_divs[players[i]]);
+                hands[players[i]] = $("<div>Hand</div>").appendTo(player_divs[players[i]]);
+            }           
+
+            for (var i = 0; i < state["in_play"].length; ++i) {
+                var obj = state["in_play"][i];
+
+                if (obj.controller != null) {
+                    var objSpan = $("<span class='card' id='obj_" + obj.id + "'></span>").appendTo(in_play[obj.controller]);
+                    objSpan.append(obj.title);
+                    objSpan.attr("title", obj.text);
+                }
+            }
+
+            for (var i = 0; i < state["players"].length; ++i) {
+                var player = state["players"][i];
+
+                displayZone(player["hand"], hands[players[i]]);
+            }
+
+            if (g_role == state["player"]) {
+                var actions_div = $("<div>Actions:</div>").appendTo(view);
+
+                var autopass = true;
+
+                if (state["text"] != "You have priority") {
+                    autopass = false;
+                }
+
+                for (var i = 0; i < state["actions"].length; ++i) {
+                    var action = state["actions"][i];
+                    if (action["object"] == null) {
+
+                        if (action["text"] != "Pass") {
+                            autopass = false;
+                        }
+
+                        var action_span = $("<span></span>").appendTo(actions_div);
+                        action_span.append(action["text"]);
+                        action_span.addClass('action');
+                        action_span.click({'i':i}, function(event) {
+                            sess.publish(g_gameuri, event.data.i);
+                        });
+                    }
+                    else {
+
+                        if (action["manaability"] == null || action["manaability"] == false) {
+                            autopass = false;
+                        }
+
+                        var action_obj = $('#obj_' + action["object"]);
+                        action_obj.addClass('action');
+                        action_obj.click({'i':i}, function(event) {
+                            sess.publish(g_gameuri, event.data.i);
+                        });
+                    }
+                }
+
+                if (autopass) {
+                    sess.publish(g_gameuri, 0);
+                }
+            } 
+        }
+
+        function view(v) {
+            $("#view_lobby").hide();
+            $("#view_game").hide();
+
+            $("#" + v).show();
+        }
+// ]]>
     </script>
+    <style>
+.card {
+    margin-left: 1em;
+    margin-right: 1em;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.action {
+   margin-left: 1em;
+   margin-right: 1em;
+   border: 1px solid black;
+   background: yellow;
+   cursor: pointer;
+}
+    </style>
     </head>
     <body>
-        <h1>ManaClash</h1>
-
-        <h3>Users</h3>
-        <div id="userlist"></div>
-
-        <h3>Games</h3>
-        <div id="gameslist"></div>
-
-        <div id="login">
-            Username: <input id="username" name="username"/>
-            Password: <input id="password" name="password" type="password"/>
-            <button onclick="login();">Login</button>
-        </div>
 
         <div>
-            <button onclick="creategame();">Create Game</button>
+            <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_game');">Game</button>
+        </div>
+
+        <div id="view_lobby">
+
+            <h1>ManaClash</h1>
+
+            <h3>Users</h3>
+            <div id="userlist"></div>
+
+            <h3>Games</h3>
+            <div id="gameslist"></div>
+
+            <div id="login">
+                Username: <input id="username" name="username"/>
+                Password: <input id="password" name="password" type="password"/>
+                <button onclick="login();">Login</button>
+            </div>
+
+            <div>
+                <button onclick="creategame();">Create Game</button>
+            </div>
+        </div>
+
+        <div id="view_game">
+            <h3>Game</h3>
         </div>
     </body>
 </html>
