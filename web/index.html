@@ -115,13 +115,52 @@
             }
         }
 
+        function displayCard(obj) {
+
+            var objSpan = $("<span class='" + (obj.tapped ? "tapped" : "card") + "' id='obj_" + obj.id + "'></span>");
+
+            var headerSpan = $("<span class='header'/>");
+            headerSpan.appendTo(objSpan);
+
+            var titleSpan = $("<span class='title'></span>");
+            titleSpan.append(obj.title);
+            titleSpan.appendTo(headerSpan);
+           
+            var costSpan = $("<span class='manacost'></span>");
+            costSpan.append(obj.manacost);
+            costSpan.appendTo(headerSpan);
+
+            var typeSpan = $("<span class='types'></span>");
+            typeSpan.append(obj.supertypes.join(" "));
+            typeSpan.append(" ");
+            typeSpan.append(obj.types.join(" "));
+
+            if (obj.subtypes.length > 0) {
+                typeSpan.append(" &ndash; ");
+            }
+
+            typeSpan.append(obj.subtypes.join(" "));
+            typeSpan.appendTo(objSpan);
+
+            var tagsSpan = $("<span class='tags'></span>");
+            tagsSpan.append(obj.tags.join(" "));
+            tagsSpan.appendTo(objSpan);
+
+            objSpan.append(" ");
+
+            var textSpan = $("<span class='text'></span>");
+            textSpan.append(obj.text);
+            textSpan.appendTo(objSpan);
+
+            return objSpan;
+        }
+
         function displayZone(state_zone, div) {
             for (var i = 0; i < state_zone.length; ++i) {
                 var obj = state_zone[i];
 
-                var objSpan = $("<span class='card' id='obj_" + obj.id + "'></span>").appendTo(div);
-                objSpan.append(obj.title);
-                objSpan.attr("title", obj.text);
+                var objSpan = displayCard(obj);
+                objSpan.appendTo(div);
             }
         }
 
@@ -192,9 +231,9 @@
                             autopass = false;
                         }
 
-                        var action_span = $("<span></span>").appendTo(actions_div);
+                        var action_span = $("<button></button>").appendTo(actions_div);
                         action_span.append(action["text"]);
-                        action_span.addClass('action');
+                        // action_span.addClass('action');
                         action_span.click({'i':i}, function(event) {
                             sess.publish(g_gameuri, event.data.i);
                         });
@@ -229,19 +268,94 @@
     </script>
     <style>
 .card {
-    margin-left: 1em;
-    margin-right: 1em;
+    display: inline-block;
+    width: 200px;
+    height: 285px;
+/*    margin-left: 1em;
+    margin-right: 1em;*/
     border: 1px solid black;
     cursor: pointer;
+    vertical-align: top;
+}
+
+.tapped {
+    width: 285px;
+    height: 200px;
+    display: inline-block;
+    border: 1px solid black;
+    cursor: pointer;
+    vertical-align: top;
+}
+
+.tapped .header {
+    position: absolute;
+    display: inline-block;
+    -webkit-transform: rotate(90deg) translate(90px, -175px);
+    -moz-transform: rotate(90deg) translate(90px, -175px);
+    font-size: 12px;
+    width: 200px;
+    height: 20px;
+}
+
+.tapped > .header > .title {
+    position: absolute;
+    text-align: left;
+    top: 0px;
+    left: 0px;
+}
+
+.tapped > .header > .manacost {
+    position: absolute;
+    text-align: right;
+    top: 0px;
+    right: 0px;
+}
+
+.tapped > .body {
+    position: absolute;
+    width: 265px;
+}
+
+.tapped > .body > .types {
+    display: block;
+}
+
+.card > .header {
+    position: absolute;
+    font-size: 12px;
+    height: 20px;
+    width: 200px;
+}
+
+.card > .header > .title {
+    position: absolute;
+    text-align: left;
+    top: 0px;
+    left: 0px;
+}
+
+.card > .header > .manacost {
+    position: absolute;
+    text-align: right;
+    top: 0px;
+    right: 0px;
+}
+
+.card > .body {
+    display: block;
+    position: relative;
+    top: 20px;
+    width: 200px;
+}
+
+.card > .body > .types {
+    display: block;
 }
 
 .action {
-   margin-left: 1em;
-   margin-right: 1em;
-   border: 1px solid black;
    background: yellow;
-   cursor: pointer;
 }
+
     </style>
     </head>
     <body>
@@ -273,6 +387,41 @@
 
         <div id="view_game">
             <h3>Game</h3>
+
+            <div>
+                <span class="card">
+                    <span class="header">
+                        <span class="title">Foo Bar</span>
+                        <span class="manacost">1UU</span>
+                    </span>
+                    <span class="body">
+                        <span class="types">Legendary Creature Bar</span>
+                        <span class="text">Lorem ipsum dolor sit amet</span>
+                    </span>
+                </span>
+
+                <span class="tapped">
+                    <span class="header">
+                        <span class="title">Foo Bar</span>
+                        <span class="manacost">1UU</span>
+                    </span>
+                    <span class="body">
+                        <span class="types">Legendary Creature Bar</span>
+                        <span class="text">Lorem ipsum dolor sit amet</span>
+                    </span>
+                </span>
+
+                <span class="card">
+                    <span class="header">
+                        <span class="title">Foo Bar</span>
+                        <span class="manacost">1UU</span>
+                    </span>
+                    <span class="body">
+                        <span class="types">Legendary Creature Bar</span>
+                        <span class="text">Lorem ipsum dolor sit amet</span>
+                    </span>
+                </span>
+            </div>
         </div>
     </body>
 </html>

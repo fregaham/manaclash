@@ -71,6 +71,14 @@ def object_to_map(game, o):
     ret["id"] = o.id
     ret["title"] = o.get_state().title
     ret["text"] = o.get_state().text
+    ret["power"] = o.get_state().power
+    ret["toughness"] = o.get_state().toughness
+    ret["manacost"] = o.get_state().manacost
+    ret["tags"] = [x for x in o.get_state().tags]
+    ret["types"] = [x for x in o.get_state().types]
+    ret["supertypes"] = [x for x in o.get_state().supertypes]
+    ret["subtypes"] = [x for x in o.get_state().subtypes]
+    ret["tapped"] = o.tapped
 
     if o.get_state().controller_id != None:
         ret["controller"] = player_to_role(game, game.objects[o.get_state().controller_id])
