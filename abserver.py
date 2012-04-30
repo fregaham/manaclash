@@ -395,7 +395,7 @@ class MyServerProtocol(WampServerProtocol):
                 game.add(player)
                 self.dispatchGames()
 
-                reactor.callLater(5, self.startGame, game.id)
+                reactor.callLater(1, self.startGame, game.id)
 
                 return "http://manaclash.org/game/" + str(game.id)
 

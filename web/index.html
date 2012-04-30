@@ -11,6 +11,8 @@
 
         var g_role = null;
         var g_gameuri = null;
+        var g_timer = null;
+        var g_timeout = null;
 
         window.onload = function() {
 
@@ -39,6 +41,18 @@
                   alert(reason);
                }
             );
+
+            $("#timer").click(function(event) {
+                if (g_timer != null) {
+                    clearTimeout(g_timer);    
+                    g_timer = null;
+                    $("#timer").hide();
+                }
+            });
+            $("#timer").hide();
+
+            view("view_lobby");
+
         };
 
         function subscribeGame(gameUri) {
@@ -117,7 +131,8 @@
 
         function displayCard(obj) {
 
-            var objSpan = $("<span class='" + (obj.tapped ? "tapped" : "card") + "' id='obj_" + obj.id + "'></span>");
+            var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
+            objSpan.attr("title", obj.text);
 
             var headerSpan = $("<span class='header'/>");
             headerSpan.appendTo(objSpan);
@@ -168,9 +183,8 @@
         }
 
         function onState(state) {
-            $("#view_game").empty();
-
-            var view = $("#view_game");
+            var view = $("#table");
+            view.empty();
 
             // is it our turn?
             if (g_role == state["player"]) {
@@ -180,7 +194,16 @@
                 $("<p>Waiting on " + state["player"] + " to " + state["text"] + "</p>").appendTo(view);
             }
 
-            $("<p>Turn: " + state["turn"] + " Phase: " + state["phase"] + " Step: " + state["step"] + "</p>").appendTo(view);
+            /* $("<p>Turn: " + state["turn"] + " Phase: " + state["phase"] + " Step: " + state["step"] + "</p>").appendTo(view); */
+
+            $("#turn").empty();
+            $("#turn").append(state["turn"]);
+
+            $("#phase").empty();
+            $("#phase").append(state["phase"]);
+
+            $("#step").empty();
+            $("#step").append(state["step"]);
 
 
             var in_play = [];
@@ -193,6 +216,11 @@
             player_divs = [];
             
             for (var i = 0; i < players.length; ++i) {
+                if (i == 1) {
+                    var stack = $("<div>Stack</div>");
+                    displayZone(state["stack"], stack);
+                    stack.appendTo(view);
+                }
                 player_divs[players[i]] = $("<div><h3>" + players[i] + "</h3></div>").appendTo(view);
             }
 
@@ -220,6 +248,7 @@
                 var actions_div = $("<div>Actions:</div>").appendTo(view);
 
                 var autopass = true;
+                var haspass = false;
 
                 if (state["text"] != "You have priority") {
                     autopass = false;
@@ -231,6 +260,9 @@
 
                         if (action["text"] != "Pass") {
                             autopass = false;
+                        }
+                        else {
+                            haspass = true;
                         }
 
                         var action_span = $("<button></button>").appendTo(actions_div);
@@ -257,7 +289,30 @@
                 if (autopass) {
                     sess.publish(g_gameuri, 0);
                 }
+                else {
+                    if (state["text"] == "You have priority" && haspass && state["phase"] != "precombat main" && state["phase"] != "postcombat main") {
+                        g_timeout = 6;
+                        g_timer = setTimeout('onTimer()', 1000);
+                        $("#timer").show();
+                    }
+                }
             } 
+        }
+
+        function onTimer() {
+            g_timeout--;
+
+            $("#timer").empty();
+            $("#timer").append(g_timeout);
+
+            if (g_timeout <= 0) {
+                sess.publish(g_gameuri, 0);
+                clearTimeout(g_timer);
+                $("#timer").hide();
+            }
+            else {
+                setTimeout('onTimer()', 1000);
+            }
         }
 
         function view(v) {
@@ -273,11 +328,19 @@
     display: inline-block;
     width: 200px;
     height: 285px;
-/*    margin-left: 1em;
-    margin-right: 1em;*/
     border: 1px solid black;
     cursor: pointer;
     vertical-align: top;
+}
+
+.card_small {
+    display: inline-block;
+    width: 100px;
+    height: 142px;
+    border: 1px solid black;
+    cursor: pointer;
+    vertical-align: top;
+    overflow: hidden;
 }
 
 .tapped {
@@ -287,6 +350,16 @@
     border: 1px solid black;
     cursor: pointer;
     vertical-align: top;
+}
+
+.tapped_small {
+    width: 142px;
+    height: 100px;
+    display: inline-block;
+    border: 1px solid black;
+    cursor: pointer;
+    vertical-align: top;
+    overflow: hidden;
 }
 
 .tapped .header {
@@ -299,7 +372,24 @@
     height: 20px;
 }
 
+.tapped_small .header {
+    position: absolute;
+    display: inline-block;
+    -webkit-transform: rotate(90deg) translate(45px, -90px);
+    -moz-transform: rotate(90deg) translate(45px, -90px);
+    font-size: 8px;
+    width: 100px;
+    height: 10px;
+}
+
 .tapped > .header > .title {
+    position: absolute;
+    text-align: left;
+    top: 0px;
+    left: 0px;
+}
+
+.tapped_small > .header > .title {
     position: absolute;
     text-align: left;
     top: 0px;
@@ -313,20 +403,33 @@
     right: 0px;
 }
 
+.tapped_small > .header > .manacost {
+    position: absolute;
+    text-align: right;
+    top: 0px;
+    right: 0px;
+}
+
 .tapped > .body {
     position: absolute;
     width: 265px;
 }
 
-.tapped > .body > .types {
+.tapped_small > .body {
+    position: absolute;
+    width: 132px;
+    font-size: 10px;
+}
+
+.types {
     display: block;
 }
 
-.tapped > .body > .tags {
+.tags {
     display: block;
 }
 
-.tapped > .body > .text {
+.text {
     display: block;
 }
 
@@ -337,7 +440,21 @@
     width: 200px;
 }
 
+.card_small > .header {
+    position: absolute;
+    font-size: 8px;
+    height: 10px;
+    width: 100px;
+}
+
 .card > .header > .title {
+    position: absolute;
+    text-align: left;
+    top: 0px;
+    left: 0px;
+}
+
+.card_small > .header > .title {
     position: absolute;
     text-align: left;
     top: 0px;
@@ -351,6 +468,13 @@
     right: 0px;
 }
 
+.card_small > .header > .manacost {
+    position: absolute;
+    text-align: right;
+    top: 0px;
+    right: 0px;
+}
+
 .card > .body {
     display: block;
     position: relative;
@@ -358,21 +482,33 @@
     width: 200px;
 }
 
-.card > .body > .types {
+.card_small > .body {
     display: block;
+    position: relative;
+    top: 10px;
+    width: 100px;
+    font-size: 10px;
 }
-
-.card > .body > .tags {
-    display: block;
-}
-
-.card > .body > .text {
-    display: block;
-}
-
 
 .action {
    background: yellow;
+}
+
+#table {
+  position:absolute;
+  left: 200px;
+  top:20px;
+  bottom:5px;
+  right:5px;
+  background: #ccffcc;
+  overflow: auto;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
 }
 
     </style>
@@ -407,37 +543,50 @@
         <div id="view_game">
             <h3>Game</h3>
 
-            <div>
-                <span class="card">
+            <div id="status">
+                <div>Turn: <span id="turn"></span></div>
+                <div>Phase: <span id="phase"></span></div>
+                <div>Step: <span id="step"></span></div>
+                <div><button id="timer"/></div>
+            </div>
+
+            <div id="table">
+                <span class="card_small">
                     <span class="header">
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
                     </span>
                     <span class="body">
                         <span class="types">Legendary Creature Bar</span>
-                        <span class="text">Lorem ipsum dolor sit amet</span>
+                        <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
+
+Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
                 </span>
 
-                <span class="tapped">
+                <span class="tapped_small">
                     <span class="header">
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
                     </span>
                     <span class="body">
                         <span class="types">Legendary Creature Bar</span>
-                        <span class="text">Lorem ipsum dolor sit amet</span>
+                        <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
+
+Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
                 </span>
 
-                <span class="card">
+                <span class="card_small">
                     <span class="header">
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
                     </span>
                     <span class="body">
                         <span class="types">Legendary Creature Bar</span>
-                        <span class="text">Lorem ipsum dolor sit amet</span>
+                        <span class="text">Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
+
+Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
                 </span>
             </div>
