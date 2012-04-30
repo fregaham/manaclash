@@ -130,6 +130,9 @@
             costSpan.append(obj.manacost);
             costSpan.appendTo(headerSpan);
 
+            var bodySpan = $("<span class='body'/>");
+            bodySpan.appendTo(objSpan);
+
             var typeSpan = $("<span class='types'></span>");
             typeSpan.append(obj.supertypes.join(" "));
             typeSpan.append(" ");
@@ -140,17 +143,17 @@
             }
 
             typeSpan.append(obj.subtypes.join(" "));
-            typeSpan.appendTo(objSpan);
+            typeSpan.appendTo(bodySpan);
 
             var tagsSpan = $("<span class='tags'></span>");
             tagsSpan.append(obj.tags.join(" "));
-            tagsSpan.appendTo(objSpan);
+            tagsSpan.appendTo(bodySpan);
 
             objSpan.append(" ");
 
             var textSpan = $("<span class='text'></span>");
             textSpan.append(obj.text);
-            textSpan.appendTo(objSpan);
+            textSpan.appendTo(bodySpan);
 
             return objSpan;
         }
@@ -202,9 +205,8 @@
                 var obj = state["in_play"][i];
 
                 if (obj.controller != null) {
-                    var objSpan = $("<span class='card' id='obj_" + obj.id + "'></span>").appendTo(in_play[obj.controller]);
-                    objSpan.append(obj.title);
-                    objSpan.attr("title", obj.text);
+                    objSpan = displayCard(obj);
+                    objSpan.appendTo(in_play[obj.controller]);
                 }
             }
 
@@ -320,6 +322,14 @@
     display: block;
 }
 
+.tapped > .body > .tags {
+    display: block;
+}
+
+.tapped > .body > .text {
+    display: block;
+}
+
 .card > .header {
     position: absolute;
     font-size: 12px;
@@ -351,6 +361,15 @@
 .card > .body > .types {
     display: block;
 }
+
+.card > .body > .tags {
+    display: block;
+}
+
+.card > .body > .text {
+    display: block;
+}
+
 
 .action {
    background: yellow;
