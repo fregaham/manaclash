@@ -207,15 +207,14 @@
             var view = $("#table");
             view.empty();
 
+            $('#text').empty();
             // is it our turn?
             if (g_role == state["player"]) {
-                $("<p>" + state["text"] + "</p>").appendTo(view);
+                $("#text").append(state["text"]);
             }
             else {
-                $("<p>Waiting on " + state["player"] + " to " + state["text"] + "</p>").appendTo(view);
+                $("#text").append("Waiting on " + state["player"]);
             }
-
-            /* $("<p>Turn: " + state["turn"] + " Phase: " + state["phase"] + " Step: " + state["step"] + "</p>").appendTo(view); */
 
             $("#turn").empty();
             $("#turn").append(state["turn"]);
@@ -271,6 +270,9 @@
             var query = $("#query");
             query.hide();
 
+            var pass = $("#pass");
+            pass.attr("disabled", "disabled");
+
             if (g_role == state["player"]) {
                 if (state["actions"] != null) {
 
@@ -287,18 +289,18 @@
 
                             if (action["text"] != "Pass") {
                                 autopass = false;
+                                var action_span = $("<button></button>").appendTo(actions_div);
+                                action_span.append(action["text"]);
+                                // action_span.addClass('action');
+                                action_span.click({'i':i}, function(event) {
+                                    stopTimer();
+                                    sess.publish(g_gameuri, event.data.i);
+                                });
                             }
                             else {
                                 haspass = true;
+                                pass.removeAttr("disabled");
                             }
-
-                            var action_span = $("<button></button>").appendTo(actions_div);
-                            action_span.append(action["text"]);
-                            // action_span.addClass('action');
-                            action_span.click({'i':i}, function(event) {
-                                stopTimer();
-                                sess.publish(g_gameuri, event.data.i);
-                            });
                         }
                         else {
 
@@ -347,6 +349,10 @@
                     query.show();
                 }
             } 
+        }
+
+        function onPass() {
+            sess.publish(g_gameuri, 0);
         }
 
         function onQueryButton() {
@@ -610,6 +616,10 @@
  width: 200px;
 }
 
+#pass {
+ width: 200px;
+}
+
 body {
   width: 100%;
   height: 100%;
@@ -653,15 +663,37 @@ body {
                 <div>Turn: <span id="turn"></span></div>
                 <div>Phase: <span id="phase"></span></div>
                 <div>Step: <span id="step"></span></div>
-                <div><button id="timer"/>Auto Pass</div>
+
+                <div id="text"></div>
+
+                <div><button id="timer">Auto Pass</button></div>
+                <div><button id="pass" onclick="onPass();">Pass</button></div>
 
                 <div id="actions">
                 </div>
+
                 <div id="query">
-                    <div id="query_text"/>
+                    <div id="query_text"></div>
                     <input id="query_input"/>
-                    <button id="query_button"/>
+                    <div>
+                        <button id="query_button">Answer</button>
+                    </div>
                 </div>
+
+                <div id="opponent">
+                    <h3 id="opponent_name"></h3>
+                    <div id="opponent_hand"></div>
+                    <div id="opponent_library"></div>
+                    <div id="opponent_graveyard"></div>
+                </div>
+
+                <div id="player">
+                    <h3 id="player_name"></h3>
+                    <div id="player_hand"></div>
+                    <div id="player_library"></div>
+                    <div id="player_graveyard"></div>
+                </div>
+
             </div>
 
             <div id="table">

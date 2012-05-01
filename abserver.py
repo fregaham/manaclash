@@ -23,7 +23,7 @@ import sys
 import mc
 
 
-
+from objects import Player
 from mcio import Output
 from game import Game
 from process import process_game
@@ -137,7 +137,11 @@ def ab_input_generator(ab_game):
                 am = {}
                 am["text"] = a.text
                 if a.object is not None:
-                    am["object"] = a.object.id
+                    # We don't treat players as objects on the client side
+                    if isinstance(a.object, Player):
+                        am["player"] = player_to_role(_as.game, a.object) 
+                    else:
+                        am["object"] = a.object.id
                 if a.ability is not None:
                     am["ability"] = a.ability.get_text(_as.game, a.object)
                     if isinstance(a.ability, BasicManaAbility):
