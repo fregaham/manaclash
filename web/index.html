@@ -43,13 +43,13 @@
             );
 
             $("#timer").click(function(event) {
-                if (g_timer != null) {
-                    clearTimeout(g_timer);    
-                    g_timer = null;
-                    $("#timer").hide();
-                }
+                stopTimer();
             });
-            $("#timer").hide();
+            $("#timer").attr("disabled", "disabled");
+
+            $("#query_button").click(function(event) {
+                onQueryButton();
+            });
 
             view("view_lobby");
 
@@ -132,7 +132,20 @@
         function displayCard(obj) {
 
             var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
-            objSpan.attr("title", obj.text);
+
+            var fulltext =  obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
+            if (obj.subtypes.length > 0) {
+                fulltext += " - ";
+            }
+            fulltext += obj.subtypes.join(" ");
+
+            fulltext += obj.text;
+
+            if (obj.power != null) {
+                fulltext += " " + obj.power + "/" + obj.toughness;
+            }
+
+            objSpan.attr("title", fulltext);
 
             var headerSpan = $("<span class='header'/>");
             headerSpan.appendTo(objSpan);
@@ -144,6 +157,12 @@
             var costSpan = $("<span class='manacost'></span>");
             costSpan.append(obj.manacost);
             costSpan.appendTo(headerSpan);
+
+            if (obj.power != null) {
+                var powerSpan = $("<span class='power'></span>");
+                powerSpan.append(obj.power + "/" + obj.toughness);
+                powerSpan.appendTo(objSpan);
+            }
 
             var bodySpan = $("<span class='body'/>");
             bodySpan.appendTo(objSpan);
@@ -169,6 +188,8 @@
             var textSpan = $("<span class='text'></span>");
             textSpan.append(obj.text);
             textSpan.appendTo(bodySpan);
+
+            
 
             return objSpan;
         }
@@ -244,62 +265,112 @@
                 displayZone(player["hand"], hands[players[i]]);
             }
 
+            var actions_div = $("#actions");
+            actions_div.empty();
+
+            var query = $("#query");
+            query.hide();
+
             if (g_role == state["player"]) {
-                var actions_div = $("<div>Actions:</div>").appendTo(view);
+                if (state["actions"] != null) {
 
-                var autopass = true;
-                var haspass = false;
+                    var autopass = true;
+                    var haspass = false;
 
-                if (state["text"] != "You have priority") {
-                    autopass = false;
-                }
+                    if (state["text"] != "You have priority") {
+                        autopass = false;
+                    }
 
-                for (var i = 0; i < state["actions"].length; ++i) {
-                    var action = state["actions"][i];
-                    if (action["object"] == null) {
+                    for (var i = 0; i < state["actions"].length; ++i) {
+                        var action = state["actions"][i];
+                        if (action["object"] == null) {
 
-                        if (action["text"] != "Pass") {
-                            autopass = false;
+                            if (action["text"] != "Pass") {
+                                autopass = false;
+                            }
+                            else {
+                                haspass = true;
+                            }
+
+                            var action_span = $("<button></button>").appendTo(actions_div);
+                            action_span.append(action["text"]);
+                            // action_span.addClass('action');
+                            action_span.click({'i':i}, function(event) {
+                                stopTimer();
+                                sess.publish(g_gameuri, event.data.i);
+                            });
                         }
                         else {
-                            haspass = true;
-                        }
 
-                        var action_span = $("<button></button>").appendTo(actions_div);
-                        action_span.append(action["text"]);
-                        // action_span.addClass('action');
-                        action_span.click({'i':i}, function(event) {
-                            sess.publish(g_gameuri, event.data.i);
-                        });
+                            if (action["manaability"] == null || action["manaability"] == false) {
+                                autopass = false;
+                            }
+
+                            var action_obj = $('#obj_' + action["object"]);
+                            action_obj.addClass('action');
+                            action_obj.click({'i':i}, function(event) {
+                                stopTimer();
+                                sess.publish(g_gameuri, event.data.i);
+                            });
+                        }
+                    }
+
+                    // auto select no more attackers if none available
+                    if (state["actions"].length == 1 && state["actions"][0]["text"] == "No more attackers" && state["step"] == "declare attackers" && state["text"] == "Select attackers") {
+                        autopass = true;
+                    }
+
+                    // auto select no more blockers if none available
+                    if (state["actions"].length == 1 && state["actions"][0]["text"] == "No more blockers" && state["step"] == "declare blockers" && state["text"] == "Select blockers") {
+                        autopass = true;
+                    }
+
+                    if (autopass) {
+                        sess.publish(g_gameuri, 0);
                     }
                     else {
+                        if (state["text"] == "You have priority" && haspass && !(state["turn"] == g_role && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
+                            g_timeout = 5;
+                            g_timer = setTimeout('onTimer()', 1000);
 
-                        if (action["manaability"] == null || action["manaability"] == false) {
-                            autopass = false;
+                            $("#timer").empty();
+                            $("#timer").append(g_timeout);
+
+                            $("#timer").removeAttr("disabled");
                         }
-
-                        var action_obj = $('#obj_' + action["object"]);
-                        action_obj.addClass('action');
-                        action_obj.click({'i':i}, function(event) {
-                            sess.publish(g_gameuri, event.data.i);
-                        });
                     }
                 }
-
-                if (autopass) {
-                    sess.publish(g_gameuri, 0);
-                }
-                else {
-                    if (state["text"] == "You have priority" && haspass && state["phase"] != "precombat main" && state["phase"] != "postcombat main") {
-                        g_timeout = 6;
-                        g_timer = setTimeout('onTimer()', 1000);
-                        $("#timer").show();
-                    }
+                else if (state["query"] != null) {
+                    $("#query_text").empty();
+                    $("#query_text").append(state["query"]);
+                    $("#query_input").val("");
+                    query.show();
                 }
             } 
         }
 
+        function onQueryButton() {
+            sess.publish(g_gameuri, $("query_input").val());
+        }
+
+        function stopTimer() {
+            if (g_timer != null) {
+                clearTimeout(g_timer);
+            }
+            g_timer = null;
+            g_timeout = null;
+            $("#timer").attr("disabled", "disabled");
+
+            $("#timer").empty();
+            $("#timer").append("Auto Pass");
+        }
+
         function onTimer() {
+
+            if (g_timeout == null) {
+                return;
+            }
+
             g_timeout--;
 
             $("#timer").empty();
@@ -307,8 +378,7 @@
 
             if (g_timeout <= 0) {
                 sess.publish(g_gameuri, 0);
-                clearTimeout(g_timer);
-                $("#timer").hide();
+                stopTimer();
             }
             else {
                 setTimeout('onTimer()', 1000);
@@ -334,6 +404,7 @@
 }
 
 .card_small {
+    position: relative;
     display: inline-block;
     width: 100px;
     height: 142px;
@@ -353,6 +424,7 @@
 }
 
 .tapped_small {
+    position: relative;
     width: 142px;
     height: 100px;
     display: inline-block;
@@ -410,13 +482,28 @@
     right: 0px;
 }
 
+.tapped_small > .power {
+    display: block;
+    position: relative;
+    font-size: 10px;
+    height: 12px;
+    width: 20px;
+    left: 0px;
+    top: 88px;
+    background: inherit;
+    z-index: 1;
+    text-align: left;
+}
+
 .tapped > .body {
     position: absolute;
     width: 265px;
 }
 
 .tapped_small > .body {
+    display: block;
     position: absolute;
+    top: 0px;
     width: 132px;
     font-size: 10px;
 }
@@ -484,10 +571,25 @@
 
 .card_small > .body {
     display: block;
-    position: relative;
+    position: absolute;
     top: 10px;
+    left: 0px;
     width: 100px;
+    height: 100px;
     font-size: 10px;
+}
+
+.card_small > .power {
+    display: block;
+    position: relative;
+    font-size: 10px;
+    height: 12px;
+    width: 20px;
+    left: 80px;
+    top: 130px;
+    background: inherit;
+    z-index: 1;
+    text-align: right;
 }
 
 .action {
@@ -502,6 +604,10 @@
   right:5px;
   background: #ccffcc;
   overflow: auto;
+}
+
+#timer {
+ width: 200px;
 }
 
 body {
@@ -547,7 +653,15 @@ body {
                 <div>Turn: <span id="turn"></span></div>
                 <div>Phase: <span id="phase"></span></div>
                 <div>Step: <span id="step"></span></div>
-                <div><button id="timer"/></div>
+                <div><button id="timer"/>Auto Pass</div>
+
+                <div id="actions">
+                </div>
+                <div id="query">
+                    <div id="query_text"/>
+                    <input id="query_input"/>
+                    <button id="query_button"/>
+                </div>
             </div>
 
             <div id="table">
@@ -556,6 +670,8 @@ body {
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
                     </span>
+                         <span class="power">3/2</span>
+ 
                     <span class="body">
                         <span class="types">Legendary Creature Bar</span>
                         <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
@@ -569,12 +685,15 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
                     </span>
+                    <span class="power">3/2</span>
+
                     <span class="body">
                         <span class="types">Legendary Creature Bar</span>
                         <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
 
 Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
+
                 </span>
 
                 <span class="card_small">
@@ -582,6 +701,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
                     </span>
+                    <span class="power">3/2</span>
                     <span class="body">
                         <span class="types">Legendary Creature Bar</span>
                         <span class="text">Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
