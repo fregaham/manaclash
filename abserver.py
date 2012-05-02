@@ -178,7 +178,10 @@ def ab_input_generator(ab_game):
                     if client_message >= 0 and client_message < len(_as.actions):
                         action = _as.actions[client_message]
                 elif isinstance(_as, QueryNumber):
-                    action = client_message
+                    try:
+                        action = int(client_message)
+                    except ValueError:
+                        action = None
 
         ab_game.current_player = None
         _as = yield action

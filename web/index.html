@@ -137,7 +137,7 @@
             if (obj.subtypes.length > 0) {
                 fulltext += " - ";
             }
-            fulltext += obj.subtypes.join(" ");
+            fulltext += obj.subtypes.join(" ") + " ";
 
             fulltext += obj.text;
 
@@ -291,7 +291,7 @@
                                 autopass = false;
                                 var action_span = $("<button></button>").appendTo(actions_div);
                                 action_span.append(action["text"]);
-                                // action_span.addClass('action');
+                                action_span.addClass('action_button');
                                 action_span.click({'i':i}, function(event) {
                                     stopTimer();
                                     sess.publish(g_gameuri, event.data.i);
@@ -352,11 +352,12 @@
         }
 
         function onPass() {
+            stopTimer();
             sess.publish(g_gameuri, 0);
         }
 
         function onQueryButton() {
-            sess.publish(g_gameuri, $("query_input").val());
+            sess.publish(g_gameuri, $("#query_input").val());
         }
 
         function stopTimer() {
@@ -602,6 +603,11 @@
    background: yellow;
 }
 
+.action_button {
+   display:block;
+   width: 200px;
+}
+
 #table {
   position:absolute;
   left: 200px;
@@ -610,6 +616,10 @@
   right:5px;
   background: #ccffcc;
   overflow: auto;
+}
+
+#status {
+  width: 200px;
 }
 
 #timer {
@@ -670,6 +680,9 @@ body {
                 <div><button id="pass" onclick="onPass();">Pass</button></div>
 
                 <div id="actions">
+                    <button class="action_button">Action 1</button>
+                    <button class="action_button">Action 2</button>
+                    <button class="action_button">Action 2</button>
                 </div>
 
                 <div id="query">
