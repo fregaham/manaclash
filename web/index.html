@@ -13,6 +13,7 @@
         var g_gameuri = null;
         var g_timer = null;
         var g_timeout = null;
+        var g_state = null;
 
         window.onload = function() {
 
@@ -52,7 +53,7 @@
             });
 
             view("view_lobby");
-
+            showZone(null);
         };
 
         function subscribeGame(gameUri) {
@@ -204,6 +205,9 @@
         }
 
         function onState(state) {
+
+            g_state = state;
+
             var view = $("#table");
             view.empty();
 
@@ -254,7 +258,6 @@
             stack.appendTo(view);
             player_divs["player"].appendTo(view);
 
-
             for (var i = 0; i < players.length; ++i) {
                 in_play[players[i]] = $("<div>In play</div>").appendTo(player_divs[players[i]]);
                 hands[players[i]] = $("<div>Hand</div>").appendTo(player_divs[players[i]]);
@@ -287,6 +290,11 @@
                 $("#" + rolemap[player.role] + "_life").empty(); 
                 $("#" + rolemap[player.role] + "_life").append(player.life);
 
+                $("#" + rolemap[player.role] + "_graveyard_zone").empty(); 
+                $("#" + rolemap[player.role] + "_library_zone").empty(); 
+
+                displayZone(player["graveyard"], $("#" + rolemap[player.role] + "_graveyard_zone"));
+                displayZone(player["library"], $("#" + rolemap[player.role] + "_library_zone"));
                 displayZone(player["hand"], hands[players[i]]);
             }
 
@@ -424,6 +432,22 @@
 
             $("#" + v).show();
         }
+
+        function showZone(zone) {
+            $("#player_graveyard_zone").hide();
+            $("#player_library_zone").hide();
+            $("#opponent_graveyard_zone").hide();
+            $("#opponent_library_zone").hide();
+
+            if (zone != null) {
+                zone.show();
+                $("#zones").show();
+            }
+            else {
+                $("#zones").hide();
+            }
+        }
+
 // ]]>
     </script>
     <style>
@@ -656,6 +680,18 @@
  width: 200px;
 }
 
+#zones {
+    position:absolute;
+    left:300px;
+    top:100px;
+    right:100px;
+    bottom:100px;
+    z-index: 2;
+    background: #aaccaa;
+    border: 1px solid black;
+    overflow: auto;
+}
+
 body {
   width: 100%;
   height: 100%;
@@ -721,18 +757,18 @@ body {
 
                 <div id="opponent">
                     <h3 id="opponent_name"></h3>
-                    <div id="opponent_life"></div>
-                    <div id="opponent_hand"></div>
-                    <div id="opponent_library"></div>
-                    <div id="opponent_graveyard"></div>
+                    <div>Life: <span id="opponent_life"></span></div>
+                    <div>Hand: <span id="opponent_hand"></span></div>
+                    <div onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></div>
+                    <div onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></div>
                 </div>
 
                 <div id="player">
                     <h3 id="player_name"></h3>
-                    <div id="player_life"></div>
-                    <div id="player_hand"></div>
-                    <div id="player_library"></div>
-                    <div id="player_graveyard"></div>
+                    <div>Life: <span id="player_life"></span></div>
+                    <div>Hand: <span id="player_hand"></span></div>
+                    <div onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></div>
+                    <div onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></div>
                 </div>
 
             </div>
@@ -782,6 +818,14 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
 Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
                 </span>
+            </div>
+
+            <div id="zones">
+                <button id="zones_hide" onclick="showZone(null);">X</button>
+                <div class="zone" id="player_graveyard_zone"></div>
+                <div class="zone" id="player_library_zone"></div>
+                <div class="zone" id="opponent_graveyard_zone"></div>
+                <div class="zone" id="opponent_library_zone"></div>
             </div>
         </div>
     </body>
