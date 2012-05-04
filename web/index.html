@@ -228,21 +228,32 @@
 
             var in_play = [];
             var hands = [];
-
             var players = [];
-            players.push("player1");
-            players.push("player2");
+            var rolemap = {};
+
+            if (g_role == "player1") {
+                players.push("player");
+                players.push("opponent");
+            }
+            else {
+                players.push("opponent");
+                players.push("player");
+            }
 
             player_divs = [];
-            
+           
             for (var i = 0; i < players.length; ++i) {
-                if (i == 1) {
-                    var stack = $("<div>Stack</div>");
-                    displayZone(state["stack"], stack);
-                    stack.appendTo(view);
-                }
-                player_divs[players[i]] = $("<div><h3>" + players[i] + "</h3></div>").appendTo(view);
+                player_divs[players[i]] = $("<div><h3>" + state["players"][i].name + "</h3></div>");
+                rolemap["player" + (i+1)] = players[i];
             }
+
+            var stack = $("<div>Stack</div>");
+            displayZone(state["stack"], stack);
+
+            player_divs["opponent"].appendTo(view);
+            stack.appendTo(view);
+            player_divs["player"].appendTo(view);
+
 
             for (var i = 0; i < players.length; ++i) {
                 in_play[players[i]] = $("<div>In play</div>").appendTo(player_divs[players[i]]);
@@ -254,12 +265,27 @@
 
                 if (obj.controller != null) {
                     objSpan = displayCard(obj);
-                    objSpan.appendTo(in_play[obj.controller]);
+                    objSpan.appendTo(in_play[rolemap[obj.controller]]);
                 }
             }
 
             for (var i = 0; i < state["players"].length; ++i) {
                 var player = state["players"][i];
+
+                $("#" + rolemap[player.role] + "_name").empty(); 
+                $("#" + rolemap[player.role] + "_name").append(player.name);
+
+                $("#" + rolemap[player.role] + "_hand").empty(); 
+                $("#" + rolemap[player.role] + "_hand").append(player.hand.length);
+
+                $("#" + rolemap[player.role] + "_library").empty(); 
+                $("#" + rolemap[player.role] + "_library").append(player.library.length);
+
+                $("#" + rolemap[player.role] + "_graveyard").empty(); 
+                $("#" + rolemap[player.role] + "_graveyard").append(player.graveyard.length);
+
+                $("#" + rolemap[player.role] + "_life").empty(); 
+                $("#" + rolemap[player.role] + "_life").append(player.life);
 
                 displayZone(player["hand"], hands[players[i]]);
             }
@@ -695,6 +721,7 @@ body {
 
                 <div id="opponent">
                     <h3 id="opponent_name"></h3>
+                    <div id="opponent_life"></div>
                     <div id="opponent_hand"></div>
                     <div id="opponent_library"></div>
                     <div id="opponent_graveyard"></div>
@@ -702,6 +729,7 @@ body {
 
                 <div id="player">
                     <h3 id="player_name"></h3>
+                    <div id="player_life"></div>
                     <div id="player_hand"></div>
                     <div id="player_library"></div>
                     <div id="player_graveyard"></div>
