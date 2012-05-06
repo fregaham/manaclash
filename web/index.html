@@ -15,6 +15,8 @@
         var g_timeout = null;
         var g_state = null;
 
+        var g_playermap = null;
+
         window.onload = function() {
 
             if (window.location.protocol === "file:") {
@@ -54,10 +56,16 @@
 
             view("view_lobby");
             showZone(null);
+
+            // clear the log
+            $("#messages").empty();
         };
 
         function subscribeGame(gameUri) {
             sess.subscribe(gameUri + "/state", onGame);
+            sess.subscribe(gameUri + "/zoneTransfer", onLogZoneTransfer);
+            sess.subscribe(gameUri + "/action", onLogAction);
+            sess.subscribe(gameUri + "/number", onLogNumber);
         }
 
         function onUsers(topicUri, users) {
@@ -233,7 +241,11 @@
             var in_play = [];
             var hands = [];
             var players = [];
+            // playerN -> player|opponent
             var rolemap = {};
+            
+            // playerN -> player object
+            g_playermap = {};
 
             if (g_role == "player1") {
                 players.push("player");
@@ -275,6 +287,8 @@
             for (var i = 0; i < state["players"].length; ++i) {
                 var player = state["players"][i];
 
+                g_playermap["player" + (i+1)] = player;
+
                 $("#" + rolemap[player.role] + "_name").empty(); 
                 $("#" + rolemap[player.role] + "_name").append(player.name);
 
@@ -306,6 +320,8 @@
 
             var pass = $("#pass");
             pass.attr("disabled", "disabled");
+
+            appendLog("" + g_playermap[state["player"]].name + ", " + state["text"]);
 
             if (g_role == state["player"]) {
                 if (state["actions"] != null) {
@@ -446,6 +462,26 @@
             else {
                 $("#zones").hide();
             }
+        }
+
+        // Logs
+
+        function appendLog(log) {
+            var msg = $("<div class='message'></div>");
+            msg.append(log);
+            msg.appendTo($("#messages"));
+        }
+
+        function onLogZoneTransfer(uri, zoneTransfer) {
+            appendLog("" + zoneTransfer[2].title + " moved from " + zoneTransfer[0] + " to " + zoneTransfer[1]);
+        }
+
+        function onLogAction(uri, actionMessage) {
+            appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]["text"]);
+        }
+
+        function onLogNumber(uri, numberMessage) {
+            appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]);
         }
 
 // ]]>
@@ -662,10 +698,30 @@
   position:absolute;
   left: 200px;
   top:20px;
-  bottom:5px;
+  bottom:100px;
   right:5px;
   background: #ccffcc;
   overflow: auto;
+}
+
+#game_messages {
+    position: absolute;
+    bottom:0px;
+    left: 200px;
+    right:5px;
+    height:100px;
+    background: #ffcccc;
+}
+
+#game_messages_form {
+    position:absolute;
+    bottom:0px;
+    height: 32px;
+}
+
+#game_messages > #messages {
+  overflow: auto;
+  height: 68px;
 }
 
 #status {
@@ -691,6 +747,7 @@
     border: 1px solid black;
     overflow: auto;
 }
+
 
 body {
   width: 100%;
@@ -818,6 +875,19 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
 Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
                 </span>
+            </div>
+
+            <div id="game_messages">
+                <div id="messages">
+                    <div id="message">foo</div>
+                    <div id="message">foo</div>
+                    <div id="message">foo</div>
+                    <div id="message">foo</div>
+                    <div id="message">foo</div>
+                </div>
+                <div id="game_messages_form">
+                    <input id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button>
+                </div>
             </div>
 
             <div id="zones">

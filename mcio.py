@@ -81,6 +81,27 @@ class Output:
     def createDamageAssignment(self, id):
         print("Creating damage assignment %d" % id)
 
+    def zoneTransfer(self, zoneFrom, zoneTo, obj):
+        pass
+
+    def damage(self, source, target, n):
+        pass
+
+    def regenerate(self, obj):
+        pass
+
+    def destroy(self, obj):
+        pass
+
+    def counter(self, obj):
+        pass
+
+    def sacrifice(self, obj):
+        pass
+
+    def bury(self, obj):
+        pass
+
 class NullOutput(Output):
     def deleteObject(self, obj):
         pass

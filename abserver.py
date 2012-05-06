@@ -87,6 +87,12 @@ def object_to_map(game, o):
 
     return ret
 
+def zone_to_string(game, zone):
+    if zone.player_id == None:
+        return zone.type
+    else:
+        return game.objects[zone.player_id].name + "'s " + zone.type
+
 def zone_to_list(game, zone):
     ret = []
     for o in zone.objects:
@@ -177,14 +183,44 @@ def ab_input_generator(ab_game):
                 if isinstance(_as, ActionSet):
                     if client_message >= 0 and client_message < len(_as.actions):
                         action = _as.actions[client_message]
+                        am = actions[client_message]
+                        g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/action", (client_player.role, am))
                 elif isinstance(_as, QueryNumber):
                     try:
                         action = int(client_message)
+                        g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/number", (client_player.role, action))
                     except ValueError:
                         action = None
 
         ab_game.current_player = None
         _as = yield action
+
+class ABOutput(Output):
+
+    def __init__ (self, abgame):
+        self.abgame = abgame
+
+    def deleteObject(self, obj):
+        pass
+
+    def createPlayer(self, id):
+        pass
+
+    def createCard(self, id):
+        pass
+
+    def createZone(self, id, owner, name):
+        pass
+
+    def createEffectObject(self, id):
+        pass
+
+    def createDamageAssignment(self, id):
+        pass
+
+    def zoneTransfer(self, zoneFrom, zoneTo, obj):
+        game = self.abgame.game
+        g_factory.dispatch("http://manaclash.org/game/" + str(self.abgame.id) + "/zoneTransfer", (zone_to_string(game, zoneFrom), zone_to_string(game, zoneTo), object_to_map(game, obj)))
 
 class ABGame:
     def __init__ (self, id):
@@ -193,36 +229,37 @@ class ABGame:
         self.current_player = None
         self.current_state = None
         self.queue = Queue()
+        self.game = None
 
     def remove(self, player):
         self.players.remove(player)
         player.user.players.remove(player)
 
-        Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.id) + "/remove", (player.user.login, player.role))
+        g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/remove", (player.user.login, player.role))
 
     def add(self, player):
         self.players.append(player)
         player.user.players.append(player)
 
-        Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.id) + "/add", (player.user.login, player.role))
+        g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/add", (player.user.login, player.role))
 
     def start(self):
-        output = Output()
+        output = ABOutput(self)
         ig = ab_input_generator(self)
 
         n = ig.next()
-        g = Game(ig, output)
-        g.create()
+        self.game = Game(ig, output)
+        self.game.create()
 
-        c1 = mc.red_deck(g, g_cards)
+        c1 = mc.red_deck(self.game, g_cards)
         random.shuffle(c1)
-        g.create_player("Alice", c1)
+        self.game.create_player("Alice", c1)
 
-        c2 = mc.blue_deck(g, g_cards)
+        c2 = mc.blue_deck(self.game, g_cards)
         random.shuffle(c2)
-        g.create_player("Bob", c2)
+        self.game.create_player("Bob", c2)
 
-        process_game(g)
+        process_game(self.game)
         
 
 class ABPlayer:
