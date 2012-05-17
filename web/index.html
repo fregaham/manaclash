@@ -54,6 +54,10 @@
                 onQueryButton();
             });
 
+            $("#game_messages_expand").click(function(event) {
+                onLogExpand();
+            });
+
             view("view_lobby");
             showZone(null);
 
@@ -142,7 +146,7 @@
 
             var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
 
-            var fulltext =  obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
+            var fulltext =  "#" + obj.id + " " + obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
             if (obj.subtypes.length > 0) {
                 fulltext += " - ";
             }
@@ -470,6 +474,8 @@
             var msg = $("<div class='message'></div>");
             msg.append(log);
             msg.appendTo($("#messages"));
+
+            $("#messages").scrollTop($("#messages")[0].scrollHeight);
         }
 
         function onLogZoneTransfer(uri, zoneTransfer) {
@@ -482,6 +488,10 @@
 
         function onLogNumber(uri, numberMessage) {
             appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]);
+        }
+
+        function onLogExpand() {
+            $("#game_messages").toggleClass("game_messages_expanded");
         }
 
 // ]]>
@@ -711,6 +721,17 @@
     right:5px;
     height:100px;
     background: #ffcccc;
+    z-index:2;
+}
+
+.game_messages_expanded {
+    position: absolute;
+    bottom:0px;
+    left: 200px;
+    right:5px;
+    top:100px;
+    height: auto !important;
+    background: #ffcccc;
 }
 
 #game_messages_form {
@@ -720,8 +741,12 @@
 }
 
 #game_messages > #messages {
+  position:absolute;
   overflow: auto;
-  height: 68px;
+  bottom: 32px;
+  top:0px;
+  right:0px;
+  left:0px;
 }
 
 #status {
@@ -886,7 +911,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                     <div id="message">foo</div>
                 </div>
                 <div id="game_messages_form">
-                    <input id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button>
+                    <input id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button> <button id="game_messages_expand">^</button>
                 </div>
             </div>
 
