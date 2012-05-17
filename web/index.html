@@ -17,6 +17,8 @@
 
         var g_playermap = null;
 
+        var g_imgprefix = null;
+
         window.onload = function() {
 
             if (window.location.protocol === "file:") {
@@ -67,6 +69,11 @@
 
             // clear the log
             $("#messages").empty();
+
+            if(typeof(Storage)!=="undefined") {
+                g_imgprefix = localStorage.imgprefix;
+                $("#settings_imgprefix").val(g_imgprefix);
+            }
         };
 
         function subscribeGame(gameUri) {
@@ -164,6 +171,15 @@
             }
 
             objSpan.attr("title", fulltext);
+
+            if (g_imgprefix != null && g_imgprefix != "") {
+                var img = $("<img/>");
+                var imgstring = obj.title.replace(" ", "") + ".jpg";
+                img.attr("src", g_imgprefix + imgstring);
+                img.attr("alt", "");
+
+                img.appendTo(objSpan);
+            }
 
             var headerSpan = $("<span class='header'/>");
             headerSpan.appendTo(objSpan);
@@ -454,6 +470,7 @@
         function view(v) {
             $("#view_lobby").hide();
             $("#view_game").hide();
+            $("#view_settings").hide();
 
             $("#" + v).show();
         }
@@ -517,6 +534,13 @@
             $("#messages").scrollTop($("#messages")[0].scrollHeight);
         }
 
+        function settingsSave() {
+            g_imgprefix = $("#settings_imgprefix").val();
+
+            if(typeof(Storage)!=="undefined") {
+                localStorage.imgprefix = g_imgprefix;
+            }
+        }
 // ]]>
     </script>
     <style>
@@ -540,6 +564,13 @@
     overflow: hidden;
 }
 
+.card_small > img {
+   position: absolute;
+   width: 100px;
+   height: 142px;
+   z-index: 2;
+}
+
 .tapped {
     width: 285px;
     height: 200px;
@@ -558,6 +589,15 @@
     cursor: pointer;
     vertical-align: top;
     overflow: hidden;
+}
+
+.tapped_small > img {
+   position: absolute;
+   width: 100px;
+   height: 142px;
+   z-index: 2;
+  -webkit-transform: rotate(90deg) translate(-21px, -21px);
+  -moz-transform: rotate(90deg) translate(-21px, -21px);
 }
 
 .tapped .header {
@@ -744,7 +784,7 @@
     right:5px;
     height:100px;
     background: #ffcccc;
-    z-index:2;
+    z-index:10;
 }
 
 .game_messages_expanded {
@@ -798,7 +838,7 @@
     top:100px;
     right:100px;
     bottom:100px;
-    z-index: 2;
+    z-index: 5;
     background: #aaccaa;
     border: 1px solid black;
     overflow: auto;
@@ -817,7 +857,7 @@ body {
     <body>
 
         <div>
-            <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_game');">Game</button>
+            <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_game');">Game</button> | <button onclick="view('view_settings');">Settings</button>
         </div>
 
         <div id="view_lobby">
@@ -888,6 +928,7 @@ body {
 
             <div id="table">
                 <span class="card_small">
+                    <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>
                     <span class="header">
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
@@ -903,6 +944,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                 </span>
 
                 <span class="tapped_small">
+                    <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>
                     <span class="header">
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
@@ -952,6 +994,21 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                 <div class="zone" id="player_library_zone"></div>
                 <div class="zone" id="opponent_graveyard_zone"></div>
                 <div class="zone" id="opponent_library_zone"></div>
+            </div>
+        </div>
+
+        <div id="view_settings">
+            <h3>Settings</h3>
+
+            <div>
+                <div>
+                    <div>Card Images URL prefix</div>
+                    <div><input id="settings_imgprefix" name="settings_imgprefix"/></div>
+                </div>
+
+                <div>
+                    <button id="settings_save" name="settings_save" onclick="settingsSave();">Save</button>
+                </div>
             </div>
         </div>
     </body>
