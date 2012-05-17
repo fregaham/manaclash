@@ -225,7 +225,7 @@ def process_play_spell (game, ability, player, obj):
 
 def process_activate_tapping_ability(game, ability, player, obj, effect):
 
-    e = game.create_effect_object (LastKnownInformation(game, obj), player, effect, {})
+    e = game.create_effect_object (LastKnownInformation(game, obj), player.id, effect, {})
 
     stack = game.get_stack_zone()
     e.zone_id = stack.id
@@ -251,7 +251,7 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
 
 def process_activate_ability(game, ability, player, obj, effect):
 
-    e = game.create_effect_object (LastKnownInformation(game, obj), player, effect, {})
+    e = game.create_effect_object (LastKnownInformation(game, obj), player.id, effect, {})
 
     stack = game.get_stack_zone()
     e.zone_id = stack.id

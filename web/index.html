@@ -174,7 +174,7 @@
 
             if (g_imgprefix != null && g_imgprefix != "") {
                 var img = $("<img/>");
-                var imgstring = obj.title.replace(" ", "") + ".jpg";
+                var imgstring = obj.title + ".jpg";
                 img.attr("src", g_imgprefix + imgstring);
                 img.attr("alt", "");
 
@@ -548,7 +548,6 @@
     display: inline-block;
     width: 200px;
     height: 285px;
-    border: 1px solid black;
     cursor: pointer;
     vertical-align: top;
 }
@@ -558,7 +557,6 @@
     display: inline-block;
     width: 100px;
     height: 142px;
-    border: 1px solid black;
     cursor: pointer;
     vertical-align: top;
     overflow: hidden;
@@ -575,7 +573,6 @@
     width: 285px;
     height: 200px;
     display: inline-block;
-    border: 1px solid black;
     cursor: pointer;
     vertical-align: top;
 }
@@ -585,7 +582,6 @@
     width: 142px;
     height: 100px;
     display: inline-block;
-    border: 1px solid black;
     cursor: pointer;
     vertical-align: top;
     overflow: hidden;
@@ -759,7 +755,7 @@
 }
 
 .action {
-   background: yellow;
+   border: solid 2px yellow;
 }
 
 .action_button {
@@ -773,7 +769,7 @@
   top:20px;
   bottom:100px;
   right:5px;
-  background: #ccffcc;
+  background: #336633;
   overflow: auto;
 }
 
