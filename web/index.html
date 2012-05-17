@@ -55,7 +55,11 @@
             });
 
             $("#game_messages_expand").click(function(event) {
-                onLogExpand();
+                expandLog();
+            });
+
+            $("#game_messages_send").click(function(event) {
+                sendMessage();
             });
 
             view("view_lobby");
@@ -70,6 +74,7 @@
             sess.subscribe(gameUri + "/zoneTransfer", onLogZoneTransfer);
             sess.subscribe(gameUri + "/action", onLogAction);
             sess.subscribe(gameUri + "/number", onLogNumber);
+            sess.subscribe(gameUri + "/message", onLogMessage);
         }
 
         function onUsers(topicUri, users) {
@@ -476,6 +481,8 @@
             msg.appendTo($("#messages"));
 
             $("#messages").scrollTop($("#messages")[0].scrollHeight);
+
+            return msg;
         }
 
         function onLogZoneTransfer(uri, zoneTransfer) {
@@ -490,8 +497,24 @@
             appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]);
         }
 
-        function onLogExpand() {
+        /* Messages sent by players */
+        function onLogMessage(uri, message) {
+            var msg = appendLog("" + g_playermap[message[0]].name + " " + message[1]);
+            if (message[0] == g_role) {
+                msg.addClass("player_message");
+            }
+            else {
+                msg.addClass("opponent_message");
+            }
+        }
+
+        function sendMessage() {
+            sess.publish(g_gameuri + "/message", [g_role, $("#game_messages_input").val()], false);
+        }
+
+        function expandLog() {
             $("#game_messages").toggleClass("game_messages_expanded");
+            $("#messages").scrollTop($("#messages")[0].scrollHeight);
         }
 
 // ]]>
@@ -747,6 +770,14 @@
   top:0px;
   right:0px;
   left:0px;
+}
+
+.player_message {
+  color: green;
+}
+
+.opponent_message {
+  color: red;
 }
 
 #status {

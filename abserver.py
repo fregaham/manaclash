@@ -354,21 +354,27 @@ class MyServerProtocol(WampServerProtocol):
 
         print "onGamePrefixPub url='" + url + "'"
 
-        #game_id = int(url[len("http://manaclash.org/game/"):])
-        game_id = int(foo)
+        if "/" in foo:
+            # TODO: check spoofed sender etc
+            # some game sub-message, such as a player-to-player message
+            return message
+        else:
+            # pure game message
+            #game_id = int(url[len("http://manaclash.org/game/"):])
+            game_id = int(foo)
 
-        print "game_id: " + str(game_id)
+            print "game_id: " + str(game_id)
 
-        game = game_map.get(game_id)
-        if game is not None:
-            print "game is not None"
-            if game.current_player is not None:
-                print "game.current_player is not None"
-                if game.current_player.session_id == self.session_id:
-                    print "game.current_player.session_id == self.session_id"
-                    # send the message to the game
-                    game.queue.put( (game.current_player, message) )
-                    return message
+            game = game_map.get(game_id)
+            if game is not None:
+                print "game is not None"
+                if game.current_player is not None:
+                    print "game.current_player is not None"
+                    if game.current_player.session_id == self.session_id:
+                        print "game.current_player.session_id == self.session_id"
+                        # send the message to the game
+                        game.queue.put( (game.current_player, message) )
+                        return message
 
     def onLogin(self, login, password):
         Context.current_protocol = self
