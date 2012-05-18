@@ -235,8 +235,9 @@
 
                 img.appendTo(objSpan);
             }
-
-            displayCardContents(objSpan, obj);
+            else {
+                displayCardContents(objSpan, obj);
+            }
 
             var detailSpan = $("<span class='card_detail' id='detail_" + obj.id + "'></span>");
             displayCardContents(detailSpan, obj);
@@ -603,6 +604,7 @@
    width: 100px;
    height: 142px;
    z-index: 2;
+   border-radius: 8px;
 }
 
 .tapped {
@@ -630,6 +632,7 @@
    z-index: 2;
   -webkit-transform: rotate(90deg) translate(-21px, -21px);
   -moz-transform: rotate(90deg) translate(-21px, -21px);
+   border-radius: 8px;
 }
 
 .tapped .header {
