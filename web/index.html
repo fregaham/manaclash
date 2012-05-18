@@ -3,6 +3,7 @@
     <head>
         <script src="autobahn.min.js"></script>
         <script src="jquery-1.7.2.js"></script>
+        <script src="functional.js"></script>
         <script>
 // <![CDATA[
         // WAMP session object
@@ -14,10 +15,11 @@
         var g_timer = null;
         var g_timeout = null;
         var g_state = null;
-
         var g_playermap = null;
-
         var g_imgprefix = null;
+
+        // currently detailed card id
+        var g_detail_id = null;
 
         window.onload = function() {
 
@@ -154,33 +156,12 @@
             }
         }
 
-        function displayCard(obj) {
-
-            var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
-
-            var fulltext =  "#" + obj.id + " " + obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
-            if (obj.subtypes.length > 0) {
-                fulltext += " - ";
-            }
-            fulltext += obj.subtypes.join(" ") + " ";
-
-            fulltext += obj.text;
-
-            if (obj.power != null) {
-                fulltext += " " + obj.power + "/" + obj.toughness;
-            }
-
-            objSpan.attr("title", fulltext);
-
-            if (g_imgprefix != null && g_imgprefix != "") {
-                var img = $("<img/>");
-                var imgstring = obj.title + ".jpg";
-                img.attr("src", g_imgprefix + imgstring);
-                img.attr("alt", "");
-
-                img.appendTo(objSpan);
-            }
-
+        /*
+            Renders the card elements
+            objSpan, the root span of the card
+            obj the object representing the card, as got from the server
+        */
+        function displayCardContents(objSpan, obj) {
             var headerSpan = $("<span class='header'/>");
             headerSpan.appendTo(objSpan);
 
@@ -222,8 +203,59 @@
             var textSpan = $("<span class='text'></span>");
             textSpan.append(obj.text);
             textSpan.appendTo(bodySpan);
+       }
 
-            
+        /*
+            Creates and returns a card <span/> from the server card object
+            Also creates a "card_detail" span for this card and appends it hidden into the card_detail container
+        */
+        function displayCard(obj) {
+
+            var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
+
+            var fulltext =  "#" + obj.id + " " + obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
+            if (obj.subtypes.length > 0) {
+                fulltext += " - ";
+            }
+            fulltext += obj.subtypes.join(" ") + " ";
+
+            fulltext += obj.text;
+
+            if (obj.power != null) {
+                fulltext += " " + obj.power + "/" + obj.toughness;
+            }
+
+            objSpan.attr("title", fulltext);
+
+            if (g_imgprefix != null && g_imgprefix != "") {
+                var img = $("<img/>");
+                var imgstring = obj.title + ".jpg";
+                img.attr("src", g_imgprefix + imgstring);
+                img.attr("alt", "");
+
+                img.appendTo(objSpan);
+            }
+
+            displayCardContents(objSpan, obj);
+
+            var detailSpan = $("<span class='card_detail' id='detail_" + obj.id + "'></span>");
+            displayCardContents(detailSpan, obj);
+            detailSpan.hide();
+            detailSpan.appendTo($("#card_details"));
+
+            objSpan.hover(
+                function(id) {
+                    if (g_detail_id != null) {
+                        $("#detail_" + g_detail_id).hide();
+                    }
+                    $("#detail_" + id).show();
+                    g_detail_id = id;
+                }.partial(obj.id),
+                function(id) {
+                    $("#detail_" + id).hide();
+                    g_detail_id = null;
+                }.partial(obj.id)
+            );
 
             return objSpan;
         }
@@ -840,6 +872,26 @@
     overflow: auto;
 }
 
+#card_details {
+    margin-top: 1em;
+}
+
+.card_detail > .power {
+    display: block;
+}
+
+.card_detail > .header {
+    display: block;
+}
+
+.card_detail .title {
+    display: block;
+}
+
+.card_detail .manacost {
+    display: block;
+}
+
 
 body {
   width: 100%;
@@ -918,6 +970,9 @@ body {
                     <div>Hand: <span id="player_hand"></span></div>
                     <div onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></div>
                     <div onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></div>
+                </div>
+
+                <div id="card_details">
                 </div>
 
             </div>
