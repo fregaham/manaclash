@@ -359,6 +359,9 @@
                 $("#" + rolemap[player.role] + "_life").empty(); 
                 $("#" + rolemap[player.role] + "_life").append(player.life);
 
+                $("#" + rolemap[player.role] + "_manapool").empty(); 
+                $("#" + rolemap[player.role] + "_manapool").append(player.manapool);
+
                 $("#" + rolemap[player.role] + "_graveyard_zone").empty(); 
                 $("#" + rolemap[player.role] + "_library_zone").empty(); 
 
@@ -960,6 +963,7 @@ body {
                 <div id="opponent">
                     <h3 id="opponent_name"></h3>
                     <div>Life: <span id="opponent_life"></span></div>
+                    <div>Manapool: <span id="opponent_manapool"></span></div>
                     <div>Hand: <span id="opponent_hand"></span></div>
                     <div onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></div>
                     <div onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></div>
@@ -968,6 +972,7 @@ body {
                 <div id="player">
                     <h3 id="player_name"></h3>
                     <div>Life: <span id="player_life"></span></div>
+                    <div>Manapool: <span id="player_manapool"></span></div>
                     <div>Hand: <span id="player_hand"></span></div>
                     <div onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></div>
                     <div onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></div>
