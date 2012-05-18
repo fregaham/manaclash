@@ -285,8 +285,6 @@
                 $("#text").append("Waiting on " + state["player"]);
             }
 
-            $("#turn").empty();
-            $("#turn").append(state["turn"]);
 
             $("#phase").empty();
             $("#phase").append(state["phase"]);
@@ -368,6 +366,9 @@
                 displayZone(player["library"], $("#" + rolemap[player.role] + "_library_zone"));
                 displayZone(player["hand"], hands[players[i]]);
             }
+
+            $("#turn").empty();
+            $("#turn").append(g_playermap[state["turn"]].name);
 
             var actions_div = $("#actions");
             actions_div.empty();

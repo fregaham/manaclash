@@ -253,11 +253,11 @@ class ABGame:
 
         c1 = mc.red_deck(self.game, g_cards)
         random.shuffle(c1)
-        self.game.create_player("Alice", c1)
+        self.game.create_player(self.players[0].user.login, c1)
 
         c2 = mc.blue_deck(self.game, g_cards)
         random.shuffle(c2)
-        self.game.create_player("Bob", c2)
+        self.game.create_player(self.players[1].user.login, c2)
 
         process_game(self.game)
         
