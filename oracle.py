@@ -125,6 +125,32 @@ def parseOracle(f):
             else:
                 card.sets = card.sets.union(set(map(lambda x:x.strip(), line.split(","))))
 
+def getParseableCards(f):
+    ig = test_input_generator([])
+    n = ig.next()
+    o = NullOutput()
+    g = Game(ig, o)
+    g.create()
+
+    for card in parseOracle(f):
+        if (isParseable(g, card)):
+            yield card
+
+def isParseable(game, card):
+
+    r = card.rules.lower().replace(card.name.lower(), "SELF").replace("\n", ";").replace("—", "-")
+    obj = game.create_card(card.name, card.cost, card.supertypes, card.types, card.subtypes, set(), r, card.power, card.toughness)
+    obj.state = obj.initial_state.copy()
+
+    try:
+        rules = parse(obj)
+        if rules is not None:
+            return True
+    except:
+        pass
+
+    return False
+
 if __name__ == "__main__":
     ig = test_input_generator([])
     n = ig.next()

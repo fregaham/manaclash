@@ -27,7 +27,7 @@ from objects import Player
 from mcio import Output
 from game import Game
 from process import process_game
-from oracle import parseOracle
+from oracle import getParseableCards
 from actions import *
 from abilities import BasicManaAbility
 
@@ -50,10 +50,14 @@ Context = threading.local()
 g_factory = None
 
 # read the oracle
+g_card_names = []
 g_cards = {}
 oracleFile = open("oracle/8th_edition.txt", "r")
-for card in parseOracle(oracleFile):
+for card in getParseableCards(oracleFile):
+    print card.name
     g_cards[card.name] = card
+    g_card_names.append (card.name)
+
 oracleFile.close()
 
 def player_to_role(game, player):
@@ -386,6 +390,8 @@ class MyServerProtocol(WampServerProtocol):
         self.registerMethodForRpc("http://manaclash.org/takeover", self, MyServerProtocol.onTakeover)
         self.registerMethodForRpc("http://manaclash.org/refresh", self, MyServerProtocol.onRefresh)
 
+        self.registerMethodForRpc("http://manaclash.org/getAvailableCards", self, MyServerProtocol.getAvailableCards)
+
         self.registerHandlerForSub("http://manaclash.org/users", self, MyServerProtocol.onUsersSub, prefixMatch=False)
         self.registerHandlerForSub("http://manaclash.org/games", self, MyServerProtocol.onGamesSub, prefixMatch=False)
 
@@ -396,6 +402,17 @@ class MyServerProtocol(WampServerProtocol):
 
     def noPub(self, url, foo, message):
         return False
+
+    def getAvailableCards(self):
+        ret = []
+        for name in g_card_names:
+            card = g_cards[name]
+            o = {}
+            o["name"] = card.name
+            o["cost"] = card.cost
+            o["text"] = card.rules
+            ret.append(o)
+        return ret
 
     def onUsersSub(self, url, foo):
         # send a list of current users to the client subscribing for http://manaclash.org/users

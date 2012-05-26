@@ -25,6 +25,11 @@
         // currently detailed card id
         var g_detail_id = null;
 
+        // List of available cards
+        var g_cards_available = [];
+        var g_cards_decknames = [];
+        var g_cards_decks = {};
+
         window.onload = function() {
 
             if (window.location.protocol === "file:") {
@@ -44,6 +49,8 @@
 
                   sess.subscribe("http://manaclash.org/users", onUsers);
                   sess.subscribe("http://manaclash.org/games", onGames);
+
+                  cardsSetup();
                },
 
                // WAMP session is gone
@@ -80,6 +87,7 @@
                 g_imgprefix = localStorage.imgprefix;
                 $("#settings_imgprefix").val(g_imgprefix);
             }
+
         };
 
         function subscribeGame(gameUri) {
@@ -148,6 +156,7 @@
                                     g_gameuri = uri;
                                 }
                                 g_joining = false;
+                                sess.call("http://manaclash.org/refresh")
                             }
                         );
                     });
@@ -558,6 +567,7 @@
         function view(v) {
             $("#view_lobby").hide();
             $("#view_game").hide();
+            $("#view_cards").hide();
             $("#view_settings").hide();
 
             $("#" + v).show();
@@ -628,6 +638,49 @@
             if(typeof(Storage)!=="undefined") {
                 localStorage.imgprefix = g_imgprefix;
             }
+        }
+
+        /* Stores the current decks into user storage */
+        function cardsSave() {
+        }
+
+        /* Updates the Cards UI (decks) */
+        function cardsUpdate() {
+            $("#cards_decks").empty();
+            for (var i = 0; i < g_cards_decknames.length; i++) {
+                $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
+            }
+        }
+
+        /* Reads available cards from the server and loads decks from the user storage */
+        function cardsSetup() {
+            sess.call("http://manaclash.org/getAvailableCards").then(
+                function(result) {
+                    g_cards_available = result;
+
+                    $("#cards_available").empty();
+
+                    for (var i = 0; i < g_cards_available.length; i++) {
+                        var card = g_cards_available[i];
+                        $("<option value='" + card.name + "'>" + card.name +  "</option>").appendTo($("#cards_available"));
+                    }
+                },
+                function(){ alert("failed to fetch available cards!"); }
+            );
+        }
+
+        function cardsDeckNew() {
+            var deckname = $("#cards_deckname").val();
+            g_cards_decknames.push(deckname);
+            g_cards_decks[deckname] = [];
+
+            cardsUpdate();
+        }
+
+        function cardsDeckRename() {
+        }
+
+        function cardsDeckDelete() {
         }
 // ]]>
     </script>
@@ -963,7 +1016,7 @@ body {
     <body>
 
         <div>
-            <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_game');">Game</button> | <button onclick="view('view_settings');">Settings</button>
+            <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_cards');">Cards</button> | <button onclick="view('view_game');">Game</button> | <button onclick="view('view_settings');">Settings</button>
         </div>
 
         <div id="view_lobby">
@@ -1102,6 +1155,20 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                 <div class="zone" id="opponent_graveyard_zone"></div>
                 <div class="zone" id="opponent_library_zone"></div>
             </div>
+        </div>
+
+        <div id="view_cards">
+            
+            <div>
+                <select id="cards_decks" onchange="cardsSelectDeck();"></select>
+            </div>
+            <div>
+                <input id="cards_deckname"/> <button onclick="cardsDeckNew();">New</button> <button onclick="cardsDeckRename();">Rename</button> <button onclick="cardsDeckDelete();">Delete</button>
+            </div>
+            
+            <select id="cards_available" multiple="multiple"></select>
+            <button onclick="cardsRemove();">&lt;&lt;</button> <button onclick="cardsAdd();">&gt;&gt;</button>
+            <select id="cards_deck" multiple="multiple"></select>
         </div>
 
         <div id="view_settings">
