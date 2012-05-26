@@ -176,7 +176,11 @@ def ab_input_generator(ab_game):
 
             g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/state", state)
 
-            client_player, client_message = ab_game.queue.get()
+            message = ab_game.queue.get()
+            if message is None:
+                return
+
+            client_player, client_message = message
 
             # is the message from the proper client?
             if client_player == ab_game.current_player and client_message is not None:
@@ -259,7 +263,14 @@ class ABGame:
         random.shuffle(c2)
         self.game.create_player(self.players[1].user.login, c2)
 
-        process_game(self.game)
+        try:
+            process_game(self.game)
+        finally:
+            players = self.players[:]
+            for player in players:
+                self.remove(player)
+
+        dispatchGames()
         
 
 class ABPlayer:
@@ -299,6 +310,13 @@ class ABClient:
             self.player = None
         self.user = None
 
+    def setPlayer(self, player):
+        if self.player is not None:
+            self.player.setSessionId(None)
+        self.player = player
+        if self.player is not None:
+            self.player.setSessionId(self.session_id)
+
 
 client_map = {}
 user_map = {}
@@ -306,17 +324,52 @@ game_map = {}
 
 last_game_id = 0
 
+def dispatchUsers(exclude=[], eligible=None):
+    g_factory.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
+
+def dispatchGames(exclude=[], eligible=None):
+    message = []
+    for game in game_map.values():
+        gm = {}
+        gm["id"] = game.id
+        gm["uri"] = "http://manaclash.org/game/" + str(game.id)
+
+        players = []
+        for p in game.players:
+            pm = {}
+            pm["login"] = p.user.login
+            pm["role"] = p.role
+            players.append(pm)
+
+        gm["players"] = players
+
+        message.append(gm)
+    g_factory.dispatch("http://manaclash.org/games", message, exclude, eligible)
+
 class MyServerProtocol(WampServerProtocol):
 
     def connectionLost(self, reason):
 
         client = client_map.get(self.session_id)
         if client is not None:
+
+            # remove the game if all this is the only connected player in the game
+            if client.player is not None and client.player.game is not None:
+                game = client.player.game
+                n = 0
+                for player in game.players:
+                    if player.session_id is not None and player.session_id != self.session_id:
+                        n += 1
+
+                if n == 0:
+                    # we terminate the game
+                    game.queue.put(None)
+
             client.disconnect()
             del client_map[self.session_id]
 
         # send an actual list of connected users
-        self.dispatchUsers()
+        dispatchUsers()
 
         WampServerProtocol.connectionLost(self, reason)
 
@@ -327,8 +380,11 @@ class MyServerProtocol(WampServerProtocol):
         self.registerForPubSub("http://manaclash.org/game/", prefixMatch=True)
 
         self.registerMethodForRpc("http://manaclash.org/login", self, MyServerProtocol.onLogin)
-        self.registerMethodForRpc("http://manaclash.org/games/create", self, MyServerProtocol.onGameCreate)
+        #self.registerMethodForRpc("http://manaclash.org/games/create", self, MyServerProtocol.onGameCreate)
         self.registerMethodForRpc("http://manaclash.org/games/join", self, MyServerProtocol.onGameJoin)
+
+        self.registerMethodForRpc("http://manaclash.org/takeover", self, MyServerProtocol.onTakeover)
+        self.registerMethodForRpc("http://manaclash.org/refresh", self, MyServerProtocol.onRefresh)
 
         self.registerHandlerForSub("http://manaclash.org/users", self, MyServerProtocol.onUsersSub, prefixMatch=False)
         self.registerHandlerForSub("http://manaclash.org/games", self, MyServerProtocol.onGamesSub, prefixMatch=False)
@@ -343,11 +399,11 @@ class MyServerProtocol(WampServerProtocol):
 
     def onUsersSub(self, url, foo):
         # send a list of current users to the client subscribing for http://manaclash.org/users
-        reactor.callLater(0, self.dispatchUsers, [], [self])
+        reactor.callLater(0, dispatchUsers, [], [self])
         return True
 
     def onGamesSub(self, url, foo):
-        reactor.callLater(0, self.dispatchGames, [], [self])
+        reactor.callLater(0, dispatchGames, [], [self])
         return True
 
     def onGamePrefixPub(self, url, foo, message):
@@ -402,54 +458,69 @@ class MyServerProtocol(WampServerProtocol):
         client.user = user
 
         if client.user is not None:
-            self.dispatchUsers()
+            dispatchUsers()
+            dispatchGames([], [self])
 
         return client.user is not None
 
-    def onGameCreate(self):
+    def onGameJoin(self, game_id):
         Context.current_protocol = self
 
-        global last_game_id
-
         client = client_map.get(self.session_id)
-        if client is not None and client.user is not None and client.player is None:
-            last_game_id += 1
 
-            game_id = last_game_id
-            game = ABGame(game_id)
+        if client is not None and client.user is not None and client.player is not None:
+            # disconnect the client from her current game
+            client.setPlayer(None)
 
-            player = ABPlayer(client.user, game, "player1")
-            player.setSessionId(self.session_id)
-
-            game.add(player)
-
-            game_map[game_id] = game
-
-            self.dispatchGames()
-            return "http://manaclash.org/game/" + str(game_id)
-
-        return None
-
-    def onGameJoin(self, game_id, role):
-        Context.current_protocol = self
-
-        assert role == "player2"
-
-        client = client_map.get(self.session_id)
         if client is not None and client.user is not None and client.player is None:
             game = game_map.get(game_id)
             if game is not None and len(game.players) < 2:
-                player = ABPlayer(client.user, game, "player2")
-                player.setSessionId(self.session_id)
+
+                role = "player" + str(len(game.players) + 1)
+
+                player = ABPlayer(client.user, game, role)
+                client.setPlayer(player)
 
                 game.add(player)
-                self.dispatchGames()
+                dispatchGames()
 
-                reactor.callLater(1, self.startGame, game.id)
+                if len(game.players) == 2:
+                    reactor.callLater(1, self.startGame, game.id)
 
-                return "http://manaclash.org/game/" + str(game.id)
+                return ["http://manaclash.org/game/" + str(game.id), role]
 
-        return False
+        return None
+
+    def onTakeover(self, game_id, role):
+        Context.current_protocol = self
+
+        client = client_map.get(self.session_id)
+
+        # disconnect the client from her current game
+        if client is not None and client.user is not None and client.player is not None:
+            client.setPlayer(None)
+
+        # check that the player we are taking over exists and is the same user
+        if client is not None and client.user is not None:
+            game = game_map.get(game_id)
+            if game is not None:
+                for player in game.players:
+                    if player.role == role:
+                        if player.user.login == client.user.login:
+                            client.setPlayer(player)
+                            return ["http://manaclash.org/game/" + str(game.id), role]
+
+        return None
+
+    def onRefresh(self):
+        dispatchUsers([], [self])
+        dispatchGames([], [self])
+
+        client = client_map.get(self.session_id)
+        if client is not None and client.user is not None and client.player is not None and client.player.game is not None:
+            game = client.player.game
+            if game.current_state != None:
+                g_factory.dispatch("http://manaclash.org/game/" + str(game.id) + "/state", game.current_state, [], [self])
 
     def startGame(self, game_id):
         game = game_map.get(game_id)
@@ -458,26 +529,7 @@ class MyServerProtocol(WampServerProtocol):
             t.daemon = True
             t.start()
 
-    def dispatchUsers(self, exclude=[], eligible=None):
-        self.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
 
-    def dispatchGames(self, exclude=[], eligible=None):
-        message = []
-        for game in game_map.values():
-            gm = {}
-            gm["id"] = game.id
-
-            players = []
-            for p in game.players:
-                pm = {}
-                pm["login"] = p.user.login
-                pm["role"] = p.role
-                players.append(pm)
-
-            gm["players"] = players
-
-            message.append(gm)
-        self.dispatch("http://manaclash.org/games", message, exclude, eligible)
 
 #class MyClientProtocol(WampClientProtocol):
 
@@ -490,9 +542,23 @@ class MyServerProtocol(WampServerProtocol):
 #        server_ids.append(self.session_id)
 #        self.subscribe("http://manaclash.org/login", self.onLogin)
 
+def create_game():
+    global last_game_id, game_map
+    
+    last_game_id += 1
 
+    game_id = last_game_id
+    game = ABGame(game_id)
+    game_map[game_id] = game
+    
 
 if __name__ == '__main__':
+
+
+    # Create game tables
+    for i in range(4):
+        create_game()
+
     log.startLogging(sys.stdout)
 
     g_factory = WampServerFactory("ws://localhost:9000", debugWamp = True)
