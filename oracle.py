@@ -151,6 +151,21 @@ def isParseable(game, card):
 
     return False
 
+def createCardObject(game, card):
+    r = card.rules.lower().replace(card.name.lower(), "SELF").replace("\n", ";").replace("—", "-")
+    power = card.power
+    toughness = card.toughness
+
+    if power != None:
+        power = int(power)
+
+    if toughness != None:
+        toughness = int(toughness)
+
+    obj = game.create_card(card.name, card.cost, card.supertypes, card.types, card.subtypes, set(), r, power, toughness)
+
+    return obj
+
 if __name__ == "__main__":
     ig = test_input_generator([])
     n = ig.next()

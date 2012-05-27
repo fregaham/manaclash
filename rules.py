@@ -148,11 +148,11 @@ class EnchantPermanentRules(ObjectRules):
 
 
 g_rules = {}
-g_rules["[G]"] = BasicLandRules("G")
-g_rules["[R]"] = BasicLandRules("R")
-g_rules["[U]"] = BasicLandRules("U")
-g_rules["[W]"] = BasicLandRules("W")
-g_rules["[B]"] = BasicLandRules("B")
+g_rules["g"] = BasicLandRules("G")
+g_rules["r"] = BasicLandRules("R")
+g_rules["u"] = BasicLandRules("U")
+g_rules["w"] = BasicLandRules("W")
+g_rules["b"] = BasicLandRules("B")
 g_rules["damage assignment"] = DamageAssignmentRules()
 g_rules[""] = ObjectRules()
 g_rules[None] = ObjectRules()

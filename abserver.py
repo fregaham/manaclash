@@ -19,15 +19,11 @@
 
 import sys
 
-# TEMPORARY
-import mc
-
-
 from objects import Player
 from mcio import Output
 from game import Game
 from process import process_game
-from oracle import getParseableCards
+from oracle import getParseableCards, createCardObject
 from actions import *
 from abilities import BasicManaAbility
 
@@ -259,11 +255,26 @@ class ABGame:
         self.game = Game(ig, output)
         self.game.create()
 
-        c1 = mc.red_deck(self.game, g_cards)
+        c1 = []
+        for count, name in self.players[0].deck:
+            for i in range(count):
+                card = g_cards.get(name)
+                if card is not None:
+                    cardObject = createCardObject(self.game, card)
+                    c1.append(cardObject)
+
         random.shuffle(c1)
+
         self.game.create_player(self.players[0].user.login, c1)
 
-        c2 = mc.blue_deck(self.game, g_cards)
+        c2 = []
+        for count, name in self.players[1].deck:
+            for i in range(count):
+                card = g_cards.get(name)
+                if card is not None:
+                    cardObject = createCardObject(self.game, card)
+                    c2.append(cardObject)
+
         random.shuffle(c2)
         self.game.create_player(self.players[1].user.login, c2)
 
@@ -278,11 +289,12 @@ class ABGame:
         
 
 class ABPlayer:
-    def __init__ (self, user, game, role):
+    def __init__ (self, user, game, role, deck):
         self.user = user
         self.game = game
         self.role = role
         self.session_id = None
+        self.deck = deck
 
     def setSessionId(self, session_id):
 
@@ -480,7 +492,7 @@ class MyServerProtocol(WampServerProtocol):
 
         return client.user is not None
 
-    def onGameJoin(self, game_id):
+    def onGameJoin(self, game_id, deck):
         Context.current_protocol = self
 
         client = client_map.get(self.session_id)
@@ -495,7 +507,7 @@ class MyServerProtocol(WampServerProtocol):
 
                 role = "player" + str(len(game.players) + 1)
 
-                player = ABPlayer(client.user, game, role)
+                player = ABPlayer(client.user, game, role, deck)
                 client.setPlayer(player)
 
                 game.add(player)

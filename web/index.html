@@ -146,7 +146,11 @@
                 if (players < 2 && !have_me && g_login != null) {
                     $("<button>Join</button>").appendTo(gameElement).click({"game_id":games[i].id}, function(event) {
                         g_joining = true;
-                        sess.call("http://manaclash.org/games/join", event.data.game_id).then(
+
+                        var deckname = $("#cards_decks").val(); //$("#cards_deckname").val();
+                        var deck = g_cards_decks[deckname];
+
+                        sess.call("http://manaclash.org/games/join", event.data.game_id, deck).then(
                             function(ret) {
                                 if(ret != null) {
                                     var uri = ret[0];
@@ -644,14 +648,6 @@
         function cardsSave() {
         }
 
-        /* Updates the Cards UI (decks) */
-        function cardsUpdate() {
-            $("#cards_decks").empty();
-            for (var i = 0; i < g_cards_decknames.length; i++) {
-                $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
-            }
-        }
-
         /* Reads available cards from the server and loads decks from the user storage */
         function cardsSetup() {
             sess.call("http://manaclash.org/getAvailableCards").then(
@@ -662,7 +658,7 @@
 
                     for (var i = 0; i < g_cards_available.length; i++) {
                         var card = g_cards_available[i];
-                        $("<option value='" + card.name + "'>" + card.name +  "</option>").appendTo($("#cards_available"));
+                        $("<option value=\"" + card.name + "\">" + card.name +  "</option>").appendTo($("#cards_available"));
                     }
                 },
                 function(){ alert("failed to fetch available cards!"); }
@@ -674,14 +670,113 @@
             g_cards_decknames.push(deckname);
             g_cards_decks[deckname] = [];
 
-            cardsUpdate();
+            $("#cards_decks").empty();
+            for (var i = 0; i < g_cards_decknames.length; i++) {
+                $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
+            }
+
+            $("#cards_decks").val(deckname);
+
+            $("#cards_deck").empty();
         }
 
         function cardsDeckRename() {
         }
 
         function cardsDeckDelete() {
+
+            var deckname = $("#cards_decks").val();
+            
+            var i = g_cards_decknames.indexOf(deckname);
+            g_cards_decknames.splice(i, 1);
+            g_cards_decks[deckname] = null;
+
+            $("#cards_decks").empty();
+            for (var i = 0; i < g_cards_decknames.length; i++) {
+                $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
+            }
+
+            $("#cards_deck").empty();
         }
+
+        /** Adds selected cards form the "available" list to the current deck */
+        function cardsAdd() {
+            var deckname = $("#cards_decks").val(); //$("#cards_deckname").val();
+            var deck = g_cards_decks[deckname];
+
+            var selected = $("#cards_available").val();
+            if (selected != null) {
+                for (var i = 0; i < selected.length; i++) {
+                    var found = false;
+                    for (var j = 0; j < deck.length; ++j) {
+                        var n = deck[j][0];
+                        var name = deck[j][1];
+                        if (name == selected[i]) {
+                            deck[j][0] = n + 1;
+                            var option = $("#cards_deck>option[value=\""+ name +"\"]");
+                            option.empty();
+                            option.append(deck[j][0] + " " + deck[j][1]);
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        /* No such card in the deck yet */
+                        deck.push([1, selected[i]]);
+                        deck.sort(function (a,b) { return a[1].localeCompare(b[1]);} );
+
+                        $("#cards_deck").empty();
+                        for (var j = 0; j < deck.length; j++) {
+                            var option = $("<option value=\"" + deck[j][1] + "\"></option>").appendTo($("#cards_deck"));
+                            option.append("" + deck[j][0] + " " + deck[j][1]);
+                        }
+                    }
+                }
+            }
+        }
+
+        /** Removes selected cards from the current deck */
+        function cardsRemove() {
+            var deckname = $("#cards_decks").val(); // $("#cards_deckname").val();
+            var deck = g_cards_decks[deckname];
+
+            var selected = $("#cards_deck").val();
+            if (selected != null) {
+                for (var i = 0; i < selected.length; i++) {
+                    for (var j = 0; j < deck.length; j++) {
+                        if (deck[j][1] == selected[i]) {
+                            deck[j][0] = deck[j][0] - 1;
+
+                            var option = $("#cards_deck>option[value=\""+ selected[i] +"\"]");
+
+                            if (deck[j][0] <= 0) {
+                                /* We have removed all cards of this type, remove the whole entry */
+                                deck.splice(j, 1);
+                                option.remove();
+                                break;
+                            }
+                            else {
+                                option.empty();
+                                option.append(deck[j][0] + " " + deck[j][1]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function cardsSelectDeck() {
+            var deckname = $("#cards_decks").val();
+            var deck = g_cards_decks[deckname];
+
+            $("#cards_deck").empty();
+
+            for (var i = 0; i < deck.length; i++) {
+                var option = $("<option value=\"" + deck[i][1] + "\"></option>").appendTo($("#cards_deck"));
+                option.append("" + deck[i][0] + " " + deck[i][1]);
+            }
+        }
+
 // ]]>
     </script>
     <style>
