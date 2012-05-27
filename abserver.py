@@ -262,6 +262,8 @@ class ABGame:
                 if card is not None:
                     cardObject = createCardObject(self.game, card)
                     c1.append(cardObject)
+                else:
+                    print ("Card %s doesn't exist!" % name)
 
         random.shuffle(c1)
 
@@ -274,6 +276,8 @@ class ABGame:
                 if card is not None:
                     cardObject = createCardObject(self.game, card)
                     c2.append(cardObject)
+                else:
+                    print ("Card %s doesn't exist!" % name)
 
         random.shuffle(c2)
         self.game.create_player(self.players[1].user.login, c2)
