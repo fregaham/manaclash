@@ -29,6 +29,7 @@
         var g_cards_available = [];
         var g_cards_decknames = [];
         var g_cards_decks = {};
+        var g_cards_available_map = {};
 
         window.onload = function() {
 
@@ -673,6 +674,8 @@
                     for (var i = 0; i < g_cards_available.length; i++) {
                         var card = g_cards_available[i];
                         $("<option value=\"" + card.name + "\">" + card.name +  "</option>").appendTo($("#cards_available"));
+
+                        g_cards_available_map[card.name] = card;
                     }
 
                     if(typeof(Storage)!=="undefined") {
@@ -840,6 +843,57 @@
             }
 
             cardsSave();
+        }
+
+        function cardsAvailableChanged() {
+            $("#cards_detail").empty();
+            var selected = $("#cards_available").val();
+            
+            if (selected != null) {
+                for (var i = 0; i < selected.length; i++) {
+                    var card = g_cards_available_map[selected[i]];
+
+                    if (g_imgprefix != null && g_imgprefix != "") {
+                        var img = $("<img/>");
+                        var imgstring = card.name + ".jpg";
+                        img.attr("src", g_imgprefix + imgstring);
+                        img.attr("alt", card.text);
+        
+                        img.appendTo($("#cards_detail"));
+                    }
+                    else {
+                        var div = $("<div></div>");
+                        div.append(card.text);
+                        div.appendTo($("#cards_detail"));
+                    }
+                }
+            }
+        }
+
+        function cardsDeckChanged() {
+            $("#cards_detail").empty();
+            var selected = $("#cards_deck").val();
+            
+            if (selected != null) {
+                for (var i = 0; i < selected.length; i++) {
+                    var card = g_cards_available_map[selected[i]];
+
+                    if (g_imgprefix != null && g_imgprefix != "") {
+                        var img = $("<img/>");
+                        var imgstring = card.name + ".jpg";
+                        img.attr("src", g_imgprefix + imgstring);
+                        img.attr("alt", card.text);
+        
+                        img.appendTo($("#cards_detail"));
+                    }
+                    else {
+                        var div = $("<div></div>");
+                        div.append(card.text);
+                        div.appendTo($("#cards_detail"));
+                    }
+                }
+            }
+
         }
 
 // ]]>
@@ -1163,6 +1217,44 @@
     display: block;
 }
 
+.view {
+    position: absolute;
+    left:8px;
+    right:8px;
+    top:32px;
+    bottom:8px;
+
+}
+
+#cards_available {
+    position:absolute;
+    left:0x;
+    top:100px;
+    width:200px;
+    bottom:0px;
+}
+
+#cards_buttons {
+    position: absolute;
+    text-align: center;
+    left:200px;
+    top:100px;
+    width:100px;
+}
+
+#cards_deck {
+    position:absolute;
+    left:300px;
+    top:100px;
+    width:200px;
+    bottom:0px;
+}
+
+#cards_detail {
+    position:absolute;
+    left:550px;
+    top:100px;
+}
 
 body {
   width: 100%;
@@ -1179,7 +1271,7 @@ body {
             <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_cards');">Cards</button> | <button onclick="view('view_game');">Game</button> | <button onclick="view('view_settings');">Settings</button>
         </div>
 
-        <div id="view_lobby">
+        <div class="view" id="view_lobby">
 
             <h1>ManaClash</h1>
 
@@ -1196,7 +1288,7 @@ body {
             </div>
         </div>
 
-        <div id="view_game">
+        <div class="view" id="view_game">
             <h3>Game</h3>
 
             <div id="status">
@@ -1317,7 +1409,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
             </div>
         </div>
 
-        <div id="view_cards">
+        <div class="view" id="view_cards">
             
             <div>
                 <select id="cards_decks" onchange="cardsSelectDeck();"></select>
@@ -1325,13 +1417,17 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
             <div>
                 <input id="cards_deckname"/> <button onclick="cardsDeckNew();">New</button> <button onclick="cardsDeckRename();">Rename</button> <button onclick="cardsDeckDelete();">Delete</button>
             </div>
-            
-            <select id="cards_available" multiple="multiple"></select>
-            <button onclick="cardsRemove();">&lt;&lt;</button> <button onclick="cardsAdd();">&gt;&gt;</button>
-            <select id="cards_deck" multiple="multiple"></select>
+
+            <select id="cards_available" multiple="multiple" onchange="cardsAvailableChanged();"></select>
+            <div id="cards_buttons">
+                <button onclick="cardsRemove();">&lt;&lt;</button> <button onclick="cardsAdd();">&gt;&gt;</button>
+            </div>
+            <select id="cards_deck" multiple="multiple" onchange="cardsDeckChanged();"></select>
+            <div id="cards_detail">
+            </div>
         </div>
 
-        <div id="view_settings">
+        <div class="view" id="view_settings">
             <h3>Settings</h3>
 
             <div>
