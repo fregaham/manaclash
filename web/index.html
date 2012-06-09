@@ -741,6 +741,22 @@
         }
 
         function cardsDeckRename() {
+            var deckname = $("#cards_decks").val();
+            var newdeckname = $("#cards_deckname").val();
+            var deck = g_cards_decks[deckname];
+            var i = g_cards_decknames.indexOf(deckname);
+            g_cards_decknames.splice(i, 1, newdeckname);
+            g_cards_decks[newdeckname] = deck;
+            g_cards_decks[deckname] = null;
+
+            $("#cards_decks").empty();
+            for (var i = 0; i < g_cards_decknames.length; i++) {
+                $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
+            }
+
+            $("#cards_decks").val(newdeckname);
+
+            cardsSave();
         }
 
         function cardsDeckDelete() {
@@ -841,6 +857,8 @@
                 var option = $("<option value=\"" + deck[i][1] + "\"></option>").appendTo($("#cards_deck"));
                 option.append("" + deck[i][0] + " " + deck[i][1]);
             }
+
+            $("#cards_deckname").val(deckname);
 
             cardsSave();
         }
