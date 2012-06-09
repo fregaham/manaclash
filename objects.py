@@ -182,6 +182,7 @@ class DamageAssignment (Object):
         self.damage_assignment_list = damage_assignment_list
         self.initial_state.title = "damage assignment"
         self.initial_state.text = "damage assignment"
+        self.initial_state.tags.add("damage assignment")
         self.combat = combat
 
     def copy(self):

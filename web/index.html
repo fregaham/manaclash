@@ -292,7 +292,8 @@
 
             objSpan.attr("title", fulltext);
 
-            if (g_imgprefix != null && g_imgprefix != "") {
+            // Try to display as an image, only if we have configured image URLs and the card is not an "effect" nor "damage assignment"
+            if (g_imgprefix != null && g_imgprefix != "" && obj.tags.indexOf("effect") < 0 && obj.tags.indexOf("damage assignment") < 0) {
                 var img = $("<img/>");
                 var imgstring = obj.title + ".jpg";
                 img.attr("src", g_imgprefix + imgstring);
@@ -775,6 +776,11 @@
             $("#cards_deck").empty();
 
             cardsSave();
+
+            if (g_cards_decknames.length > 0) {
+                $("#cards_deck").val(g_cards_decknames[0]);
+                cardsSelectDeck();
+            }
         }
 
         /** Adds selected cards form the "available" list to the current deck */
@@ -935,6 +941,13 @@
     overflow: hidden;
 }
 
+/*
+.card_small:hover {
+    width: 200px;
+    height: 284px;
+}
+*/
+
 .card_small > img {
    position: absolute;
    width: 100px;
@@ -942,6 +955,16 @@
    z-index: 2;
    border-radius: 8px;
 }
+
+/*
+.card_small:hover > img {
+   position: absolute;
+   width: 200px;
+   height: 284px;
+   z-index: 2;
+   border-radius: 8px;
+}
+*/
 
 .tapped {
     width: 285px;
@@ -961,6 +984,13 @@
     overflow: hidden;
 }
 
+/*
+.tapped_small:hover {
+    width: 284px;
+    height: 200px;
+}
+*/
+
 .tapped_small > img {
    position: absolute;
    width: 100px;
@@ -970,6 +1000,13 @@
   -moz-transform: rotate(90deg) translate(-21px, -21px);
    border-radius: 8px;
 }
+
+/*
+.tapped_small:hover >img {
+    width: 200px;
+    height: 284px;
+}
+*/
 
 .tapped .header {
     position: absolute;
