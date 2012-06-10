@@ -19,6 +19,9 @@
         var g_playermap = null;
         var g_imgprefix = null;
 
+        // map id -> game object
+        var g_objects = {};
+
         // Currently in the process of joining a game
         var g_joining = false;
 
@@ -276,6 +279,9 @@
         */
         function displayCard(obj) {
 
+            // Store all objects in a map
+            g_objects[obj.id] = obj;
+
             var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
 
             var fulltext =  "#" + obj.id + " " + obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
@@ -310,16 +316,35 @@
             detailSpan.hide();
             detailSpan.appendTo($("#card_details"));
 
+            // Display card details on the currently hovered card, also, highlight any card targets
             objSpan.hover(
                 function(id) {
+                    // hide the old detail and unhighlight targets
                     if (g_detail_id != null) {
                         $("#detail_" + g_detail_id).hide();
+
+                        var obj = g_objects[g_detail_id];
+                        for (var i = 0; i < obj.targets.length; ++i) {
+                            $("#obj_" + obj.targets[i]).removeClass("targeted");
+                        }
                     }
                     $("#detail_" + id).show();
                     g_detail_id = id;
+
+                    var obj = g_objects[id];
+                    for (var i = 0; i < obj.targets.length; ++i) {
+                        $("#obj_" + obj.targets[i]).addClass("targeted");
+                    }
+
                 }.partial(obj.id),
                 function(id) {
                     $("#detail_" + id).hide();
+
+                    var obj = g_objects[id];
+                    for (var i = 0; i < obj.targets.length; ++i) {
+                        $("#obj_" + obj.targets[i]).removeClass("targeted");
+                    }
+
                     g_detail_id = null;
                 }.partial(obj.id)
             );
@@ -1170,6 +1195,10 @@
    border: solid 2px yellow;
 }
 
+.targeted {
+   border: solid 2px red !important;
+}
+
 .action_button {
    display:block;
    width: 200px;
@@ -1283,7 +1312,7 @@
 
 #cards_available {
     position:absolute;
-    left:0x;
+    left:0px;
     top:100px;
     width:200px;
     bottom:0px;

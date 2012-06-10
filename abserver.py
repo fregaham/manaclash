@@ -79,6 +79,11 @@ def object_to_map(game, o):
     ret["supertypes"] = [x for x in o.get_state().supertypes]
     ret["subtypes"] = [x for x in o.get_state().subtypes]
     ret["tapped"] = o.tapped
+    ret["enchanted_id"] = o.enchanted_id
+        
+    ret["targets"] = []
+    for target in o.targets.values():
+        ret["targets"].append(target.get_id())
 
     if o.get_state().controller_id != None:
         ret["controller"] = player_to_role(game, game.objects[o.get_state().controller_id])
