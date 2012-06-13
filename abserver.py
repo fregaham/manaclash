@@ -92,6 +92,8 @@ def object_to_map(game, o):
 
     ret["blockers"] = []
     ret["attacker"] = None
+
+    ret["show_to"] = map(lambda x: player_to_role(game, game.objects[x]), o.get_state().show_to)
     
     for obj in game.declared_attackers:
         if o.id == obj.get_id():

@@ -63,6 +63,12 @@ class Game:
 
         self.turn_number = 0
 
+        # ids of cards revealed to all players
+        self.revealed = []
+
+        # ids of cards looked at by a controller (e.g. from a library)
+        self.looked_at = []
+
     def add_object (self, object):
         self.obj_max_id += 1
         object.id = self.obj_max_id

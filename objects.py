@@ -32,6 +32,8 @@ class ObjectState:
         self.abilities = []
         self.manacost = None
         self.text = None
+        # ids of players that see the card
+        self.show_to = []
 
     def copy (self):
         ret = ObjectState ()
@@ -48,6 +50,7 @@ class ObjectState:
         ret.subtypes = self.subtypes.copy()
         ret.abilities = self.abilities[:]
         ret.manacost = self.manacost
+        ret.show_to = self.show_to[:]
         return ret
 
 class Object:

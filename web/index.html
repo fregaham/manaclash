@@ -283,36 +283,44 @@
             g_objects[obj.id] = obj;
 
             var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
+            var detailSpan = $("<span class='card_detail' id='detail_" + obj.id + "'></span>");
 
-            var fulltext =  "#" + obj.id + " " + obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
-            if (obj.subtypes.length > 0) {
-                fulltext += " - ";
-            }
-            fulltext += obj.subtypes.join(" ") + " ";
+            if (obj.show_to.indexOf(g_role) >= 0) {
 
-            fulltext += obj.text;
+                var fulltext =  "#" + obj.id + " " + obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
+                if (obj.subtypes.length > 0) {
+                    fulltext += " - ";
+                }
+                fulltext += obj.subtypes.join(" ") + " ";
+    
+                fulltext += obj.text;
 
-            if (obj.power != null) {
-                fulltext += " " + obj.power + "/" + obj.toughness;
-            }
+                if (obj.power != null) {
+                    fulltext += " " + obj.power + "/" + obj.toughness;
+                }
 
-            objSpan.attr("title", fulltext);
+                objSpan.attr("title", fulltext);
 
-            // Try to display as an image, only if we have configured image URLs and the card is not an "effect" nor "damage assignment"
-            if (g_imgprefix != null && g_imgprefix != "" && obj.tags.indexOf("effect") < 0 && obj.tags.indexOf("damage assignment") < 0) {
-                var img = $("<img/>");
-                var imgstring = obj.title + ".jpg";
-                img.attr("src", g_imgprefix + imgstring);
-                img.attr("alt", "");
+                // Try to display as an image, only if we have configured image URLs and the card is not an "effect" nor "damage assignment"
+                if (g_imgprefix != null && g_imgprefix != "" && obj.tags.indexOf("effect") < 0 && obj.tags.indexOf("damage assignment") < 0) {
+                    var img = $("<img/>");
+                    var imgstring = obj.title + ".jpg";
+                    img.attr("src", g_imgprefix + imgstring);
+                    img.attr("alt", "");
 
-                img.appendTo(objSpan);
+                    img.appendTo(objSpan);
+                }
+                else {
+                    displayCardContents(objSpan, obj);
+                }
+
+                displayCardContents(detailSpan, obj);
             }
             else {
-                displayCardContents(objSpan, obj);
+                // backside
+                
             }
 
-            var detailSpan = $("<span class='card_detail' id='detail_" + obj.id + "'></span>");
-            displayCardContents(detailSpan, obj);
             detailSpan.hide();
             detailSpan.appendTo($("#card_details"));
 

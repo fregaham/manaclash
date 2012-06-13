@@ -61,6 +61,21 @@ def evaluate (game):
     for object in _as.all(game, None):
         object.state = object.initial_state.copy ()
 
+        # show_to rules
+        # cards in play, stack and graveyards are visible to all
+        zone = game.objects.get(object.zone_id)
+        if zone is not None:
+            if zone.type == "in play" or zone.type == "stack" or zone.type == "graveyard" or object.get_id() in game.revealed:
+                for player in game.players:
+                    object.state.show_to.append(player.get_id())
+
+            # cards in hand are visible to controllers
+            if zone.type == "hand":
+                object.state.show_to.append( zone.player_id )
+
+            if object.id in game.looked_at:
+                object.state.show_to.append( object.controller_id )
+
         # some basic rules
 
         # taxonomy
