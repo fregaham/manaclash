@@ -90,6 +90,18 @@ def object_to_map(game, o):
     else:
         ret["controller"] = None
 
+    ret["blockers"] = []
+    ret["attacker"] = None
+    
+    for obj in game.declared_attackers:
+        if o.id == obj.get_id():
+            # Try to find a blocker
+            for blocker_id, attacker_id in game.declared_blockers_map.iteritems():
+                if o.id == attacker_id:
+                    ret["blockers"].append(blocker_id)
+
+    ret["attacker"] = game.declared_blockers_map.get(o.id)
+
     return ret
 
 def zone_to_string(game, zone):
