@@ -568,9 +568,18 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
 
     def resolve(self, game, obj):
 
+        from process import evaluate
+        
         for player in self.x_selector.all(game, obj):
+
+            old_looked_at = game.looked_at
+            game.looked_at = game.looked_at[:]
+
             actions = []
             for card in game.get_library(player).objects:
+
+                game.looked_at.append (card.get_id())
+                
                 if self.y_selector.contains(game, obj, card):
                     _p = Action ()
                     _p.object = card
@@ -584,6 +593,8 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
 
                 actions = [_pass] + actions
 
+                evaluate(game)
+
                 _as = ActionSet (game, player, "Choose a card to put into play", actions)
                 a = game.input.send (_as)
  
@@ -591,6 +602,10 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
                 game.doZoneTransfer (a.object, game.get_in_play_zone())
 
                 game.doShuffle(game.get_library(player))
+
+            game.looked_at = old_looked_at
+
+        evaluate(game)
 
         return True
 
@@ -698,6 +713,8 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
         self.n = n
 
     def resolve(self, game, obj):
+        from process import evaluate
+
         player = game.objects[obj.get_controller_id()]
         library = game.get_library(player)
 
@@ -714,18 +731,30 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
                 cards.append(library.objects.pop())
 
         while len(cards) > 0:
+
+            old_looked_at = game.looked_at
+            game.looked_at = game.looked_at[:]
+
             options = []
             for card in cards:
                 _option = Action()
                 _option.text = str(card)
                 _option.object = card
                 options.append (_option)
+
+                game.looked_at.append(card.get_id())
         
+            evaluate(game)
+
             _as = ActionSet (game, player, "Put card on top of your library", options)
             a = game.input.send(_as)
 
             cards.remove (a.object)
             library.objects.append(a.object)
+
+            game.looked_at = old_looked_at
+
+        evaluate(game)
 
     def __str__ (self):
         return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n
