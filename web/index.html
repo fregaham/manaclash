@@ -416,7 +416,7 @@
             $("#card_details").empty();
 
             var in_play = [];
-            var hands = [];
+            var player_hand = [];
             var players = [];
             // playerN -> player|opponent
             var rolemap = {};
@@ -449,8 +449,9 @@
 
             for (var i = 0; i < players.length; ++i) {
                 in_play[players[i]] = $("<div>In play</div>").appendTo(player_divs[players[i]]);
-                hands[players[i]] = $("<div>Hand</div>").appendTo(player_divs[players[i]]);
-            }           
+            }
+
+            player_hand = $("<div>Hand</div>").appendTo(player_divs["player"]);
 
             for (var i = 0; i < state["in_play"].length; ++i) {
                 var obj = state["in_play"][i];
@@ -489,7 +490,14 @@
 
                 displayZone(player["graveyard"], $("#" + rolemap[player.role] + "_graveyard_zone"));
                 displayZone(player["library"], $("#" + rolemap[player.role] + "_library_zone"));
-                displayZone(player["hand"], hands[players[i]]);
+
+                if (rolemap[player.role] == "player") {
+                    displayZone(player["hand"], player_hand);
+                }
+                else {
+                    $("#" + rolemap[player.role] + "_hand_zone").empty();
+                    displayZone(player["hand"], $("#" + rolemap[player.role] + "_hand_zone"));
+                }
             }
 
             $("#turn").empty();
@@ -639,6 +647,7 @@
             $("#player_library_zone").hide();
             $("#opponent_graveyard_zone").hide();
             $("#opponent_library_zone").hide();
+            $("#opponent_hand_zone").hide();
 
             if (zone != null) {
                 zone.show();
@@ -1432,7 +1441,7 @@ body {
                     <h3 id="opponent_name"></h3>
                     <div>Life: <span id="opponent_life"></span></div>
                     <div>Manapool: <span id="opponent_manapool"></span></div>
-                    <div>Hand: <span id="opponent_hand"></span></div>
+                    <div onclick="showZone($('#opponent_hand_zone'));">Hand: <span id="opponent_hand"></span></div>
                     <div onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></div>
                     <div onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></div>
                 </div>
@@ -1519,6 +1528,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                 <div class="zone" id="player_library_zone"></div>
                 <div class="zone" id="opponent_graveyard_zone"></div>
                 <div class="zone" id="opponent_library_zone"></div>
+                <div class="zone" id="opponent_hand_zone"></div>
             </div>
         </div>
 
