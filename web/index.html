@@ -22,6 +22,9 @@
         // map id -> game object
         var g_objects = {};
 
+        // map object id -> zone (e.g. "player_hand", "opponent_graveyard", etc.)
+        var g_zone_map = {};
+
         // Currently in the process of joining a game
         var g_joining = false;
 
@@ -381,18 +384,29 @@
             return objSpan;
         }
 
-        function displayZone(state_zone, div) {
+        function displayZone(zone_name, state_zone, div) {
             for (var i = 0; i < state_zone.length; ++i) {
                 var obj = state_zone[i];
 
                 var objSpan = displayCard(obj);
                 objSpan.appendTo(div);
+
+                g_zone_map[obj.id] = zone_name;
             }
+        }
+
+        function selectAction(i) {
+            stopTimer();
+            sess.publish(g_gameuri, i);
+
+            /* clear the "action_zone_button" classes from any zone_buttons */
+            $(".action_zone_button").removeClass("action_zone_button");
         }
 
         function onState(state) {
 
             g_state = state;
+            g_zone_map = {};
 
             var view = $("#table");
             view.empty();
@@ -441,7 +455,7 @@
             }
 
             var stack = $("<div>Stack</div>");
-            displayZone(state["stack"], stack);
+            displayZone("stack", state["stack"], stack);
 
             player_divs["opponent"].appendTo(view);
             stack.appendTo(view);
@@ -456,9 +470,12 @@
             for (var i = 0; i < state["in_play"].length; ++i) {
                 var obj = state["in_play"][i];
 
+
                 if (obj.controller != null) {
                     objSpan = displayCard(obj);
                     objSpan.appendTo(in_play[rolemap[obj.controller]]);
+
+                    g_zone_map[obj.id] = rolemap[obj.controller] + "_in_play";
                 }
             }
 
@@ -488,15 +505,15 @@
                 $("#" + rolemap[player.role] + "_graveyard_zone").empty(); 
                 $("#" + rolemap[player.role] + "_library_zone").empty(); 
 
-                displayZone(player["graveyard"], $("#" + rolemap[player.role] + "_graveyard_zone"));
-                displayZone(player["library"], $("#" + rolemap[player.role] + "_library_zone"));
+                displayZone(rolemap[player.role] + "_graveyard", player["graveyard"], $("#" + rolemap[player.role] + "_graveyard_zone"));
+                displayZone(rolemap[player.role] + "_library", player["library"], $("#" + rolemap[player.role] + "_library_zone"));
 
                 if (rolemap[player.role] == "player") {
-                    displayZone(player["hand"], player_hand);
+                    displayZone("player_hand", player["hand"], player_hand);
                 }
                 else {
                     $("#" + rolemap[player.role] + "_hand_zone").empty();
-                    displayZone(player["hand"], $("#" + rolemap[player.role] + "_hand_zone"));
+                    displayZone(rolemap[player.role] + "_hand", player["hand"], $("#" + rolemap[player.role] + "_hand_zone"));
                 }
             }
 
@@ -514,6 +531,7 @@
 
             appendLog("" + g_playermap[state["player"]].name + ", " + state["text"]);
 
+            /* It is our "turn" now */
             if (g_role == state["player"]) {
                 if (state["actions"] != null) {
 
@@ -526,7 +544,9 @@
 
                     for (var i = 0; i < state["actions"].length; ++i) {
                         var action = state["actions"][i];
+
                         if (action["object"] == null) {
+                            /* action with now object, display it as a button in the actions list */
 
                             if (action["text"] != "Pass") {
                                 autopass = false;
@@ -534,8 +554,7 @@
                                 action_span.append(action["text"]);
                                 action_span.addClass('action_button');
                                 action_span.click({'i':i}, function(event) {
-                                    stopTimer();
-                                    sess.publish(g_gameuri, event.data.i);
+                                    selectAction(event.data.i);
                                 });
                             }
                             else {
@@ -544,6 +563,7 @@
                             }
                         }
                         else {
+                            /* action with an object, let the user click on the object */
 
                             if (action["manaability"] == null || action["manaability"] == false) {
                                 autopass = false;
@@ -552,9 +572,16 @@
                             var action_obj = $('#obj_' + action["object"]);
                             action_obj.addClass('action');
                             action_obj.click({'i':i}, function(event) {
-                                stopTimer();
-                                sess.publish(g_gameuri, event.data.i);
+                                selectAction(event.data.i);
                             });
+
+                            /* Highlight the zone button if the object is in a zone that is not visible by default  */
+                            if (g_zone_map[action["object"]] !== undefined) {
+                                var zone_button = $("#" + g_zone_map[action["object"]] + "_zone_button");
+                                if (zone_button !== undefined) {
+                                    zone_button.addClass("action_zone_button");
+                                }
+                            }
                         }
                     }
 
@@ -1242,9 +1269,19 @@
    width: 200px;
 }
 
+.zone_button {
+    border: 1px solid #006;
+    display:block;
+    width: 200px; 
+}
+
+.action_zone_button {
+    border: 1px solid yellow;
+}
+
 #table {
   position:absolute;
-  left: 200px;
+  left: 208px;
   top:20px;
   bottom:100px;
   right:5px;
@@ -1255,7 +1292,7 @@
 #game_messages {
     position: absolute;
     bottom:0px;
-    left: 200px;
+    left: 208px;
     right:5px;
     height:100px;
     background: #ffcccc;
@@ -1265,7 +1302,7 @@
 .game_messages_expanded {
     position: absolute;
     bottom:0px;
-    left: 200px;
+    left: 208px;
     right:5px;
     top:100px;
     height: auto !important;
@@ -1441,9 +1478,9 @@ body {
                     <h3 id="opponent_name"></h3>
                     <div>Life: <span id="opponent_life"></span></div>
                     <div>Manapool: <span id="opponent_manapool"></span></div>
-                    <div onclick="showZone($('#opponent_hand_zone'));">Hand: <span id="opponent_hand"></span></div>
-                    <div onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></div>
-                    <div onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></div>
+                    <button id="opponent_hand_zone_button" class="zone_button" onclick="showZone($('#opponent_hand_zone'));">Hand: <span id="opponent_hand"></span></button>
+                    <button id="opponent_library_zone_button" class="zone_button" onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></button>
+                    <button id="opponent_graveyard_zone_button" class="zone_button" onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></button>
                 </div>
 
                 <div id="player">
@@ -1451,8 +1488,8 @@ body {
                     <div>Life: <span id="player_life"></span></div>
                     <div>Manapool: <span id="player_manapool"></span></div>
                     <div>Hand: <span id="player_hand"></span></div>
-                    <div onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></div>
-                    <div onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></div>
+                    <button id="player_library_zone_button" class="zone_button" onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></button>
+                    <button id="player_graveyard_zone_button" class="zone_button" onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></button>
                 </div>
 
                 <div id="card_details">
