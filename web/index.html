@@ -1029,6 +1029,9 @@
     cursor: pointer;
     vertical-align: top;
     overflow: hidden;
+    border-radius: 6px;
+
+    margin:3px;
 }
 
 /*
@@ -1043,7 +1046,7 @@
    width: 100px;
    height: 142px;
    z-index: 2;
-   border-radius: 8px;
+   border-radius: 6px;
 }
 
 /*
@@ -1072,6 +1075,8 @@
     cursor: pointer;
     vertical-align: top;
     overflow: hidden;
+    border-radius: 6px;
+    margin: 3px;
 }
 
 /*
@@ -1088,7 +1093,7 @@
    z-index: 2;
   -webkit-transform: rotate(90deg) translate(-21px, -21px);
   -moz-transform: rotate(90deg) translate(-21px, -21px);
-   border-radius: 8px;
+   border-radius: 6px;
 }
 
 /*
@@ -1257,11 +1262,19 @@
 }
 
 .action {
-   border: solid 2px yellow;
+   border: solid 1px yellow;
+
+   box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+   -webkit-box-shadow: 0 0 5px rgba(255, 255, 0, 1); 
+   -moz-box-shadow: 0 0 5px rgba(255, 255, 0, 1); 
 }
 
 .targeted {
-   border: solid 2px red !important;
+    border: solid 1px red !important;
+
+    box-shadow: 0 0 5px rgba(255, 0, 0, 1);
+    -webkit-box-shadow: 0 0 5px rgba(255, 0, 0, 1); 
+    -moz-box-shadow: 0 0 5px rgba(255, 0, 0, 1); 
 }
 
 .action_button {
