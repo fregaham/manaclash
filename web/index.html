@@ -460,33 +460,27 @@
             player_divs = [];
            
             for (var i = 0; i < players.length; ++i) {
-                player_divs[players[i]] = $("<div><h3>" + state["players"][i].name + "</h3></div>");
+                player_divs[players[i]] = $("<div></div>");
                 rolemap["player" + (i+1)] = players[i];
             }
 
-            var stack = $("<div>Stack</div>");
+            var stack = $("<div id='zone_stack'></div>");
             displayZone("stack", state["stack"], stack);
 
             player_divs["opponent"].appendTo(view);
             stack.appendTo(view);
             player_divs["player"].appendTo(view);
 
-            for (var i = 0; i < players.length; ++i) {
-                in_play[players[i]] = $("<div>In play</div>").appendTo(player_divs[players[i]]);
-                in_play_battle[players[i]] = $("<div></div>").appendTo(player_divs[players[i]]);
-            }
-
-            in_play["opponent"] = $("<div>In play</div>").appendTo(player_divs["opponent"]);
+            in_play["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);
             in_play_battle["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);
 
             in_play_battle["player"] = $("<div></div>").appendTo(player_divs["player"]);
-            in_play["player"] = $("<div>In play</div>").appendTo(player_divs["player"]);
+            in_play["player"] = $("<div></div>").appendTo(player_divs["player"]);
 
-            player_hand = $("<div>Hand</div>").appendTo(player_divs["player"]);
+            player_hand = $("<div></div>").appendTo(player_divs["player"]);
 
             for (var i = 0; i < state["in_play"].length; ++i) {
                 var obj = state["in_play"][i];
-
 
                 if (obj.controller != null) {
                     objSpan = displayCard(obj);
@@ -1396,6 +1390,11 @@
     background: #aaccaa;
     border: 1px solid black;
     overflow: auto;
+}
+
+#zone_stack {
+    background: #ccaaaa;
+    margin: 8px;
 }
 
 #card_details {
