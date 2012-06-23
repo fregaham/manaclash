@@ -421,14 +421,6 @@
             view.empty();
 
             $('#text').empty();
-            // is it our turn?
-            if (g_role == state["player"]) {
-                $("#text").append(state["text"]);
-            }
-            else {
-                $("#text").append("Waiting on " + state["player"]);
-            }
-
 
             $("#phase").empty();
             $("#phase").append(state["phase"]);
@@ -551,6 +543,9 @@
 
             /* It is our "turn" now */
             if (g_role == state["player"]) {
+
+                $("#text").append(state["text"]);
+
                 if (state["actions"] != null) {
 
                     var autopass = true;
@@ -622,7 +617,7 @@
                             g_timer = setTimeout('onTimer()', 1000);
 
                             $("#autopass").empty();
--                           $("#autopass").append("<div class='autopass_priority'>" + g_state["text"] + "<br/>" + g_timeout + "</div>");
+                            $("#autopass").append("<div class='autopass_priority'>" + g_state["text"] + "<br/>" + g_timeout + "</div>");
                             $("#autopass").show();
                         }
                         else {
@@ -638,9 +633,11 @@
                 }
             } 
             else {
+                $("#text").append("Waiting for " + g_playermap[state["player"]].name);
+
                 // It is not our turn
                 $("#autopass").empty();
--               $("#autopass").append("<div class='autopass_wait'>" + "Waiting on " + state["player"] + "</div>");
+                $("#autopass").append("<div class='autopass_wait'>" + "Waiting for " + g_playermap[state["player"]].name + "</div>");
                 $("#autopass").show();
             }
         }
@@ -673,6 +670,7 @@
                 stopTimer();
                 $("#pass").attr("disabled", "disabled");
                 sess.publish(g_gameuri, 0);
+                $("#autopass").empty();
             }
             else {
                 $("#autopass").empty();
@@ -1393,7 +1391,7 @@
 }
 
 #zone_stack {
-    background: #ccaaaa;
+    background: #428042;
     margin: 8px;
 }
 
