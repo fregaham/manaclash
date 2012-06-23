@@ -727,8 +727,8 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
 
         cards = []
         for i in range(n):
-           if len(library.objects) > 0:
-                cards.append(library.objects.pop())
+           if i < len(library.objects):
+                cards.append(library.objects[-i-1])
 
         while len(cards) > 0:
 
@@ -750,7 +750,13 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
             a = game.input.send(_as)
 
             cards.remove (a.object)
+            library.objects.remove(a.object)
             library.objects.append(a.object)
+
+            # put the other cards we are looking at on top of the library
+            for card in cards:
+                library.objects.remove(card)
+                library.objects.append(card)
 
             game.looked_at = old_looked_at
 
