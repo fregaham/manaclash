@@ -439,6 +439,7 @@
             $("#card_details").empty();
 
             var in_play = [];
+            var in_play_battle = [];
             var player_hand = [];
             var players = [];
             // playerN -> player|opponent
@@ -472,7 +473,14 @@
 
             for (var i = 0; i < players.length; ++i) {
                 in_play[players[i]] = $("<div>In play</div>").appendTo(player_divs[players[i]]);
+                in_play_battle[players[i]] = $("<div></div>").appendTo(player_divs[players[i]]);
             }
+
+            in_play["opponent"] = $("<div>In play</div>").appendTo(player_divs["opponent"]);
+            in_play_battle["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);
+
+            in_play_battle["player"] = $("<div></div>").appendTo(player_divs["player"]);
+            in_play["player"] = $("<div>In play</div>").appendTo(player_divs["player"]);
 
             player_hand = $("<div>Hand</div>").appendTo(player_divs["player"]);
 
@@ -482,9 +490,16 @@
 
                 if (obj.controller != null) {
                     objSpan = displayCard(obj);
-                    objSpan.appendTo(in_play[rolemap[obj.controller]]);
 
-                    g_zone_map[obj.id] = rolemap[obj.controller] + "_in_play";
+                    if (obj.tags.indexOf("attacking") >= 0 || obj.tags.indexOf("blocking") >= 0) {
+                        objSpan.appendTo(in_play_battle[rolemap[obj.controller]]);
+                        g_zone_map[obj.id] = rolemap[obj.controller] + "_in_play_battle";
+
+                    }
+                    else {
+                        objSpan.appendTo(in_play[rolemap[obj.controller]]);
+                        g_zone_map[obj.id] = rolemap[obj.controller] + "_in_play";
+                    }
                 }
             }
 
