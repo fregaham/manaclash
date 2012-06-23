@@ -22,6 +22,9 @@
         // map id -> game object
         var g_objects = {};
 
+        // Is autopass cancelled?
+        var g_autopass_cancel = false;
+
         // map object id -> zone (e.g. "player_hand", "opponent_graveyard", etc.)
         var g_zone_map = {};
 
@@ -67,10 +70,12 @@
                }
             );
 
-            $("#timer").click(function(event) {
+            $("#autopass").click(function(event) {
                 stopTimer();
+                g_autopass_cancel = true;
+                $("#autopass").hide();
             });
-            $("#timer").attr("disabled", "disabled");
+            $("#autopass").hide();
 
             $("#query_button").click(function(event) {
                 onQueryButton();
@@ -399,6 +404,10 @@
             stopTimer();
             sess.publish(g_gameuri, i);
 
+            g_autopass_cancel = false;
+
+            $("#pass").attr("disabled", "disabled");
+
             /* clear the "action_zone_button" classes from any zone_buttons */
             $(".action_zone_button").removeClass("action_zone_button");
         }
@@ -599,14 +608,16 @@
                         sess.publish(g_gameuri, 0);
                     }
                     else {
-                        if (state["text"] == "You have priority" && haspass && !(state["turn"] == g_role && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
-                            g_timeout = 5;
+                        if (!g_autopass_cancel && state["text"] == "You have priority" && haspass && !(state["turn"] == g_role && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
+                            g_timeout = 3;
                             g_timer = setTimeout('onTimer()', 1000);
 
-                            $("#timer").empty();
-                            $("#timer").append(g_timeout);
-
-                            $("#timer").removeAttr("disabled");
+                            $("#autopass").empty();
+-                           $("#autopass").append("<div class='autopass_priority'>" + g_state["text"] + "<br/>" + g_timeout + "</div>");
+                            $("#autopass").show();
+                        }
+                        else {
+                            $("#autopass").hide();
                         }
                     }
                 }
@@ -617,15 +628,20 @@
                     query.show();
                 }
             } 
+            else {
+                // It is not our turn
+                $("#autopass").empty();
+-               $("#autopass").append("<div class='autopass_wait'>" + "Waiting on " + state["player"] + "</div>");
+                $("#autopass").show();
+            }
         }
 
         function onPass() {
-            stopTimer();
-            sess.publish(g_gameuri, 0);
+            selectAction(0);
         }
 
         function onQueryButton() {
-            sess.publish(g_gameuri, $("#query_input").val());
+            selectAction($("#query_input").val());
         }
 
         function stopTimer() {
@@ -634,10 +650,6 @@
             }
             g_timer = null;
             g_timeout = null;
-            $("#timer").attr("disabled", "disabled");
-
-            $("#timer").empty();
-            $("#timer").append("Auto Pass");
         }
 
         function onTimer() {
@@ -648,14 +660,15 @@
 
             g_timeout--;
 
-            $("#timer").empty();
-            $("#timer").append(g_timeout);
-
             if (g_timeout <= 0) {
-                sess.publish(g_gameuri, 0);
                 stopTimer();
+                $("#pass").attr("disabled", "disabled");
+                sess.publish(g_gameuri, 0);
             }
             else {
+                $("#autopass").empty();
+                $("#autopass").append("<div class='autopass_priority'>" + g_state["text"] + "<br/>" + g_timeout + "</div>");
+
                 setTimeout('onTimer()', 1000);
             }
         }
@@ -1349,6 +1362,7 @@
   width: 200px;
 }
 
+
 #timer {
  width: 200px;
 }
@@ -1435,6 +1449,30 @@ body {
   margin: 0px;
 }
 
+#autopass {
+    display: table;
+    left:0px;
+    top:0px;
+    width: 100%;
+    height: 100%;
+    z-index: 128;
+    position: fixed;
+    background: black;
+    opacity: 0.5;
+    text-align: center;
+    font-size: 48pt;
+    color: light-gray;
+}
+
+#autopass > div {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.autopass_priority {
+    color: white;
+}
+
     </style>
     </head>
     <body>
@@ -1463,6 +1501,8 @@ body {
         <div class="view" id="view_game">
             <h3>Game</h3>
 
+            <div id="autopass"><span>3</span></div>
+
             <div id="status">
                 <div>Turn: <span id="turn"></span></div>
                 <div>Phase: <span id="phase"></span></div>
@@ -1470,7 +1510,7 @@ body {
 
                 <div id="text"></div>
 
-                <div><button id="timer">Auto Pass</button></div>
+<!--                <div><button id="timer">Auto Pass</button></div>-->
                 <div><button id="pass" onclick="onPass();">Pass</button></div>
 
                 <div id="actions">
@@ -1511,6 +1551,8 @@ body {
             </div>
 
             <div id="table">
+
+
                 <span class="card_small">
                     <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>
                     <span class="header">
