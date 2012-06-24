@@ -1050,7 +1050,7 @@
     vertical-align: top;
     overflow: hidden;
     border-radius: 6px;
-
+    background: white;
     margin:3px;
 }
 
@@ -1068,6 +1068,19 @@
    z-index: 2;
    border-radius: 6px;
 }
+
+.card_small > .card_content {
+    position: relative;
+    left:3px;
+    width:90px;
+    top:3px;
+    height:130px;
+    background: gray;
+    border: 1px solid black;
+    padding: 1px;
+}
+
+
 
 /*
 .card_small:hover > img {
@@ -1097,7 +1110,20 @@
     overflow: hidden;
     border-radius: 6px;
     margin: 3px;
+    background: white;
 }
+
+.tapped_small > .card_content {
+    position: relative;
+    left:3px;
+    width:130px;
+    top:3px;
+    height:90px;
+    background: gray;
+    border: 1px solid black;
+    padding: 1px;
+}
+
 
 /*
 .tapped_small:hover {
@@ -1150,7 +1176,7 @@
     left: 0px;
 }
 
-.tapped_small > .header > .title {
+.tapped_small .header > .title {
     position: absolute;
     text-align: left;
     top: 0px;
@@ -1164,14 +1190,14 @@
     right: 0px;
 }
 
-.tapped_small > .header > .manacost {
+.tapped_small .header > .manacost {
     position: absolute;
     text-align: right;
     top: 0px;
     right: 0px;
 }
 
-.tapped_small > .power {
+.tapped_small .power {
     display: block;
     position: relative;
     font-size: 10px;
@@ -1189,7 +1215,7 @@
     width: 265px;
 }
 
-.tapped_small > .body {
+.tapped_small .body {
     display: block;
     position: absolute;
     top: 0px;
@@ -1216,21 +1242,44 @@
     width: 200px;
 }
 
-.card_small > .header {
+.card_small .header {
     position: absolute;
     font-size: 8px;
     height: 10px;
-    width: 100px;
+    width: 88px;
+    border: 1px solid black;
 }
 
-.card > .header > .title {
+.card_red > .card_content {
+    border: 1px solid #843c2e !important;
+}
+
+.card_red .card_content {
+    background: #a7524d !important;
+}
+
+.card_red .header {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_red .text {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_red .power {
+    background: #f8ceb6 !important;
+}
+
+.card .header > .title {
     position: absolute;
     text-align: left;
     top: 0px;
     left: 0px;
 }
 
-.card_small > .header > .title {
+.card_small .header > .title {
     position: absolute;
     text-align: left;
     top: 0px;
@@ -1244,7 +1293,7 @@
     right: 0px;
 }
 
-.card_small > .header > .manacost {
+.card_small .header > .manacost {
     position: absolute;
     text-align: right;
     top: 0px;
@@ -1258,24 +1307,38 @@
     width: 200px;
 }
 
-.card_small > .body {
+.card_small .body {
     display: block;
     position: absolute;
     top: 10px;
     left: 0px;
-    width: 100px;
-    height: 100px;
-    font-size: 10px;
+    width: 92px;
+    height: 121px;
+    font-size: 8px;
+    overflow: hidden;
 }
 
-.card_small > .power {
+.card_small .body .text {
+    border: 1px solid black;
+    margin: 1px;
+    height: 108px;
+}
+
+.card_small .body .types {
+    width:88px;
+    height:9px;
+    margin-top:1px;
+    overflow:hidden;
+}
+
+.card_small .power {
     display: block;
     position: relative;
     font-size: 10px;
     height: 12px;
     width: 20px;
-    left: 80px;
-    top: 130px;
+    left: 67px;
+    top: 116px;
     background: inherit;
     z-index: 1;
     text-align: right;
@@ -1581,8 +1644,27 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                     </span>
                 </span>
 
+                <span class="card_small card_red">
+                    <div class="card_content">
+                    <span class="header">
+                        <span class="title">Foo Bar</span>
+                        <span class="manacost">1UU</span>
+                    </span>
+                         <span class="power">3/2</span>
+ 
+                    <span class="body">
+                        <span class="types">Legendary Creature Bar</span>
+                        <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
+
+Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
+                    </span>
+                    </div>
+                </span>
+
+
                 <span class="tapped_small">
-                    <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>
+                    <div class="card_content">
+<!--                    <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>-->
                     <span class="header">
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
@@ -1595,10 +1677,11 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
 
 Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
-
+                    </div>
                 </span>
 
                 <span class="card_small">
+                    <div class="card_content">
                     <span class="header">
                         <span class="title">Foo Bar</span>
                         <span class="manacost">1UU</span>
@@ -1610,6 +1693,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
 
 Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
                     </span>
+                    </div>
                 </span>
             </div>
 
