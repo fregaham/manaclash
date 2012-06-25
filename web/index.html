@@ -294,7 +294,17 @@
             // Store all objects in a map
             g_objects[obj.id] = obj;
 
-            var objSpan = $("<span class='" + (obj.tapped ? "card_small card_tapped" : "card_small") + "' id='obj_" + obj.id + "'></span>");
+            // color
+            var color = "colorless";
+            var colors = ["red", "blue", "white", "black", "green", "multicolor"];
+            for (var i = 0; i < colors.length; i++) {
+                if (obj.tags.indexOf(colors[i]) >= 0) {
+                    color = colors[i];
+                }
+            }
+            
+
+            var objSpan = $("<span class='" + (obj.tapped ? "card_small card_tapped" : "card_small") + " card_" + color + "' id='obj_" + obj.id + "'></span>");
             var detailSpan = $("<span class='card_detail' id='detail_" + obj.id + "'></span>");
 
             if (obj.show_to.indexOf(g_role) >= 0) {
@@ -1046,13 +1056,6 @@
 // ]]>
     </script>
     <style>
-.card {
-    display: inline-block;
-    width: 200px;
-    height: 285px;
-    cursor: pointer;
-    vertical-align: top;
-}
 
 .card_small {
     position: relative;
@@ -1066,13 +1069,6 @@
     background: white;
     margin:3px;
 }
-
-/*
-.card_small:hover {
-    width: 200px;
-    height: 284px;
-}
-*/
 
 .card_small > img {
    position: absolute;
@@ -1093,39 +1089,6 @@
     padding: 1px;
 }
 
-
-
-/*
-.card_small:hover > img {
-   position: absolute;
-   width: 200px;
-   height: 284px;
-   z-index: 2;
-   border-radius: 8px;
-}
-*/
-
-.tapped {
-    width: 285px;
-    height: 200px;
-    display: inline-block;
-    cursor: pointer;
-    vertical-align: top;
-}
-
-.tapped_small {
-    position: relative;
-    width: 142px;
-    height: 100px;
-    display: inline-block;
-    cursor: pointer;
-    vertical-align: top;
-    overflow: hidden;
-    border-radius: 6px;
-    margin: 3px;
-    background: white;
-}
-
 .tapped_dummy {
     position:relative;
     width:42px;
@@ -1133,118 +1096,9 @@
     display:inline-block;
 }
 
-.tapped_small > .card_content {
-    position: relative;
-    left:3px;
-    width:130px;
-    top:3px;
-    height:90px;
-    background: gray;
-    border: 1px solid black;
-    padding: 1px;
-}
-
 .card_tapped {
    -webkit-transform: rotate(90deg) translate(-21px, -21px);
    -moz-transform: rotate(90deg) translate(-21px, -21px);
-}
-
-/*
-.tapped_small:hover {
-    width: 284px;
-    height: 200px;
-}
-*/
-
-.tapped_small > img {
-   position: absolute;
-   width: 100px;
-   height: 142px;
-   z-index: 2;
-  -webkit-transform: rotate(90deg) translate(-21px, -21px);
-  -moz-transform: rotate(90deg) translate(-21px, -21px);
-   border-radius: 6px;
-}
-
-/*
-.tapped_small:hover >img {
-    width: 200px;
-    height: 284px;
-}
-*/
-
-.tapped .header {
-    position: absolute;
-    display: inline-block;
-    -webkit-transform: rotate(90deg) translate(90px, -175px);
-    -moz-transform: rotate(90deg) translate(90px, -175px);
-    font-size: 12px;
-    width: 200px;
-    height: 20px;
-}
-
-.tapped_small .header {
-    position: absolute;
-    display: inline-block;
-    -webkit-transform: rotate(90deg) translate(45px, -90px);
-    -moz-transform: rotate(90deg) translate(45px, -90px);
-    font-size: 8px;
-    width: 100px;
-    height: 10px;
-}
-
-.tapped > .header > .title {
-    position: absolute;
-    text-align: left;
-    top: 0px;
-    left: 0px;
-}
-
-.tapped_small .header > .title {
-    position: absolute;
-    text-align: left;
-    top: 0px;
-    left: 0px;
-}
-
-.tapped > .header > .manacost {
-    position: absolute;
-    text-align: right;
-    top: 0px;
-    right: 0px;
-}
-
-.tapped_small .header > .manacost {
-    position: absolute;
-    text-align: right;
-    top: 0px;
-    right: 0px;
-}
-
-.tapped_small .power {
-    display: block;
-    position: relative;
-    font-size: 10px;
-    height: 12px;
-    width: 20px;
-    left: 0px;
-    top: 88px;
-    background: inherit;
-    z-index: 1;
-    text-align: left;
-}
-
-.tapped > .body {
-    position: absolute;
-    width: 265px;
-}
-
-.tapped_small .body {
-    display: block;
-    position: absolute;
-    top: 0px;
-    width: 132px;
-    font-size: 10px;
 }
 
 .types {
@@ -1257,13 +1111,6 @@
 
 .text {
     display: block;
-}
-
-.card > .header {
-    position: absolute;
-    font-size: 12px;
-    height: 20px;
-    width: 200px;
 }
 
 .card_small .header {
@@ -1296,11 +1143,80 @@
     background: #f8ceb6 !important;
 }
 
-.card .header > .title {
-    position: absolute;
-    text-align: left;
-    top: 0px;
-    left: 0px;
+.card_green > .card_content {
+    border: 1px solid #274939 !important;
+    background: #45715a !important;
+}
+
+.card_green .header {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_green .text {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_green .power {
+    background: #c8d5cc !important;
+}
+
+.card_blue > .card_content {
+    border: 1px solid #002c43 !important;
+    background: #2f84bd !important;
+}
+
+.card_blue .header {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_blue .text {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_blue .power {
+    background: #c9dceb !important;
+}
+
+.card_black > .card_content {
+    border: 1px solid #312f32 !important;
+    background: #4e4548 !important;
+}
+
+.card_black .header {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_black .text {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_black .power {
+    background: #bbb1b0 !important;
+}
+
+.card_white > .card_content {
+    border: 1px solid #3f3734 !important;
+    background: #fafafa !important;
+}
+
+.card_white .header {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_white .text {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_white .power {
+    background: #f6f5f3 !important;
 }
 
 .card_small .header > .title {
@@ -1310,25 +1226,11 @@
     left: 0px;
 }
 
-.card > .header > .manacost {
-    position: absolute;
-    text-align: right;
-    top: 0px;
-    right: 0px;
-}
-
 .card_small .header > .manacost {
     position: absolute;
     text-align: right;
     top: 0px;
     right: 0px;
-}
-
-.card > .body {
-    display: block;
-    position: relative;
-    top: 20px;
-    width: 200px;
 }
 
 .card_small .body {
@@ -1508,7 +1410,6 @@
     right:8px;
     top:32px;
     bottom:8px;
-
 }
 
 #cards_available {
