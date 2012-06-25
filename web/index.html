@@ -238,8 +238,12 @@
             obj the object representing the card, as got from the server
         */
         function displayCardContents(objSpan, obj) {
+
+            var contentDiv = $("<div class='card_content'></div>");
+            contentDiv.appendTo(objSpan);
+
             var headerSpan = $("<span class='header'/>");
-            headerSpan.appendTo(objSpan);
+            headerSpan.appendTo(contentDiv);
 
             var titleSpan = $("<span class='title'></span>");
             titleSpan.append(obj.title);
@@ -252,11 +256,11 @@
             if (obj.power != null) {
                 var powerSpan = $("<span class='power'></span>");
                 powerSpan.append(obj.power + "/" + obj.toughness);
-                powerSpan.appendTo(objSpan);
+                powerSpan.appendTo(contentDiv);
             }
 
             var bodySpan = $("<span class='body'/>");
-            bodySpan.appendTo(objSpan);
+            bodySpan.appendTo(contentDiv);
 
             var typeSpan = $("<span class='types'></span>");
             typeSpan.append(obj.supertypes.join(" "));
@@ -270,11 +274,11 @@
             typeSpan.append(obj.subtypes.join(" "));
             typeSpan.appendTo(bodySpan);
 
-            var tagsSpan = $("<span class='tags'></span>");
+/*            var tagsSpan = $("<span class='tags'></span>");
             tagsSpan.append(obj.tags.join(" "));
             tagsSpan.appendTo(bodySpan);
 
-            objSpan.append(" ");
+            objSpan.append(" ");*/
 
             var textSpan = $("<span class='text'></span>");
             textSpan.append(obj.text);
@@ -290,7 +294,7 @@
             // Store all objects in a map
             g_objects[obj.id] = obj;
 
-            var objSpan = $("<span class='" + (obj.tapped ? "tapped_small" : "card_small") + "' id='obj_" + obj.id + "'></span>");
+            var objSpan = $("<span class='" + (obj.tapped ? "card_small card_tapped" : "card_small") + "' id='obj_" + obj.id + "'></span>");
             var detailSpan = $("<span class='card_detail' id='detail_" + obj.id + "'></span>");
 
             if (obj.show_to.indexOf(g_role) >= 0) {
@@ -477,15 +481,24 @@
                 if (obj.controller != null) {
                     objSpan = displayCard(obj);
 
+                    var zone = null;
+                    var zone_name = null;
                     if (obj.tags.indexOf("attacking") >= 0 || obj.tags.indexOf("blocking") >= 0) {
-                        objSpan.appendTo(in_play_battle[rolemap[obj.controller]]);
-                        g_zone_map[obj.id] = rolemap[obj.controller] + "_in_play_battle";
-
+                        zone_name = rolemap[obj.controller] + "_in_play_battle";
+                        zone = in_play_battle[rolemap[obj.controller]];
                     }
                     else {
-                        objSpan.appendTo(in_play[rolemap[obj.controller]]);
-                        g_zone_map[obj.id] = rolemap[obj.controller] + "_in_play";
+                        zone_name = rolemap[obj.controller] + "_in_play";
+                        zone = in_play[rolemap[obj.controller]];
                     }
+
+                    objSpan.appendTo(zone);
+
+                    if (obj.tapped) {
+                        $("<span class='tapped_dummy'></span>").appendTo(zone);
+                    }
+
+                    g_zone_map[obj.id] = zone_name;
                 }
             }
 
@@ -1113,6 +1126,13 @@
     background: white;
 }
 
+.tapped_dummy {
+    position:relative;
+    width:42px;
+    height:142px;
+    display:inline-block;
+}
+
 .tapped_small > .card_content {
     position: relative;
     left:3px;
@@ -1124,6 +1144,10 @@
     padding: 1px;
 }
 
+.card_tapped {
+   -webkit-transform: rotate(90deg) translate(-21px, -21px);
+   -moz-transform: rotate(90deg) translate(-21px, -21px);
+}
 
 /*
 .tapped_small:hover {
@@ -1644,7 +1668,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                     </span>
                 </span>
 
-                <span class="card_small card_red">
+                <span class="card_small card_red card_tapped">
                     <div class="card_content">
                     <span class="header">
                         <span class="title">Foo Bar</span>
@@ -1660,9 +1684,10 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                     </span>
                     </div>
                 </span>
+                <span style="position:relative; width:42px;height:142px;display:inline-block;">&nbsp;</span>
 
 
-                <span class="tapped_small">
+                <span class="card_small card_tapped">
                     <div class="card_content">
 <!--                    <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>-->
                     <span class="header">
@@ -1679,6 +1704,7 @@ Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum 
                     </span>
                     </div>
                 </span>
+                <span style="position:relative; width:42px;height:142px;display:inline-block;"></span>
 
                 <span class="card_small">
                     <div class="card_content">
