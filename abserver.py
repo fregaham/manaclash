@@ -457,9 +457,29 @@ class MyServerProtocol(WampServerProtocol):
         for name in g_card_names:
             card = g_cards[name]
             o = {}
-            o["name"] = card.name
-            o["cost"] = card.cost
+            o["title"] = card.name
+            o["manacost"] = card.cost
             o["text"] = card.rules
+            o["power"] = card.power
+            o["toughness"] = card.toughness
+            o["types"] = [x for x in card.types]
+            o["subtypes"] = [x for x in card.subtypes]
+            o["supertypes"] = [x for x in card.supertypes]
+            o["tags"] = []
+
+            if "U" in card.cost:
+                o["tags"].append("blue")
+            if "G" in card.cost:
+                o["tags"].append("green")
+            if "W" in card.cost:
+                o["tags"].append("white")
+            if "B" in card.cost:
+                o["tags"].append("black")
+            if "R" in card.cost:
+                o["tags"].append("red")
+            if len(o["tags"]) > 1:
+                o["tags"].append("multicolor")
+
             ret.append(o)
         return ret
 
@@ -619,7 +639,7 @@ if __name__ == '__main__':
 
     log.startLogging(sys.stdout)
 
-    g_factory = WampServerFactory("ws://localhost:9000", debugWamp = False)
+    g_factory = WampServerFactory("ws://localhost:9000", debugWamp = True)
     g_factory.protocol = MyServerProtocol
     g_factory.setProtocolOptions(allowHixie76 = True)
     listenWS(g_factory)
