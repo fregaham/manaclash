@@ -92,7 +92,7 @@
                 sendMessage();
             });
 
-            view("view_lobby");
+            view("view_login");
             showZone(null);
 
             // clear the log
@@ -222,6 +222,9 @@
                      if(!result) {
                         alert("Login failed!");
                         g_login = null;
+                     }
+                     else {
+                        view('view_lobby');
                      }
                 },
                 function(){ alert("failed to login!"); }
@@ -726,12 +729,20 @@
         }
 
         function view(v) {
+            $("#view_login").hide();
             $("#view_lobby").hide();
             $("#view_game").hide();
             $("#view_cards").hide();
             $("#view_settings").hide();
 
             $("#" + v).show();
+
+            if (v == "view_login") {
+                $("#view_menu").hide();
+            }
+            else {
+                $("#view_menu").show();
+            }
         }
 
         function showZone(zone) {
@@ -1631,25 +1642,25 @@ body {
     </head>
     <body>
 
-        <div>
+        <div id="view_menu">
             <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_cards');">Cards</button> | <button onclick="view('view_game');">Game</button> | <button onclick="view('view_settings');">Settings</button>
         </div>
 
-        <div class="view" id="view_lobby">
-
+        <div class="view" id="view_login">
             <h1>ManaClash</h1>
-
-            <h3>Users</h3>
-            <div id="userlist"></div>
-
-            <h3>Games</h3>
-            <div id="gameslist"></div>
-
             <div id="login">
                 Username: <input id="username" name="username"/>
                 Password: <input id="password" name="password" type="password"/>
                 <button onclick="login();">Login</button>
             </div>
+        </div>
+
+        <div class="view" id="view_lobby">
+            <h3>Users</h3>
+            <div id="userlist"></div>
+
+            <h3>Games</h3>
+            <div id="gameslist"></div>
         </div>
 
         <div class="view" id="view_game">
