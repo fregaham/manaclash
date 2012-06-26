@@ -302,6 +302,17 @@
                     color = colors[i];
                 }
             }
+
+            if (color == "colorless" && obj.types.indexOf("land") >= 0) {
+                color = "land";
+            }
+
+            var land_subtypes = ["forest", "swamp", "island", "plains", "mountain"];
+            for (var i = 0; i < land_subtypes.length; i++) {
+                if (color == "land" && obj.subtypes.indexOf(land_subtypes[i]) >= 0) {
+                    color = land_subtypes[i];
+                }
+            }
             
 
             var objSpan = $("<span class='" + (obj.tapped ? "card_small card_tapped" : "card_small") + " card_" + color + "' id='obj_" + obj.id + "'></span>");
@@ -1123,9 +1134,6 @@
 
 .card_red > .card_content {
     border: 1px solid #843c2e !important;
-}
-
-.card_red .card_content {
     background: #a7524d !important;
 }
 
@@ -1216,6 +1224,139 @@
 }
 
 .card_white .power {
+    background: #f6f5f3 !important;
+}
+
+.card_colorless > .card_content {
+    border: 1px solid #919199 !important;
+    background: #e3e4e8 !important;
+}
+
+.card_colorless .header {
+    border: 1px solid #919199 !important;
+    background: #e3e4e8;
+}
+
+.card_colorless .text {
+    border: 1px solid #919199 !important;
+    background: #e3e4e8;
+}
+
+.card_colorless .power {
+    background: #e3e4e8 !important;
+}
+
+.card_land > .card_content {
+    border: 1px solid #564f47 !important;
+    background: #bca9a2 !important;
+}
+
+.card_land .header {
+    border: 1px solid #564f47 !important;
+    background: #d7d0ca;
+}
+
+.card_land .text {
+    border: 1px solid #564f47 !important;
+    background: #d7d0ca;
+}
+
+.card_land .power {
+    background: #d7d0ca !important;
+}
+
+.card_forest > .card_content {
+    border: 1px solid #274939 !important;
+    background: #bca9a2 !important;
+}
+
+.card_forest .header {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_forest .text {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_forest .power {
+    background: #c8d5cc !important;
+}
+
+.card_mountain > .card_content {
+    border: 1px solid #843c2e !important;
+    background: #bca9a2 !important;
+}
+
+.card_mountain .header {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_mountain .text {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_mountain .power {
+    background: #f8ceb6 !important;
+}
+
+.card_island > .card_content {
+    border: 1px solid #002c43 !important;
+    background: #bca9a2 !important;
+}
+
+.card_island .header {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_island .text {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_island .power {
+    background: #c9dceb !important;
+}
+
+.card_swamp > .card_content {
+    border: 1px solid #312f32 !important;
+    background: #bca9a2 !important;
+}
+
+.card_swamp .header {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_swamp .text {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_swamp .power {
+    background: #bbb1b0 !important;
+}
+
+.card_plains > .card_content {
+    border: 1px solid #3f3734 !important;
+    background: #bca9a2 !important;
+}
+
+.card_plains .header {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_plains .text {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_plains .power {
     background: #f6f5f3 !important;
 }
 
