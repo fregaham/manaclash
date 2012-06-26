@@ -1090,6 +1090,19 @@
     </script>
     <style>
 
+.login {
+    font-size: 15pt;
+    text-align: center;
+}
+
+.login input {
+    font-size: 15pt;
+}
+
+.login button {
+    font-size: 15pt;
+}
+
 .card_small {
     position: relative;
     display: inline-block;
@@ -1612,6 +1625,7 @@ body {
   height: 100%;
   padding: 0px;
   margin: 0px;
+  background: #f0f0f0;
 }
 
 #autopass {
@@ -1647,11 +1661,17 @@ body {
         </div>
 
         <div class="view" id="view_login">
-            <h1>ManaClash</h1>
-            <div id="login">
-                Username: <input id="username" name="username"/>
-                Password: <input id="password" name="password" type="password"/>
-                <button onclick="login();">Login</button>
+            <div class="login">
+                <h1><img src="logo.png" alt="ManaClash"/></h1>
+                <div id="login">
+                    <center>
+                    <table>
+                    <tr><td>Username:</td><td><input id="username" name="username" /></td>
+                    <tr><td>Password:</td><td><input id="password" name="password" type="password"/></td>
+                    <tr><td colspan="2"><center><button onclick="login();">Login</button></center></td></tr>
+                    </table>
+                    </center>
+                </div>
             </div>
         </div>
 
@@ -1659,7 +1679,7 @@ body {
             <h3>Users</h3>
             <div id="userlist"></div>
 
-            <h3>Games</h3>
+            <h3>Tables</h3>
             <div id="gameslist"></div>
         </div>
 
@@ -1716,77 +1736,6 @@ body {
             </div>
 
             <div id="table">
-
-
-                <span class="card_small">
-                    <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>
-                    <span class="header">
-                        <span class="title">Foo Bar</span>
-                        <span class="manacost">1UU</span>
-                    </span>
-                         <span class="power">3/2</span>
- 
-                    <span class="body">
-                        <span class="types">Legendary Creature Bar</span>
-                        <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
-
-Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
-                    </span>
-                </span>
-
-                <span class="card_small card_red card_tapped">
-                    <div class="card_content">
-                    <span class="header">
-                        <span class="title">Foo Bar adasda s adsad</span>
-                        <span class="manacost">1UU</span>
-                    </span>
-                         <span class="power">3/2</span>
- 
-                    <span class="body">
-                        <span class="types">Legendary Creature Bar</span>
-                        <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
-
-Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
-                    </span>
-                    </div>
-                </span>
-                <span style="position:relative; width:42px;height:142px;display:inline-block;">&nbsp;</span>
-
-
-                <span class="card_small card_tapped">
-                    <div class="card_content">
-<!--                    <img src="file:///home/marcho/Documents/Projects/ManaClash/images/Island.jpg"/>-->
-                    <span class="header">
-                        <span class="title">Foo Bar</span>
-                        <span class="manacost">1UU</span>
-                    </span>
-                    <span class="power">3/2</span>
-
-                    <span class="body">
-                        <span class="types">Legendary Creature Bar</span>
-                        <span class="text">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
-
-Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
-                    </span>
-                    </div>
-                </span>
-                <span style="position:relative; width:42px;height:142px;display:inline-block;"></span>
-
-                <span class="card_small">
-                    <div class="card_content">
-                    <span class="header">
-                        <span class="title">Foo Bar</span>
-                        <span class="manacost">1UU</span>
-                    </span>
-                    <span class="power">3/2</span>
-                    <span class="body">
-                        <span class="types">Legendary Creature Bar</span>
-                        <span class="text">Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque aliquet consequat leo vitae ornare. Proin placerat mauris eu risus dictum imperdiet. Praesent egestas arcu sit amet est sollicitudin ac molestie sapien dapibus. Proin eu eros neque, sed adipiscing leo. Mauris bibendum, sapien sit amet viverra malesuada, ipsum risus hendrerit tellus, sed tristique tellus nunc a nisi. Ut porttitor augue gravida purus convallis eu feugiat elit pulvinar. Nam sit amet cursus tortor. Vestibulum ipsum metus, auctor quis malesuada ut, tempor id lectus. In cursus, lacus id convallis euismod, augue dui porttitor turpis, quis luctus sapien purus sagittis metus. Nulla vitae magna eros. Nam non tortor tortor.
-
-Phasellus ut velit quis tellus ornare pulvinar. Nam adipiscing odio vitae ipsum lacinia vitae accumsan lectus auctor. In consequat pulvinar mi, et rhoncus est accumsan eget. Cras faucibus, eros eu ullamcorper viverra, urna magna molestie lectus, ut molestie est risus id eros. Ut magna ligula, lacinia nec fringilla id, pellentesque ac mauris. Aliquam sit amet lorem massa, ac malesuada est. Donec sagittis semper sollicitudin. Morbi suscipit, nunc eget porta elementum, libero augue ornare metus, in sollicitudin massa lectus in massa. Donec euismod scelerisque quam imperdiet varius. Donec iaculis felis vel magna euismod ac dignissim urna ullamcorper. </span>
-                    </span>
-                    </div>
-                </span>
             </div>
 
             <div id="game_messages">
