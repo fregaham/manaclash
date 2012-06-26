@@ -19,6 +19,9 @@
         var g_playermap = null;
         var g_imgprefix = null;
 
+        // After clicking join, switch to game view automatically when the game starts
+        var g_waiting_for_game = false;
+
         // map id -> game object
         var g_objects = {};
 
@@ -129,7 +132,9 @@
 
                 var players = 0;
                 var have_me = false;
+
                 for (var j = 0; j < games[i].players.length; j++) {
+                    
                     if (games[i].players[j].role == "player1" || games[i].players[j].role == "player2") {
                         ++players;
                     }
@@ -139,7 +144,7 @@
                         have_me = true;
                     }
 
-                    if (have_me && !(g_gameuri == games[i].uri && g_role == games[i].players[j].role) && !g_joining) {
+                    if (games[i].players[j].login == g_login && !(g_gameuri == games[i].uri && g_role == games[i].players[j].role) && !g_joining) {
                         $("<button>Takeover</button>").appendTo(playerElement).click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
                             sess.call("http://manaclash.org/takeover", event.data.game_id, event.data.role).then(
                                 function(ret) {
@@ -170,6 +175,7 @@
                                     subscribeGame(uri);
                                     g_role = role;
                                     g_gameuri = uri;
+                                    g_waiting_for_game = true;
                                 }
                                 g_joining = false;
                                 sess.call("http://manaclash.org/refresh")
@@ -439,11 +445,16 @@
 
         function onState(state) {
 
+            if (g_waiting_for_game) {
+                g_waiting_for_game = false;
+                view("view_game");
+            }
+
             g_state = state;
             g_zone_map = {};
 
-            var view = $("#table");
-            view.empty();
+            var table = $("#table");
+            table.empty();
 
             $('#text').empty();
 
@@ -484,9 +495,9 @@
             var stack = $("<div id='zone_stack'></div>");
             displayZone("stack", state["stack"], stack);
 
-            player_divs["opponent"].appendTo(view);
-            stack.appendTo(view);
-            player_divs["player"].appendTo(view);
+            player_divs["opponent"].appendTo(table);
+            stack.appendTo(table);
+            player_divs["player"].appendTo(table);
 
             in_play["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);
             in_play_battle["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);

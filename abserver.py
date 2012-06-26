@@ -267,6 +267,9 @@ class ABGame:
         g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/add", (player.user.login, player.role))
 
     def start(self):
+
+        print "game " + str(self.id) + " starting"
+
         output = ABOutput(self)
         ig = ab_input_generator(self)
 
@@ -307,8 +310,14 @@ class ABGame:
             players = self.players[:]
             for player in players:
                 self.remove(player)
+            self.game = None
+            self.current_state = None
+            self.current_player = None
+            self.queue = Queue()
 
         dispatchGames()
+        print "game " + str(self.id) + " ending"
+
         
 
 class ABPlayer:
@@ -387,22 +396,27 @@ def dispatchGames(exclude=[], eligible=None):
 
 class MyServerProtocol(WampServerProtocol):
 
+    def unsetPlayer(self, client):
+        # remove the game if all this is the only connected player in the game
+        if client.player is not None and client.player.game is not None:
+            game = client.player.game
+            n = 0
+            for player in game.players:
+                if player.session_id is not None and player.session_id != self.session_id:
+                    n += 1
+
+            if n == 0:
+                # we terminate the game
+                game.queue.put(None)
+
+        client.setPlayer(None)
+
     def connectionLost(self, reason):
 
         client = client_map.get(self.session_id)
         if client is not None:
 
-            # remove the game if all this is the only connected player in the game
-            if client.player is not None and client.player.game is not None:
-                game = client.player.game
-                n = 0
-                for player in game.players:
-                    if player.session_id is not None and player.session_id != self.session_id:
-                        n += 1
-
-                if n == 0:
-                    # we terminate the game
-                    game.queue.put(None)
+            self.unsetPlayer(client)
 
             client.disconnect()
             del client_map[self.session_id]
@@ -460,8 +474,6 @@ class MyServerProtocol(WampServerProtocol):
 
     def onGamePrefixPub(self, url, foo, message):
 
-        print "onGamePrefixPub url='" + url + "'"
-
         if "/" in foo:
             # TODO: check spoofed sender etc
             # some game sub-message, such as a player-to-player message
@@ -471,23 +483,16 @@ class MyServerProtocol(WampServerProtocol):
             #game_id = int(url[len("http://manaclash.org/game/"):])
             game_id = int(foo)
 
-            print "game_id: " + str(game_id)
-
             game = game_map.get(game_id)
             if game is not None:
-                print "game is not None"
                 if game.current_player is not None:
-                    print "game.current_player is not None"
                     if game.current_player.session_id == self.session_id:
-                        print "game.current_player.session_id == self.session_id"
                         # send the message to the game
                         game.queue.put( (game.current_player, message) )
                         return message
 
     def onLogin(self, login, password):
         Context.current_protocol = self
-        #print self.session_id
-        #print "onPub " + `url` + ", " + `foo` + ", " + `message`
         print "client ", self.session_id, " is ", login, ", password: ", password
 
         client = client_map.get(self.session_id)
@@ -496,6 +501,7 @@ class MyServerProtocol(WampServerProtocol):
             client_map[self.session_id] = client
         else:
             # disconnect 
+            self.unsetPlayer(client)
             client.disconnect()
 
         # create a new user or check password if such user exists
@@ -522,7 +528,7 @@ class MyServerProtocol(WampServerProtocol):
 
         if client is not None and client.user is not None and client.player is not None:
             # disconnect the client from her current game
-            client.setPlayer(None)
+            self.unsetPlayer(client)
 
         if client is not None and client.user is not None and client.player is None:
             game = game_map.get(game_id)
@@ -550,7 +556,7 @@ class MyServerProtocol(WampServerProtocol):
 
         # disconnect the client from her current game
         if client is not None and client.user is not None and client.player is not None:
-            client.setPlayer(None)
+            self.unsetPlayer(client)
 
         # check that the player we are taking over exists and is the same user
         if client is not None and client.user is not None:
@@ -613,7 +619,7 @@ if __name__ == '__main__':
 
     log.startLogging(sys.stdout)
 
-    g_factory = WampServerFactory("ws://localhost:9000", debugWamp = True)
+    g_factory = WampServerFactory("ws://localhost:9000", debugWamp = False)
     g_factory.protocol = MyServerProtocol
     g_factory.setProtocolOptions(allowHixie76 = True)
     listenWS(g_factory)
