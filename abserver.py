@@ -428,6 +428,7 @@ class MyServerProtocol(WampServerProtocol):
 
     def onSessionOpen(self):
         ## register a single, fixed URI as PubSub topic
+        self.registerForPubSub("http://manaclash.org/chat")
         self.registerForPubSub("http://manaclash.org/users")
         self.registerForPubSub("http://manaclash.org/games")
         self.registerForPubSub("http://manaclash.org/game/", prefixMatch=True)
@@ -441,9 +442,11 @@ class MyServerProtocol(WampServerProtocol):
 
         self.registerMethodForRpc("http://manaclash.org/getAvailableCards", self, MyServerProtocol.getAvailableCards)
 
+        self.registerHandlerForSub("http://manaclash.org/chat",  self, MyServerProtocol.onChatSub, prefixMatch=False)
         self.registerHandlerForSub("http://manaclash.org/users", self, MyServerProtocol.onUsersSub, prefixMatch=False)
         self.registerHandlerForSub("http://manaclash.org/games", self, MyServerProtocol.onGamesSub, prefixMatch=False)
 
+        self.registerHandlerForPub("http://manaclash.org/chat",  self, MyServerProtocol.onChatPub, prefixMatch=False)
         self.registerHandlerForPub("http://manaclash.org/users", self, MyServerProtocol.noPub, prefixMatch=False)
         self.registerHandlerForPub("http://manaclash.org/games", self, MyServerProtocol.noPub, prefixMatch=False)
 
@@ -491,6 +494,18 @@ class MyServerProtocol(WampServerProtocol):
     def onGamesSub(self, url, foo):
         reactor.callLater(0, dispatchGames, [], [self])
         return True
+
+    def onChatSub(self, url, foo):
+        # TODO: send latest chat messages
+        return True
+
+    def onChatPub(self, url, foo, message):
+        client = client_map.get(self.session_id)
+        if client is not None:
+            if client.user is not None:
+                return [client.user.login, message]
+
+        return None
 
     def onGamePrefixPub(self, url, foo, message):
 

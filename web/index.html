@@ -60,6 +60,7 @@
                   sess = session;
                   console.log("Connected!");
 
+                  sess.subscribe("http://manaclash.org/chat", onChat);
                   sess.subscribe("http://manaclash.org/users", onUsers);
                   sess.subscribe("http://manaclash.org/games", onGames);
 
@@ -115,6 +116,20 @@
             sess.subscribe(gameUri + "/player/online", onPlayerOnline);
             sess.subscribe(gameUri + "/player/offline", onPlayerOffline);
 
+        }
+
+        function lobbyChatSend() {
+            sess.publish("http://manaclash.org/chat", $("#lobby_chat_input").val(), false);
+        }
+
+        function onChat(topicUri, message) {
+            var login = message[0];
+            var content = message[1];
+            var msg = $("<div class='message'></div>");
+            msg.append(login + ": " + content);
+            msg.appendTo($("#lobby_chat"));
+
+            $("#lobby_chat").scrollTop($("#lobby_chat")[0].scrollHeight);
         }
 
         function onUsers(topicUri, users) {
@@ -1661,6 +1676,13 @@ body {
 
             <h3>Tables</h3>
             <div id="gameslist"></div>
+
+            <h3>Chat</h3>
+            <div id="lobby_chat"></div>
+            <div id="lobby_chat_form">
+                <input id="lobby_chat_input" name="lobby_chat_input" /> <button id="lobby_chat_send" onclick="lobbyChatSend();">Send</button> <button id="lobby_chat_expand" onclick="lobbyChatExpand();">^</button>
+            </div>
+
         </div>
 
         <div class="view" id="view_game">
