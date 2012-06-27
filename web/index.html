@@ -61,6 +61,8 @@
                   console.log("Connected!");
 
                   sess.subscribe("http://manaclash.org/chat", onChat);
+                  sess.subscribe("http://manaclash.org/chat_history", onChatHistory);
+
                   sess.subscribe("http://manaclash.org/users", onUsers);
                   sess.subscribe("http://manaclash.org/games", onGames);
 
@@ -122,20 +124,48 @@
             sess.publish("http://manaclash.org/chat", $("#lobby_chat_input").val(), false);
         }
 
-        function onChat(topicUri, message) {
-            var login = message[0];
-            var content = message[1];
-            var msg = $("<div class='message'></div>");
-            msg.append(login + ": " + content);
-            msg.appendTo($("#lobby_chat"));
+        function lobbyChatExpand() {
+            $("#lobby_chat").toggleClass("lobby_chat_expanded");
+            $("#lobby_chat_messages").scrollTop($("#lobby_chat_messages")[0].scrollHeight);
+        }
 
-            $("#lobby_chat").scrollTop($("#lobby_chat")[0].scrollHeight);
+        function lobbyChatFormat(message) {
+            var date = new Date(message[0] * 1000);
+            var login = message[1];
+            var content = message[2];
+            var msg = $("<div class='message'></div>");
+
+            var date_formatted = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+            if (date.toLocaleDateString() == (new Date()).toLocaleDateString()) {
+                date_formatted = date.toLocaleTimeString();
+            }
+
+            msg.append(date_formatted + " ");
+            $("<b></b>").text(login + ": ").appendTo(msg);
+            $("<span></span>").text(content).appendTo(msg);
+            return msg;
+        }
+
+        function onChat(topicUri, message) {
+            var msg = lobbyChatFormat(message);
+            msg.appendTo($("#lobby_chat_messages"));
+
+            $("#lobby_chat_messages").scrollTop($("#lobby_chat_messages")[0].scrollHeight);
+        }
+
+        function onChatHistory(topicUri, messages) {
+            for (var i = 0; i < messages.length; i++) {
+                var msg = lobbyChatFormat(messages[i]);
+                msg.appendTo($("#lobby_chat_messages"));
+            }
+
+            $("#lobby_chat_messages").scrollTop($("#lobby_chat_messages")[0].scrollHeight);
         }
 
         function onUsers(topicUri, users) {
             $("#userlist").empty();
             for (var i = 0; i < users.length; i++) {
-                $("#userlist").append ("<p>" + users[i] + "</p>");
+                $("<div></div>").text(users[i]).appendTo($("#userlist"));
             }
         }
 
@@ -153,7 +183,7 @@
                     if (games[i].players[j].role == "player1" || games[i].players[j].role == "player2") {
                         ++players;
                     }
-                    var playerElement = $("<div>" + games[i].players[j].login + " (" + games[i].players[j].role + ")</div>").appendTo(gameElement);
+                    var playerElement = $("<div></div>").text(games[i].players[j].login + " (" + games[i].players[j].role + ")").appendTo(gameElement);
 
                     if (games[i].players[j].login == g_login) {
                         have_me = true;
@@ -291,16 +321,16 @@
             headerSpan.appendTo(contentDiv);
 
             var titleSpan = $("<span class='title'></span>");
-            titleSpan.append(obj.title);
+            titleSpan.text(obj.title);
             titleSpan.appendTo(headerSpan);
            
             var costSpan = $("<span class='manacost'></span>");
-            costSpan.append(obj.manacost);
+            costSpan.text(obj.manacost);
             costSpan.appendTo(headerSpan);
 
             if (obj.power != null) {
                 var powerSpan = $("<span class='power'></span>");
-                powerSpan.append(obj.power + "/" + obj.toughness);
+                powerSpan.text(obj.power + "/" + obj.toughness);
                 powerSpan.appendTo(contentDiv);
             }
 
@@ -308,9 +338,7 @@
             bodySpan.appendTo(contentDiv);
 
             var typeSpan = $("<span class='types'></span>");
-            typeSpan.append(obj.supertypes.join(" "));
-            typeSpan.append(" ");
-            typeSpan.append(obj.types.join(" "));
+            typeSpan.text(obj.supertypes.join(" ") + " " + obj.types.join(" "));
 
             if (obj.subtypes.length > 0) {
                 typeSpan.append(" &ndash; ");
@@ -326,7 +354,7 @@
             objSpan.append(" ");*/
 
             var textSpan = $("<span class='text'></span>");
-            textSpan.append(obj.text);
+            textSpan.text(obj.text);
             textSpan.appendTo(bodySpan);
        }
 
@@ -477,10 +505,10 @@
             $('#text').empty();
 
             $("#phase").empty();
-            $("#phase").append(state["phase"]);
+            $("#phase").text(state["phase"]);
 
             $("#step").empty();
-            $("#step").append(state["step"]);
+            $("#step").text(state["step"]);
 
             $("#card_details").empty();
 
@@ -558,22 +586,22 @@
                 g_playermap["player" + (i+1)] = player;
 
                 $("#" + rolemap[player.role] + "_name").empty(); 
-                $("#" + rolemap[player.role] + "_name").append(player.name);
+                $("#" + rolemap[player.role] + "_name").text(player.name);
 
                 $("#" + rolemap[player.role] + "_hand").empty(); 
-                $("#" + rolemap[player.role] + "_hand").append(player.hand.length);
+                $("#" + rolemap[player.role] + "_hand").text(player.hand.length);
 
                 $("#" + rolemap[player.role] + "_library").empty(); 
-                $("#" + rolemap[player.role] + "_library").append(player.library.length);
+                $("#" + rolemap[player.role] + "_library").text(player.library.length);
 
                 $("#" + rolemap[player.role] + "_graveyard").empty(); 
-                $("#" + rolemap[player.role] + "_graveyard").append(player.graveyard.length);
+                $("#" + rolemap[player.role] + "_graveyard").text(player.graveyard.length);
 
                 $("#" + rolemap[player.role] + "_life").empty(); 
-                $("#" + rolemap[player.role] + "_life").append(player.life);
+                $("#" + rolemap[player.role] + "_life").text(player.life);
 
                 $("#" + rolemap[player.role] + "_manapool").empty(); 
-                $("#" + rolemap[player.role] + "_manapool").append(player.manapool);
+                $("#" + rolemap[player.role] + "_manapool").text(player.manapool);
 
                 $("#" + rolemap[player.role] + "_graveyard_zone").empty(); 
                 $("#" + rolemap[player.role] + "_library_zone").empty(); 
@@ -591,7 +619,7 @@
             }
 
             $("#turn").empty();
-            $("#turn").append(g_playermap[state["turn"]].name);
+            $("#turn").text(g_playermap[state["turn"]].name);
 
             var actions_div = $("#actions");
             actions_div.empty();
@@ -602,12 +630,14 @@
             var pass = $("#pass");
             pass.attr("disabled", "disabled");
 
-            appendLog("" + g_playermap[state["player"]].name + ", " + state["text"]);
+            if (state["text"] != "You have priority") {
+                appendLog("" + g_playermap[state["player"]].name + ", " + state["text"]);
+            }
 
             /* It is our "turn" now */
             if (g_role == state["player"]) {
 
-                $("#text").append(state["text"]);
+                $("#text").text(state["text"]);
 
                 if (state["actions"] != null) {
 
@@ -627,7 +657,7 @@
                             if (action["text"] != "Pass") {
                                 autopass = false;
                                 var action_span = $("<button></button>").appendTo(actions_div);
-                                action_span.append(action["text"]);
+                                action_span.text(action["text"]);
                                 action_span.addClass('action_button');
                                 action_span.click({'i':i}, function(event) {
                                     selectAction(event.data.i);
@@ -680,7 +710,7 @@
                             g_timer = setTimeout('onTimer()', 1000);
 
                             $("#autopass").empty();
-                            $("#autopass").append("<div class='autopass_priority'>" + g_state["text"] + "<br/>" + g_timeout + "</div>");
+                            $("<div class='autopass_priority'></div>").text(g_state["text"]).append("<br/>" + g_timeout).appendTo($("#autopass"));
                             $("#autopass").show();
                         }
                         else {
@@ -690,7 +720,7 @@
                 }
                 else if (state["query"] != null) {
                     $("#query_text").empty();
-                    $("#query_text").append(state["query"]);
+                    $("#query_text").text(state["query"]);
                     $("#query_input").val("");
                     query.show();
                 }
@@ -700,7 +730,7 @@
 
                 // It is not our turn
                 $("#autopass").empty();
-                $("#autopass").append("<div class='autopass_wait'>" + "Waiting for " + g_playermap[state["player"]].name + "</div>");
+                $("<div class='autopass_wait'></div>").text("Waiting for " + g_playermap[state["player"]].name).appendTo($("#autopass"));
                 $("#autopass").show();
             }
         }
@@ -737,8 +767,7 @@
             }
             else {
                 $("#autopass").empty();
-                $("#autopass").append("<div class='autopass_priority'>" + g_state["text"] + "<br/>" + g_timeout + "</div>");
-
+                $("<div class='autopass_priority'></div>").text(g_state["text"]).append("<br/>" + g_timeout).appendTo($("#autopass"));
                 setTimeout('onTimer()', 1000);
             }
         }
@@ -780,7 +809,7 @@
 
         function appendLog(log) {
             var msg = $("<div class='message'></div>");
-            msg.append(log);
+            msg.text(log);
             msg.appendTo($("#messages"));
 
             $("#messages").scrollTop($("#messages")[0].scrollHeight);
@@ -793,7 +822,9 @@
         }
 
         function onLogAction(uri, actionMessage) {
-            appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]["text"]);
+            if (actionMessage[1]["text"] != "Pass") {
+                appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]["text"]);
+            }
         }
 
         function onLogNumber(uri, numberMessage) {
@@ -1647,6 +1678,41 @@ body {
     color: white;
 }
 
+#lobby_chat {
+    position: absolute;
+    bottom:0px;
+    left: 208px;
+    right:5px;
+    height:100px;
+    background: #ffcccc;
+    z-index:10;
+}
+
+.lobby_chat_expanded {
+    position: absolute;
+    bottom:0px;
+    left: 208px;
+    right:5px;
+    top:100px;
+    height: auto !important;
+    background: #ffcccc;
+}
+
+#lobby_chat_form {
+    position:absolute;
+    bottom:0px;
+    height: 32px;
+}
+
+#lobby_chat_messages {
+  position:absolute;
+  overflow: auto;
+  bottom: 32px;
+  top:0px;
+  right:0px;
+  left:0px;
+}
+
     </style>
     </head>
     <body>
@@ -1678,9 +1744,11 @@ body {
             <div id="gameslist"></div>
 
             <h3>Chat</h3>
-            <div id="lobby_chat"></div>
-            <div id="lobby_chat_form">
-                <input id="lobby_chat_input" name="lobby_chat_input" /> <button id="lobby_chat_send" onclick="lobbyChatSend();">Send</button> <button id="lobby_chat_expand" onclick="lobbyChatExpand();">^</button>
+            <div id="lobby_chat">
+                <div id="lobby_chat_messages"></div>
+                <div id="lobby_chat_form">
+                    <input id="lobby_chat_input" name="lobby_chat_input" /> <button id="lobby_chat_send" onclick="lobbyChatSend();">Send</button> <button id="lobby_chat_expand" onclick="lobbyChatExpand();">^</button>
+                </div>
             </div>
 
         </div>

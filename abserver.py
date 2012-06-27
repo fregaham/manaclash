@@ -27,6 +27,7 @@ from oracle import getParseableCards, createCardObject
 from actions import *
 from abilities import BasicManaAbility
 
+import time
 import random
 import threading
 from Queue import Queue
@@ -372,6 +373,8 @@ game_map = {}
 
 last_game_id = 0
 
+chat_messages = []
+
 def dispatchUsers(exclude=[], eligible=None):
     g_factory.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
 
@@ -393,6 +396,9 @@ def dispatchGames(exclude=[], eligible=None):
 
         message.append(gm)
     g_factory.dispatch("http://manaclash.org/games", message, exclude, eligible)
+
+def dispatchChatHistory(exclude=[], eligible=None):
+    g_factory.dispatch("http://manaclash.org/chat_history", chat_messages[:], exclude, eligible)
 
 class MyServerProtocol(WampServerProtocol):
 
@@ -429,6 +435,8 @@ class MyServerProtocol(WampServerProtocol):
     def onSessionOpen(self):
         ## register a single, fixed URI as PubSub topic
         self.registerForPubSub("http://manaclash.org/chat")
+        self.registerForPubSub("http://manaclash.org/chat_history")
+
         self.registerForPubSub("http://manaclash.org/users")
         self.registerForPubSub("http://manaclash.org/games")
         self.registerForPubSub("http://manaclash.org/game/", prefixMatch=True)
@@ -443,10 +451,13 @@ class MyServerProtocol(WampServerProtocol):
         self.registerMethodForRpc("http://manaclash.org/getAvailableCards", self, MyServerProtocol.getAvailableCards)
 
         self.registerHandlerForSub("http://manaclash.org/chat",  self, MyServerProtocol.onChatSub, prefixMatch=False)
+        self.registerHandlerForSub("http://manaclash.org/chat_history",  self, MyServerProtocol.onChatHistorySub, prefixMatch=False)
+
         self.registerHandlerForSub("http://manaclash.org/users", self, MyServerProtocol.onUsersSub, prefixMatch=False)
         self.registerHandlerForSub("http://manaclash.org/games", self, MyServerProtocol.onGamesSub, prefixMatch=False)
 
         self.registerHandlerForPub("http://manaclash.org/chat",  self, MyServerProtocol.onChatPub, prefixMatch=False)
+        self.registerHandlerForPub("http://manaclash.org/chat_histroy", self, MyServerProtocol.noPub, prefixMatch=False)
         self.registerHandlerForPub("http://manaclash.org/users", self, MyServerProtocol.noPub, prefixMatch=False)
         self.registerHandlerForPub("http://manaclash.org/games", self, MyServerProtocol.noPub, prefixMatch=False)
 
@@ -496,14 +507,26 @@ class MyServerProtocol(WampServerProtocol):
         return True
 
     def onChatSub(self, url, foo):
-        # TODO: send latest chat messages
+        return True
+
+    def onChatHistorySub(self, url, foo):
+        reactor.callLater(0, dispatchChatHistory, [], [self])
         return True
 
     def onChatPub(self, url, foo, message):
+        global chat_messages
+
         client = client_map.get(self.session_id)
         if client is not None:
             if client.user is not None:
-                return [client.user.login, message]
+                message = [int(time.time()), client.user.login, message]
+
+                if len(chat_messages) > 32:
+                    chat_messages = chat_messages[1:] + [message]
+                else:
+                    chat_messages = chat_messages + [message]
+
+                return message
 
         return None
 
