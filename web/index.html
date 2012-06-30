@@ -34,6 +34,9 @@
         // Currently in the process of joining a game
         var g_joining = false;
 
+        // Currently waiting for a random duel
+        var g_waiting_for_duel = false;
+
         // currently detailed card id
         var g_detail_id = null;
 
@@ -120,6 +123,20 @@
 
         }
 
+        function lobbyRandomDuel() {
+            var deckname = $("#cards_decks").val();
+            var deck = g_cards_decks[deckname];
+
+
+            sess.call("http://manaclash.org/random_duel", deck).then(
+                function(ret) {
+                    if(ret) {
+                        g_waiting_for_duel = true;
+                        $("#lobby_random_duel").attr("disabled", "disabled");
+                    }
+                });
+        }
+
         function lobbyChatSend() {
             sess.publish("http://manaclash.org/chat", $("#lobby_chat_input").val(), false);
         }
@@ -190,9 +207,14 @@
                     }
 
                     if (games[i].players[j].login == g_login && !(g_gameuri == games[i].uri && g_role == games[i].players[j].role) && !g_joining) {
-                        $("<button>Takeover</button>").appendTo(playerElement).click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
-                            sess.call("http://manaclash.org/takeover", event.data.game_id, event.data.role).then(
+
+                        if (g_waiting_for_duel) {
+                            // Immediately takeover
+                            g_waiting_for_duel = false;
+                            $("#lobby_random_duel").removeAttr("disabled");;
+                            sess.call("http://manaclash.org/takeover", games[i].id, games[i].players[j].role).then(
                                 function(ret) {
+                                    g_waiting_for_game = true;
                                     var uri = ret[0];
                                     var role = ret[1];
                                     subscribeGame(uri);
@@ -201,7 +223,22 @@
                                     sess.call("http://manaclash.org/refresh")
                                 }
                             );
-                        });
+                        }
+                        else {
+                            $("<button>Takeover</button>").appendTo(playerElement).click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
+                                sess.call("http://manaclash.org/takeover", event.data.game_id, event.data.role).then(
+                                    function(ret) {
+                                        g_waiting_for_game = true;
+                                        var uri = ret[0];
+                                        var role = ret[1];
+                                        subscribeGame(uri);
+                                        g_role = role;
+                                        g_gameuri = uri;
+                                        sess.call("http://manaclash.org/refresh")
+                                    }
+                                );
+                            });
+                        }
                     }
                 }
 
@@ -1741,6 +1778,7 @@ body {
             <div id="userlist"></div>
 
             <h3>Tables</h3>
+            <div><button id="lobby_random_duel" onclick="lobbyRandomDuel();">Random Duel</button></div>
             <div id="gameslist"></div>
 
             <h3>Chat</h3>

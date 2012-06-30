@@ -318,6 +318,7 @@ class ABGame:
 
         dispatchGames()
         print "game " + str(self.id) + " ending"
+        reactor.callLater(1, startDuels)
 
         
 
@@ -374,6 +375,54 @@ game_map = {}
 last_game_id = 0
 
 chat_messages = []
+
+# Clients waiting for a random duel  [(abclient, deck)]
+random_duel_clients = []
+
+def startGame(game_id):
+    game = game_map.get(game_id)
+    if game is not None:
+        t = threading.Thread(target=game.start)
+        t.daemon = True
+        t.start()
+
+
+def joinGame(game, client, role, deck):
+    player = ABPlayer(client.user, game, role, deck)
+    client.setPlayer(player)
+
+    game.add(player)
+    dispatchGames()
+
+    if len(game.players) == 2:
+        reactor.callLater(1, startGame, game.id)
+
+
+def startDuels():
+    """ Check if we can start any duels and start them if so """
+    global random_duel_clients
+    global game_map
+
+    # filter disconnected clients
+    new_random_duel_clients = []
+    for c, d in random_duel_clients:
+        if c.user is not None:
+            new_random_duel_clients.append( (c,d) )
+
+    random_duel_clients = new_random_duel_clients
+
+    for game in game_map.itervalues():
+        if len(game.players) == 0:
+            # We need at least two clients
+            if len(random_duel_clients) <= 1:
+                return
+
+            # start the game
+            client1, deck1 = random_duel_clients[0]
+            client2, deck2 = random_duel_clients[1]
+            random_duel_clients = random_duel_clients[2:]
+            joinGame(game, client1, "player1", deck1)
+            joinGame(game, client2, "player2", deck2)
 
 def dispatchUsers(exclude=[], eligible=None):
     g_factory.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
@@ -440,6 +489,8 @@ class MyServerProtocol(WampServerProtocol):
         self.registerForPubSub("http://manaclash.org/users")
         self.registerForPubSub("http://manaclash.org/games")
         self.registerForPubSub("http://manaclash.org/game/", prefixMatch=True)
+
+        self.registerMethodForRpc("http://manaclash.org/random_duel", self, MyServerProtocol.onRandomDuel)
 
         self.registerMethodForRpc("http://manaclash.org/login", self, MyServerProtocol.onLogin)
         #self.registerMethodForRpc("http://manaclash.org/games/create", self, MyServerProtocol.onGameCreate)
@@ -579,6 +630,8 @@ class MyServerProtocol(WampServerProtocol):
 
         return client.user is not None
 
+       
+
     def onGameJoin(self, game_id, deck):
         Context.current_protocol = self
 
@@ -594,18 +647,31 @@ class MyServerProtocol(WampServerProtocol):
 
                 role = "player" + str(len(game.players) + 1)
 
-                player = ABPlayer(client.user, game, role, deck)
-                client.setPlayer(player)
-
-                game.add(player)
-                dispatchGames()
-
-                if len(game.players) == 2:
-                    reactor.callLater(1, self.startGame, game.id)
+                joinGame(game, client, role, deck)
 
                 return ["http://manaclash.org/game/" + str(game.id), role]
 
         return None
+
+    def onRandomDuel(self, deck):
+        global random_duel_clients
+
+        client = client_map.get(self.session_id)
+        # We don't allow users to play more than one game at a time
+        if client is not None and client.user is not None and (client.player is not None or len(client.user.players) > 0):
+            return False
+
+        # check that the client is not already in the list
+        for c, d in random_duel_clients:
+            if client == c:
+                return False
+
+        if client is not None and client.user is not None and client.player is None:
+            random_duel_clients.append( (client, deck) )
+            reactor.callLater(1, startDuels)
+            return True
+
+        return False
 
     def onTakeover(self, game_id, role):
         Context.current_protocol = self
@@ -638,12 +704,6 @@ class MyServerProtocol(WampServerProtocol):
             if game.current_state != None:
                 g_factory.dispatch("http://manaclash.org/game/" + str(game.id) + "/state", game.current_state, [], [self])
 
-    def startGame(self, game_id):
-        game = game_map.get(game_id)
-        if game is not None:
-            t = threading.Thread(target=game.start)
-            t.daemon = True
-            t.start()
 
 
 
