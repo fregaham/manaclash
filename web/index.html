@@ -117,6 +117,7 @@
             sess.subscribe(gameUri + "/action", onLogAction);
             sess.subscribe(gameUri + "/number", onLogNumber);
             sess.subscribe(gameUri + "/message", onLogMessage);
+            sess.subscribe(gameUri + "/endgame", onEndGame);
 
             sess.subscribe(gameUri + "/player/online", onPlayerOnline);
             sess.subscribe(gameUri + "/player/offline", onPlayerOffline);
@@ -320,6 +321,21 @@
                 if (event == "/state") {
                     onState(state);
                 }
+            }
+        }
+
+        function endGame() {
+            sess.publish(g_gameuri + "/endgame", g_login, false);
+        }
+
+        function onEndGame(uri, login) {
+            var msg = appendLog("Game ended by " + login);
+
+            if (login == g_login) {
+                msg.addClass("player_message");
+            }
+            else {
+                msg.addClass("opponent_message");
             }
         }
 
@@ -1855,7 +1871,7 @@ body {
                     <div id="message">foo</div>
                 </div>
                 <div id="game_messages_form">
-                    <input id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button> <button id="game_messages_expand">^</button>
+                    <input id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button> <button id="game_messages_expand">^</button> <button onclick="endGame();">End Game</button>
                 </div>
             </div>
 

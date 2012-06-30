@@ -584,9 +584,19 @@ class MyServerProtocol(WampServerProtocol):
     def onGamePrefixPub(self, url, foo, message):
 
         if "/" in foo:
-            # TODO: check spoofed sender etc
-            # some game sub-message, such as a player-to-player message
-            return message
+            client = client_map.get(self.session_id)
+            game_id = int(foo[:foo.find("/")])
+            game = game_map.get(game_id)
+            if game is not None and client != None and client.player != None and client.player.game == game:
+                if foo.endswith("/endgame"):
+                    game.queue.put(None)
+                    return client.user.login
+                else:
+                    # some game sub-message, such as a player-to-player message
+                    return message
+            else:
+                return None
+
         else:
             # pure game message
             #game_id = int(url[len("http://manaclash.org/game/"):])
