@@ -121,6 +121,18 @@
 
             sess.subscribe(gameUri + "/player/online", onPlayerOnline);
             sess.subscribe(gameUri + "/player/offline", onPlayerOffline);
+        }
+
+        function unsubscribeGame(gameUri) {
+            sess.unsubscribe(gameUri + "/state");
+            sess.unsubscribe(gameUri + "/zoneTransfer");
+            sess.unsubscribe(gameUri + "/action");
+            sess.unsubscribe(gameUri + "/number");
+            sess.unsubscribe(gameUri + "/message");
+            sess.unsubscribe(gameUri + "/endgame");
+
+            sess.unsubscribe(gameUri + "/player/online");
+            sess.unsubscribe(gameUri + "/player/offline");
 
         }
 
@@ -329,6 +341,7 @@
         }
 
         function onEndGame(uri, login) {
+            
             var msg = appendLog("Game ended by " + login);
 
             if (login == g_login) {
@@ -337,6 +350,12 @@
             else {
                 msg.addClass("opponent_message");
             }
+
+            unsubscribeGame(g_gameuri);
+
+            g_gameuri = null;
+            g_role = null;
+
         }
 
         /*
@@ -543,7 +562,6 @@
         }
 
         function onState(state) {
-
             if (g_waiting_for_game) {
                 g_waiting_for_game = false;
                 view("view_game");

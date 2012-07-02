@@ -259,11 +259,17 @@ class ABGame:
         self.players.remove(player)
         player.user.players.remove(player)
 
+        if player.client is not None:
+            player.client.setPlayer(None)
+
         g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/remove", (player.user.login, player.role))
 
     def add(self, player):
         self.players.append(player)
         player.user.players.append(player)
+
+        if player.client is not None:
+            player.client.setPlayer(player)
 
         g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/add", (player.user.login, player.role))
 
@@ -323,24 +329,24 @@ class ABGame:
         
 
 class ABPlayer:
-    def __init__ (self, user, game, role, deck):
+    def __init__ (self, client, user, game, role, deck):
+        self.client = client
         self.user = user
         self.game = game
         self.role = role
-        self.session_id = None
         self.deck = deck
 
-    def setSessionId(self, session_id):
+    def setClient(self, client):
 
         # publish a message about player going offline
-        if self.session_id is not None and session_id is None:
-            Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.game.id) + "/player/offline", (self.user.login, self.role))
+        if self.client is not None and client is None:
+            g_factory.dispatch("http://manaclash.org/game/" + str(self.game.id) + "/player/offline", (self.user.login, self.role))
 
         # publish a messasge about player online
-        if self.session_id is None and session_id is not None:
-            Context.current_protocol.dispatch("http://manaclash.org/game/" + str(self.game.id) + "/player/online", (self.user.login, self.role))
+        if self.client is None and client is not None:
+            g_factory.dispatch("http://manaclash.org/game/" + str(self.game.id) + "/player/online", (self.user.login, self.role))
 
-        self.session_id = session_id
+        self.client = client
 
 class ABUser:
     def __init__ (self, login, password):
@@ -356,16 +362,16 @@ class ABClient:
 
     def disconnect(self):
         if self.player is not None:
-            self.player.setSessionId(None)
+            self.player.setClient(None)
             self.player = None
         self.user = None
 
     def setPlayer(self, player):
         if self.player is not None:
-            self.player.setSessionId(None)
+            self.player.setClient(None)
         self.player = player
         if self.player is not None:
-            self.player.setSessionId(self.session_id)
+            self.player.setClient(self)
 
 
 client_map = {}
@@ -388,8 +394,7 @@ def startGame(game_id):
 
 
 def joinGame(game, client, role, deck):
-    player = ABPlayer(client.user, game, role, deck)
-    client.setPlayer(player)
+    player = ABPlayer(client, client.user, game, role, deck)
 
     game.add(player)
     dispatchGames()
@@ -457,7 +462,7 @@ class MyServerProtocol(WampServerProtocol):
             game = client.player.game
             n = 0
             for player in game.players:
-                if player.session_id is not None and player.session_id != self.session_id:
+                if player.client is not None and player.client.session_id != self.session_id:
                     n += 1
 
             if n == 0:
@@ -605,7 +610,7 @@ class MyServerProtocol(WampServerProtocol):
             game = game_map.get(game_id)
             if game is not None:
                 if game.current_player is not None:
-                    if game.current_player.session_id == self.session_id:
+                    if game.current_player.client is not None and game.current_player.client.session_id == self.session_id:
                         # send the message to the game
                         game.queue.put( (game.current_player, message) )
                         return message
@@ -700,8 +705,12 @@ class MyServerProtocol(WampServerProtocol):
                     if player.role == role:
                         if player.user.login == client.user.login:
                             client.setPlayer(player)
+
+                            print "onTakeover returning " + `["http://manaclash.org/game/" + str(game.id), role]`
+
                             return ["http://manaclash.org/game/" + str(game.id), role]
 
+        print "onTakeover returning None"
         return None
 
     def onRefresh(self):
