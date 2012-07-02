@@ -705,12 +705,8 @@ class MyServerProtocol(WampServerProtocol):
                     if player.role == role:
                         if player.user.login == client.user.login:
                             client.setPlayer(player)
-
-                            print "onTakeover returning " + `["http://manaclash.org/game/" + str(game.id), role]`
-
                             return ["http://manaclash.org/game/" + str(game.id), role]
 
-        print "onTakeover returning None"
         return None
 
     def onRefresh(self):
