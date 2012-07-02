@@ -498,8 +498,6 @@ class MyServerProtocol(WampServerProtocol):
         self.registerMethodForRpc("http://manaclash.org/random_duel", self, MyServerProtocol.onRandomDuel)
 
         self.registerMethodForRpc("http://manaclash.org/login", self, MyServerProtocol.onLogin)
-        #self.registerMethodForRpc("http://manaclash.org/games/create", self, MyServerProtocol.onGameCreate)
-        self.registerMethodForRpc("http://manaclash.org/games/join", self, MyServerProtocol.onGameJoin)
 
         self.registerMethodForRpc("http://manaclash.org/takeover", self, MyServerProtocol.onTakeover)
         self.registerMethodForRpc("http://manaclash.org/refresh", self, MyServerProtocol.onRefresh)
@@ -645,28 +643,6 @@ class MyServerProtocol(WampServerProtocol):
 
         return client.user is not None
 
-       
-
-    def onGameJoin(self, game_id, deck):
-        Context.current_protocol = self
-
-        client = client_map.get(self.session_id)
-
-        if client is not None and client.user is not None and client.player is not None:
-            # disconnect the client from her current game
-            self.unsetPlayer(client)
-
-        if client is not None and client.user is not None and client.player is None:
-            game = game_map.get(game_id)
-            if game is not None and len(game.players) < 2:
-
-                role = "player" + str(len(game.players) + 1)
-
-                joinGame(game, client, role, deck)
-
-                return ["http://manaclash.org/game/" + str(game.id), role]
-
-        return None
 
     def onRandomDuel(self, deck):
         global random_duel_clients

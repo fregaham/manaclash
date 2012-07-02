@@ -31,9 +31,6 @@
         // map object id -> zone (e.g. "player_hand", "opponent_graveyard", etc.)
         var g_zone_map = {};
 
-        // Currently in the process of joining a game
-        var g_joining = false;
-
         // Currently waiting for a random duel
         var g_waiting_for_duel = false;
 
@@ -219,7 +216,7 @@
                         have_me = true;
                     }
 
-                    if (games[i].players[j].login == g_login && !(g_gameuri == games[i].uri && g_role == games[i].players[j].role) && !g_joining) {
+                    if (games[i].players[j].login == g_login && !(g_gameuri == games[i].uri && g_role == games[i].players[j].role)) {
 
                         if (g_waiting_for_duel) {
                             // Immediately takeover
@@ -253,30 +250,6 @@
                             });
                         }
                     }
-                }
-
-                if (players < 2 && !have_me && g_login != null) {
-                    $("<button>Join</button>").appendTo(gameElement).click({"game_id":games[i].id}, function(event) {
-                        g_joining = true;
-
-                        var deckname = $("#cards_decks").val();
-                        var deck = g_cards_decks[deckname];
-
-                        sess.call("http://manaclash.org/games/join", event.data.game_id, deck).then(
-                            function(ret) {
-                                if(ret != null) {
-                                    var uri = ret[0];
-                                    var role = ret[1];
-                                    subscribeGame(uri);
-                                    g_role = role;
-                                    g_gameuri = uri;
-                                    g_waiting_for_game = true;
-                                }
-                                g_joining = false;
-                                sess.call("http://manaclash.org/refresh")
-                            }
-                        );
-                    });
                 }
             }
         }
@@ -337,7 +310,9 @@
         }
 
         function endGame() {
-            sess.publish(g_gameuri + "/endgame", g_login, false);
+            if (window.confirm("Are you sure to end the current game?")) {
+                sess.publish(g_gameuri + "/endgame", g_login, false);
+            }
         }
 
         function onEndGame(uri, login) {
@@ -363,7 +338,7 @@
             objSpan, the root span of the card
             obj the object representing the card, as got from the server
         */
-        function displayCardContents(objSpan, obj) {
+        function displayCardContents(objSpan, obj, tags) {
             // color
             var color = "colorless";
             var colors = ["red", "blue", "white", "black", "green", "multicolor"];
@@ -419,11 +394,12 @@
             typeSpan.append(obj.subtypes.join(" "));
             typeSpan.appendTo(bodySpan);
 
-/*            var tagsSpan = $("<span class='tags'></span>");
-            tagsSpan.append(obj.tags.join(" "));
-            tagsSpan.appendTo(bodySpan);
-
-            objSpan.append(" ");*/
+            if (tags) {
+                var tagsSpan = $("<span class='tags'></span>");
+                tagsSpan.append(obj.tags.join(" "));
+                tagsSpan.appendTo(bodySpan);
+                bodySpan.append(" ");
+            }
 
             var textSpan = $("<span class='text'></span>");
             textSpan.text(obj.text);
@@ -468,10 +444,10 @@
                     img.appendTo(objSpan);
                 }
                 else {
-                    displayCardContents(objSpan, obj);
+                    displayCardContents(objSpan, obj, false);
                 }
 
-                displayCardContents(detailSpan, obj);
+                displayCardContents(detailSpan, obj, true);
             }
             else {
                 // backside
@@ -1161,7 +1137,7 @@
                     var card = g_cards_available_map[selected[i]];
 
                     var span = $("<span class='card_small'></span>");
-                    displayCardContents(span, card);
+                    displayCardContents(span, card, false);
                     span.appendTo($("#cards_detail"));
                 }
             }
@@ -1176,7 +1152,7 @@
                     var card = g_cards_available_map[selected[i]];
 
                     var span = $("<span class='card_small'></span>");
-                    displayCardContents(span, card);
+                    displayCardContents(span, card, false);
                     span.appendTo($("#cards_detail"));
                 }
             }
