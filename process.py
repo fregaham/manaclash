@@ -176,6 +176,7 @@ def process_pay_cost (game, player, obj, costs):
         actions = []
 
         _pass = PassAction (player)
+        _pass.text = "Cancel"
         actions.append (_pass)
 
         _al = AllSelector()
