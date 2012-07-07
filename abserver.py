@@ -244,7 +244,15 @@ class ABOutput(Output):
 
     def zoneTransfer(self, zoneFrom, zoneTo, obj):
         game = self.abgame.game
-        g_factory.dispatch("http://manaclash.org/game/" + str(self.abgame.id) + "/zoneTransfer", (zone_to_string(game, zoneFrom), zone_to_string(game, zoneTo), object_to_map(game, obj)))
+
+        special = None
+        if zoneFrom.type == "library" and zoneTo.type =="hand":
+            special = "draw"
+
+        elif zoneFrom.type == "hand" and zoneTo.type == "library":
+            special = "put"
+
+        g_factory.dispatch("http://manaclash.org/game/" + str(self.abgame.id) + "/zoneTransfer", (zone_to_string(game, zoneFrom), zone_to_string(game, zoneTo), object_to_map(game, obj), special))
 
 class ABGame:
     def __init__ (self, id):

@@ -200,7 +200,7 @@
             $("#gameslist").empty();
 
             for (var i = 0; i < games.length; i++) {
-                var gameElement = $("<div>" + games[i].id + "</div>").appendTo($("#gameslist"));
+                var gameElement = $("<div class='lobby_table'></div>").appendTo($("#gameslist"));
 
                 var players = 0;
                 var have_me = false;
@@ -210,7 +210,11 @@
                     if (games[i].players[j].role == "player1" || games[i].players[j].role == "player2") {
                         ++players;
                     }
-                    var playerElement = $("<div></div>").text(games[i].players[j].login + " (" + games[i].players[j].role + ")").appendTo(gameElement);
+
+                    if (j != 0) {
+                        gameElement.append(", ");
+                    }
+                    var playerElement = $("<span></span>").text(games[i].players[j].login).appendTo(gameElement);
 
                     if (games[i].players[j].login == g_login) {
                         have_me = true;
@@ -235,7 +239,9 @@
                             );
                         }
                         else {
-                            $("<button>Takeover</button>").appendTo(playerElement).click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
+                            gameElement.addClass("lobby_table_takeover");
+                            gameElement.append(" (click to takeover)");
+                            gameElement.click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
                                 sess.call("http://manaclash.org/takeover", event.data.game_id, event.data.role).then(
                                     function(ret) {
                                         g_waiting_for_game = true;
@@ -250,6 +256,10 @@
                             });
                         }
                     }
+                }
+
+                if (players ==  0) {
+                    gameElement.addClass("lobby_table_empty");
                 }
             }
         }
@@ -871,7 +881,12 @@
         }
 
         function onLogZoneTransfer(uri, zoneTransfer) {
-            appendLog("" + zoneTransfer[2].title + " moved from " + zoneTransfer[0] + " to " + zoneTransfer[1]);
+            if (zoneTransfer[3] != null) {
+                appendLog("card moved from " + zoneTransfer[0] + " to " + zoneTransfer[1]);
+            }
+            else {
+                appendLog("" + zoneTransfer[2].title + " moved from " + zoneTransfer[0] + " to " + zoneTransfer[1]);
+            }
         }
 
         function onLogAction(uri, actionMessage) {
@@ -1752,19 +1767,10 @@ body {
     bottom:0px;
     left: 208px;
     right:5px;
-    height:100px;
-    background: #ffffff;
-    z-index:10;
-}
-
-.lobby_chat_expanded {
-    position: absolute;
-    bottom:0px;
-    left: 208px;
-    right:5px;
     top:100px;
-    height: auto !important;
-    background: #ffffff;
+    z-index:10;
+    background: #ffbd6d;
+    border: 1px solid black;
 }
 
 #lobby_chat_form {
@@ -1780,6 +1786,23 @@ body {
   top:0px;
   right:0px;
   left:0px;
+}
+
+.lobby_table {
+    display: block;
+    width: 180px;
+    margin-top:8px;
+    border: 1px solid black;
+    background: #669966;
+    cursor: default;
+}
+
+.lobby_table_empty {
+    background: gray !important;
+}
+
+.lobby_table_takeover {
+    background: yellow !important;
 }
 
 #view_menu {
@@ -1798,6 +1821,7 @@ body {
     display: inline-block;
     height: 15px;
     padding: 4px;
+    cursor: default;
 }
 
 #view_menu .current_view {
@@ -1835,18 +1859,22 @@ body {
 
             <div class="view_margin">
 
+            <h3>Lobby</h3>
+
+            <div id="lobby_buttons">
+                <button id="lobby_random_duel" onclick="lobbyRandomDuel();">Random Duel</button>
+            </div>
+
             <h3>Users</h3>
             <div id="userlist"></div>
 
             <h3>Tables</h3>
-            <div><button id="lobby_random_duel" onclick="lobbyRandomDuel();">Random Duel</button></div>
             <div id="gameslist"></div>
 
-            <h3>Chat</h3>
             <div id="lobby_chat">
                 <div id="lobby_chat_messages"></div>
                 <div id="lobby_chat_form">
-                    <input id="lobby_chat_input" name="lobby_chat_input" /> <button id="lobby_chat_send" onclick="lobbyChatSend();">Send</button> <button id="lobby_chat_expand" onclick="lobbyChatExpand();">^</button>
+                    <input size=60" id="lobby_chat_input" name="lobby_chat_input" /> <button id="lobby_chat_send" onclick="lobbyChatSend();">Send</button>
                 </div>
             </div>
 
