@@ -385,12 +385,6 @@
             costSpan.text(obj.manacost);
             costSpan.appendTo(headerSpan);
 
-            if (obj.power != null) {
-                var powerSpan = $("<span class='power'></span>");
-                powerSpan.text(obj.power + "/" + obj.toughness);
-                powerSpan.appendTo(contentDiv);
-            }
-
             var bodySpan = $("<span class='body'/>");
             bodySpan.appendTo(contentDiv);
 
@@ -404,16 +398,35 @@
             typeSpan.append(obj.subtypes.join(" "));
             typeSpan.appendTo(bodySpan);
 
-            if (tags) {
-                var tagsSpan = $("<span class='tags'></span>");
-                tagsSpan.append(obj.tags.join(" "));
-                tagsSpan.appendTo(bodySpan);
-                bodySpan.append(" ");
-            }
-
             var textSpan = $("<span class='text'></span>");
-            textSpan.text(obj.text);
+            if (tags) {
+                var tagsSpan = $("<span></span>");
+                // tagSpan.text(obj.tags.join(" "));
+                for (var i = 0; i < obj.tags.length; i++) {
+                    var tagSpan = $("<span></span>");
+                    tagSpan.text(obj.tags[i]);
+                    tagsSpan.append(tagSpan);
+                    tagsSpan.append("<br/>");
+                }
+                var tSpan = $("<span></span>");
+                tSpan.text(obj.text);
+
+                if (obj.tags.length > 0) {
+                    textSpan.append(tagsSpan);
+                    textSpan.append($("<br/>"));
+                }
+                textSpan.append(tSpan);
+            }
+            else {
+                textSpan.text(obj.text);
+            }
             textSpan.appendTo(bodySpan);
+
+            if (obj.power != null) {
+                var powerSpan = $("<span class='power'></span>");
+                powerSpan.text(obj.power + "/" + obj.toughness);
+                powerSpan.appendTo(textSpan);
+            }
        }
 
         /*
@@ -1531,12 +1544,12 @@
 
 .card_small .power {
     display: block;
-    position: relative;
+    position: absolute;
     font-size: 10px;
     height: 10px;
     width: 20px;
     left: 67px;
-    top: 120px;
+    bottom: 2px;
     background: inherit;
     z-index: 1;
     text-align: right;
@@ -1668,21 +1681,54 @@
     margin-top: 1em;
 }
 
-.card_detail > .power {
-    display: block;
+.card_detail {
+    position: relative;
+    width: 180px;
 }
 
-.card_detail > .header {
+.card_detail .power {
     display: block;
+    width: 178px;
+    text-align: right;
 }
 
 .card_detail .title {
     display: block;
 }
 
-.card_detail .manacost {
-    display: block;
+.card_detail .header > .title {
+    position: absolute;
+    text-align: left;
+    top: 0px;
+    left: 0px;
+    overflow: hidden;
 }
+
+.card_detail .header > .manacost {
+    position: absolute;
+    text-align: right;
+    top: 0px;
+    right: 0px;
+}
+
+.card_detail > .card_content {
+    position: relative;
+    left:3px;
+    width:180px;
+    top:3px;
+    background: gray;
+    border: 1px solid black;
+    padding: 1px;
+}
+
+.card_detail .header {
+    border: 1px solid black;
+    display: block;
+    position: relative;
+    height: 17px;
+    width: 177px;
+}
+
 
 .view {
     position: absolute;
@@ -1886,6 +1932,24 @@ body {
             <div id="autopass"><span>3</span></div>
 
             <div id="status">
+                <div id="opponent">
+                    <h3 id="opponent_name"></h3>
+                    <div>Life: <span id="opponent_life"></span></div>
+                    <div>Manapool: <span id="opponent_manapool"></span></div>
+                    <button id="opponent_hand_zone_button" class="zone_button" onclick="showZone($('#opponent_hand_zone'));">Hand: <span id="opponent_hand"></span></button>
+                    <button id="opponent_library_zone_button" class="zone_button" onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></button>
+                    <button id="opponent_graveyard_zone_button" class="zone_button" onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></button>
+                </div>
+
+                <div id="player">
+                    <h3 id="player_name"></h3>
+                    <div>Life: <span id="player_life"></span></div>
+                    <div>Manapool: <span id="player_manapool"></span></div>
+                    <div>Hand: <span id="player_hand"></span></div>
+                    <button id="player_library_zone_button" class="zone_button" onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></button>
+                    <button id="player_graveyard_zone_button" class="zone_button" onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></button>
+                </div>
+
                 <div>Turn: <span id="turn"></span></div>
                 <div>Phase: <span id="phase"></span></div>
                 <div>Step: <span id="step"></span></div>
@@ -1909,26 +1973,9 @@ body {
                     </div>
                 </div>
 
-                <div id="opponent">
-                    <h3 id="opponent_name"></h3>
-                    <div>Life: <span id="opponent_life"></span></div>
-                    <div>Manapool: <span id="opponent_manapool"></span></div>
-                    <button id="opponent_hand_zone_button" class="zone_button" onclick="showZone($('#opponent_hand_zone'));">Hand: <span id="opponent_hand"></span></button>
-                    <button id="opponent_library_zone_button" class="zone_button" onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></button>
-                    <button id="opponent_graveyard_zone_button" class="zone_button" onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></button>
-                </div>
-
-                <div id="player">
-                    <h3 id="player_name"></h3>
-                    <div>Life: <span id="player_life"></span></div>
-                    <div>Manapool: <span id="player_manapool"></span></div>
-                    <div>Hand: <span id="player_hand"></span></div>
-                    <button id="player_library_zone_button" class="zone_button" onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></button>
-                    <button id="player_graveyard_zone_button" class="zone_button" onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></button>
-                </div>
-
                 <div id="card_details">
                 </div>
+
 
             </div>
 
