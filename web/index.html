@@ -820,11 +820,16 @@
         }
 
         function view(v) {
-            $("#view_login").hide();
-            $("#view_lobby").hide();
-            $("#view_game").hide();
-            $("#view_cards").hide();
-            $("#view_settings").hide();
+
+            var views = ["login", "lobby", "game", "cards", "settings"];
+
+            for (var i = 0; i < views.length; i++) {
+                $("#view_" + views[i]).hide();
+
+                if (views[i] != "login") {
+                    $("#view_" + views[i] + "_button").removeClass("current_view");
+                }
+            }
 
             $("#" + v).show();
 
@@ -833,6 +838,7 @@
             }
             else {
                 $("#view_menu").show();
+                $("#" + v + "_button").addClass("current_view");
             }
         }
 
@@ -1555,9 +1561,9 @@
 #table {
   position:absolute;
   left: 208px;
-  top:20px;
+  top: 0px;
   bottom:100px;
-  right:5px;
+  right:0px;
   background: #336633;
   overflow: auto;
 }
@@ -1566,26 +1572,31 @@
     position: absolute;
     bottom:0px;
     left: 208px;
-    right:5px;
+    right:0px;
     height:100px;
-    background: #ffcccc;
+    background: #ffbd6d;
     z-index:10;
+    border: 1px solid black;
 }
 
 .game_messages_expanded {
     position: absolute;
     bottom:0px;
     left: 208px;
-    right:5px;
-    top:100px;
+    right:0px;
+    top: 0px;
     height: auto !important;
-    background: #ffcccc;
+    background: #ffbd6d;
+    opacity: 0.9;
+    border: 1px solid black;
 }
 
 #game_messages_form {
     position:absolute;
     bottom:0px;
     height: 32px;
+    left:0px;
+    right:0px;
 }
 
 #game_messages > #messages {
@@ -1606,6 +1617,9 @@
 }
 
 #status {
+  position:absolute;
+  left:4px;
+  top:4px;
   width: 200px;
 }
 
@@ -1657,9 +1671,17 @@
 
 .view {
     position: absolute;
+    left:0px;
+    right:0px;
+    top:24px;
+    bottom:0px;
+}
+
+.view_margin {
+    position: absolute;
     left:8px;
     right:8px;
-    top:32px;
+    top:8px;
     bottom:8px;
 }
 
@@ -1731,7 +1753,7 @@ body {
     left: 208px;
     right:5px;
     height:100px;
-    background: #ffcccc;
+    background: #ffffff;
     z-index:10;
 }
 
@@ -1742,7 +1764,7 @@ body {
     right:5px;
     top:100px;
     height: auto !important;
-    background: #ffcccc;
+    background: #ffffff;
 }
 
 #lobby_chat_form {
@@ -1760,12 +1782,38 @@ body {
   left:0px;
 }
 
+#view_menu {
+    position: absolute;
+    left:0px;
+    top:0px;
+    right:0px;
+    height:24px;
+    background: white;
+    border-bottom: 1px solid black;
+}
+
+#view_menu a {
+    background: white;
+    border-bottom: 1px solid black;
+    display: inline-block;
+    height: 15px;
+    padding: 4px;
+}
+
+#view_menu .current_view {
+    background: #f0f0f0 !important;
+    border-bottom: 1px solid #f0f0f0;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-top: 1px solid black;
+}
+
     </style>
     </head>
     <body>
 
         <div id="view_menu">
-            <button onclick="view('view_lobby');">Lobby</button> | <button onclick="view('view_cards');">Cards</button> | <button onclick="view('view_game');">Game</button> | <button onclick="view('view_settings');">Settings</button>
+            <a id="view_lobby_button" onclick="view('view_lobby');">Lobby</a><a id="view_cards_button" onclick="view('view_cards');">Cards</a><a id="view_game_button" onclick="view('view_game');">Game</a><a id="view_settings_button" onclick="view('view_settings');">Settings</a>
         </div>
 
         <div class="view" id="view_login">
@@ -1784,6 +1832,9 @@ body {
         </div>
 
         <div class="view" id="view_lobby">
+
+            <div class="view_margin">
+
             <h3>Users</h3>
             <div id="userlist"></div>
 
@@ -1799,11 +1850,11 @@ body {
                 </div>
             </div>
 
+            </div>
+
         </div>
 
         <div class="view" id="view_game">
-            <h3>Game</h3>
-
             <div id="autopass"><span>3</span></div>
 
             <div id="status">
@@ -1865,7 +1916,7 @@ body {
                     <div id="message">foo</div>
                 </div>
                 <div id="game_messages_form">
-                    <input id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button> <button id="game_messages_expand">^</button> <button onclick="endGame();">End Game</button>
+                    <input size="60" id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button> <button id="game_messages_expand">^</button> <button onclick="endGame();">End Game</button>
                 </div>
             </div>
 
@@ -1880,7 +1931,9 @@ body {
         </div>
 
         <div class="view" id="view_cards">
-            
+
+            <div class="view_margin">           
+ 
             <div>
                 <select id="cards_decks" onchange="cardsSelectDeck();"></select>
             </div>
@@ -1895,9 +1948,14 @@ body {
             <select id="cards_deck" multiple="multiple" onchange="cardsDeckChanged();"></select>
             <div id="cards_detail">
             </div>
+
+            </div>
         </div>
 
         <div class="view" id="view_settings">
+
+            <div class="view_margin">
+
             <h3>Settings</h3>
 
             <div>
@@ -1909,6 +1967,8 @@ body {
                 <div>
                     <button id="settings_save" name="settings_save" onclick="settingsSave();">Save</button>
                 </div>
+            </div>
+
             </div>
         </div>
     </body>
