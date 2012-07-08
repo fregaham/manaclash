@@ -255,8 +255,9 @@ class Game:
     def doDrawCard (self, player):
         library = self.get_library(player)
         if len(library.objects) == 0:
-            #  TODO: lose
-            pass
+            for p in self.players:
+                if p != player:
+                    raise GameEndException(p)
         else:
             card = library.objects[-1]
             self.doZoneTransfer(card, self.get_hand(player))

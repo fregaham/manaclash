@@ -255,6 +255,9 @@ class ABOutput(Output):
 
         g_factory.dispatch("http://manaclash.org/game/" + str(self.abgame.id) + "/zoneTransfer", (zone_to_string(game, zoneFrom), zone_to_string(game, zoneTo), object_to_map(game, obj), special))
 
+    def gameEnds(self, winner):
+        g_factory.dispatch("http://manaclash.org/game/" + str(self.abgame.id) + "/win", player_to_role(self.abgame.game, winner))
+
 class ABGame:
     def __init__ (self, id):
         self.id = id

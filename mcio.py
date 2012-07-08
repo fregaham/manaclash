@@ -102,6 +102,9 @@ class Output:
     def bury(self, obj):
         pass
 
+    def gameEnds(self, winner):
+        pass
+
 class NullOutput(Output):
     def deleteObject(self, obj):
         pass

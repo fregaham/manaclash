@@ -115,6 +115,7 @@
             sess.subscribe(gameUri + "/number", onLogNumber);
             sess.subscribe(gameUri + "/message", onLogMessage);
             sess.subscribe(gameUri + "/endgame", onEndGame);
+            sess.subscribe(gameUri + "/win", onGameWin);
 
             sess.subscribe(gameUri + "/player/online", onPlayerOnline);
             sess.subscribe(gameUri + "/player/offline", onPlayerOffline);
@@ -127,6 +128,7 @@
             sess.unsubscribe(gameUri + "/number");
             sess.unsubscribe(gameUri + "/message");
             sess.unsubscribe(gameUri + "/endgame");
+            sess.unsubscribe(gameUri + "/win");
 
             sess.unsubscribe(gameUri + "/player/online");
             sess.unsubscribe(gameUri + "/player/offline");
@@ -341,6 +343,22 @@
             g_gameuri = null;
             g_role = null;
 
+        }
+
+        function onGameWin(uri, role) {
+            if (role == null) {
+                var msg = appendLog("Game ended in a draw!");
+                msg.addClass("player_message");
+            }
+            else {
+                var msg = appendLog("" + g_playermap[role].name + " wins the game!");
+                if (role == g_role) {
+                    msg.addClass("player_message");
+                }
+                else {
+                    msg.addClass("opponent_message");
+                }
+            }
         }
 
         /*

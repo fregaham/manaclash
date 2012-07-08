@@ -23,6 +23,10 @@ from actions import *
 from cost import *
 from objects import *
 
+class GameEndException(Exception):
+    def __init__ (self, player):
+        self.player = player
+
 def get_possible_actions (game, player):
     ret = []
     _al = AllSelector()
@@ -171,6 +175,19 @@ def evaluate (game):
             if object.damage >= object.state.toughness:
                 game.doDestroy(object)
 
+    lost = []
+    for player in game.players:
+        if player.life <= 0:
+            lost.append (player)
+
+    if len(lost) == 1:
+        for player in game.players:
+            if player != lost[0]:
+                raise GameEndException(player)
+    elif len(lost) > 1:
+        raise GameEndException(None)
+
+
 def process_pay_cost (game, player, obj, costs):
     notpaid = costs
     while len(notpaid) > 0:
@@ -225,7 +242,7 @@ def process_play_spell (game, ability, player, obj):
         return
 
     costs = ability.determineCost(game, obj, player)
-
+    costs = costs[:]
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
@@ -255,6 +272,7 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
         return
 
     costs = ability.determineCost(game, obj, player)
+    costs = costs[:]
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
@@ -281,6 +299,7 @@ def process_activate_ability(game, ability, player, obj, effect):
         return
 
     costs = ability.determineCost(game, obj, player)
+    costs = costs[:]
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):
@@ -1027,6 +1046,9 @@ def process_game (game):
             try:
                 process_turn (game, player)
             except StopIteration:
+                return
+            except GameEndException, x:
+                game.output.gameEnds(x.player)
                 return
 
         game.turn_number += 1
