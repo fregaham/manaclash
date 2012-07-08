@@ -113,12 +113,13 @@ def evaluate (game):
 
             obj.get_state().tags.add ("blocking")
 
-            blocked_id = game.declared_blockers_map[obj.get_id()]
-            blocked_lki = attacker_lki_map[blocked_id]
-            blocked_lki.get_state().tags.add ("blocked")
+            blocked_ids = game.declared_blockers_map[obj.get_id()]
+            for blocked_id in blocked_ids:
+                blocked_lki = attacker_lki_map[blocked_id]
+                blocked_lki.get_state().tags.add ("blocked")
 
-            if blocked_lki in unblocked:
-                unblocked.remove (blocked_lki)
+                if blocked_lki in unblocked:
+                    unblocked.remove (blocked_lki)
 
         for obj in unblocked:
             obj.get_state().tags.add ("unblocked")
@@ -556,18 +557,23 @@ def is_valid_block(game, attacker, blocker):
 
 def validate_block(game, blockers, blockers_map):
     # evasion abilities
-    for blocker_id, attacker in blockers_map.items():
+    for blocker_id, attackers in blockers_map.items():
         blocker = game.objects[blocker_id]
 
-        if not is_valid_block(game, attacker, blocker):
+        # we normally allow only one attacker per blocker
+        if len(attackers) > 1 and "can block any number of creatures" not in blocker.state.tags:
             return False
+
+        for attacker in attackers:
+            if not is_valid_block(game, attacker, blocker):
+                return False
 
     # check for lures and that all creature able to block are blocking them are blocking something
     for attacker in game.declared_attackers:
         if "lure" in attacker.get_state().tags:
             selector = PermanentPlayerControlsSelector(game.get_defending_player())
             for permanent in selector.all(game, None):
-                if "creature" in permanent.state.types and not permanent.tapped and permanent not in blockers:
+                if "creature" in permanent.state.types and not permanent.tapped and (permanent not in blockers or "can block any number of creatures" in permanent.state.tags):
                     if is_valid_block(game, attacker, permanent):
                         print("Invalid block, %s not blocking a lure" % permanent)
                         return False
@@ -595,7 +601,7 @@ def process_step_declare_blockers (game):
 
             selector = PermanentPlayerControlsSelector(game.get_defending_player())
             for permanent in selector.all(game, None):
-                if "creature" in permanent.state.types and not permanent.tapped and permanent not in blockers:
+                if "creature" in permanent.state.types and not permanent.tapped and (permanent not in blockers or "can block any number of creatures" in permanent.state.tags):
                     _p = Action ()
                     _p.object = permanent
                     _p.player = game.get_defending_player()
@@ -626,7 +632,9 @@ def process_step_declare_blockers (game):
 
                 if a != _pass:
                     blockers.add (b.object)
-                    blockers_map[b.object.id] = a.object
+
+                    _as = blockers_map.get(b.object.id, [])
+                    blockers_map[b.object.id] = _as + [a.object]
                 else:
                     pass
             else:
@@ -637,7 +645,7 @@ def process_step_declare_blockers (game):
     for b in blockers:
         b_lki = LastKnownInformation(game, b)
         game.declared_blockers.add (b_lki)
-        game.declared_blockers_map[b.id] = blockers_map[b.id].id
+        game.declared_blockers_map[b.id] = map(lambda x:x.id, blockers_map[b.id])
 
     process_raise_blocking_events(game)
 
@@ -665,10 +673,11 @@ def process_raise_blocking_events(game):
         attacker_lki_map[obj.get_id()] = obj
 
     for obj in game.declared_blockers:
-        blocked_id = game.declared_blockers_map[obj.get_id()]
-        blocked_lki = attacker_lki_map[blocked_id]
+        blocked_ids = game.declared_blockers_map[obj.get_id()]
+        for blocked_id in blocked_ids:
+            blocked_lki = attacker_lki_map[blocked_id]
 
-        game.raise_event("blocks", obj, blocked_lki)
+            game.raise_event("blocks", obj, blocked_lki)
 
 def process_step_combat_damage (game, firstStrike):
     game.current_step = "combat damage"
@@ -697,11 +706,14 @@ def process_step_combat_damage (game, firstStrike):
 
         b_id2a_ids[_id] = []
 
-        # the declared_blockers_map map blocker id to the attacker id it
+        # the declared_blockers_map map blocker id to the attacker ids it
         # blocks
-        a_id = game.declared_blockers_map[b.get_object().id]
-        a_id2b_ids[a_id].append (_id)
-        b_id2a_ids[_id].append (a_id)
+        a_ids = game.declared_blockers_map[b.get_object().id]
+
+        for a_id in a_ids:
+            a_id2b_ids[a_id].append (_id)
+            b_id2a_ids[_id].append (a_id)
+
 
     # list of  (source lki,
     #           target lki,
@@ -768,13 +780,44 @@ def process_step_combat_damage (game, firstStrike):
 
                             d -= 1
 
-        # damage by the blocked creatures
-        for b_id in b_ids:
-            b_lki = id2lki[b_id]
-            b_obj = id2lki[b_id].get_object()
-            b_state = id2lki[b_id].get_state()
-            if not b_lki.is_moved() and "creature" in b_state.types and ((firstStrike and "first strike" in b_lki.get_state().tags) or (not firstStrike and "first strike" not in b_lki.get_state().tags) or (firstStrike and "double strike" in b_lki.get_state().tags)):
+    # damage by the blocked creatures
+    for b_id, a_ids in b_id2a_ids.items():
+        b_lki = id2lki[b_id]
+        b_obj = id2lki[b_id].get_object()
+        b_state = id2lki[b_id].get_state()
+
+        if not b_lki.is_moved() and "creature" in b_state.types and ((firstStrike and "first strike" in b_lki.get_state().tags) or (not firstStrike and "first strike" not in b_lki.get_state().tags) or (firstStrike and "double strike" in b_lki.get_state().tags)):
+            if len(a_ids) == 0:
+                # creature not blocking any attacker, do nothing
+                pass
+
+            elif len(a_ids) == 1:
+                # creature blocking one attacker
+                a_id = a_ids[0]
+                a_lki = id2lki[a_id]
                 damage.append ( (b_lki, a_lki, b_state.power) )
+
+            else:
+                d = b_state.power
+
+                while d > 0:
+                    # defending player choose how to assign damage
+                    actions = []
+
+                    for a_id in a_ids:
+                        _p = Action ()
+                        _p.object = id2lki[a_id].get_object()
+                        _p.text = str(_p.object)
+                        actions.append (_p)
+
+                    _as = ActionSet (game, game.get_blocking_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
+                    a = game.input.send (_as)
+
+                    a_lki = id2lki[a.object.id]
+                    damage.append ( (b_lki, a_lki, 1) )
+
+                    d -= 1
+
 
     merged = {}
     for a, b, n in damage:

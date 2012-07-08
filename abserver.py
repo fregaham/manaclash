@@ -92,18 +92,19 @@ def object_to_map(game, o):
         ret["controller"] = None
 
     ret["blockers"] = []
-    ret["attacker"] = None
+    ret["attackers"] = []
 
     ret["show_to"] = map(lambda x: player_to_role(game, game.objects[x]), o.get_state().show_to)
     
     for obj in game.declared_attackers:
         if o.id == obj.get_id():
             # Try to find a blocker
-            for blocker_id, attacker_id in game.declared_blockers_map.iteritems():
-                if o.id == attacker_id:
-                    ret["blockers"].append(blocker_id)
+            for blocker_id, attacker_ids in game.declared_blockers_map.iteritems():
+                for attacker_id in attacker_ids:
+                    if o.id == attacker_id:
+                        ret["blockers"].append(blocker_id)
 
-    ret["attacker"] = game.declared_blockers_map.get(o.id)
+    ret["attackers"] = game.declared_blockers_map.get(o.id, [])
 
     return ret
 

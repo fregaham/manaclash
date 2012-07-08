@@ -496,10 +496,9 @@
                         for (var i = 0; i < obj.blockers.length; ++i) {
                             $("#obj_" + obj.blockers[i]).removeClass("targeted");
                         }
-                        if (obj.attacker != null) {
-                            $("#obj_" + obj.attacker).removeClass("targeted");
+                        for (var i = 0; i < obj.attackers.length; ++i) {
+                            $("#obj_" + obj.attackers[i]).removeClass("targeted");
                         }
-
                     }
                     $("#detail_" + id).show();
                     g_detail_id = id;
@@ -511,8 +510,8 @@
                     for (var i = 0; i < obj.blockers.length; ++i) {
                         $("#obj_" + obj.blockers[i]).addClass("targeted");
                     }
-                    if (obj.attacker != null) {
-                        $("#obj_" + obj.attacker).addClass("targeted");
+                    for (var i = 0; i < obj.attackers.length; ++i) {
+                        $("#obj_" + obj.attackers[i]).addClass("targeted");
                     }
 
                 }.partial(obj.id),
@@ -526,8 +525,8 @@
                     for (var i = 0; i < obj.blockers.length; ++i) {
                         $("#obj_" + obj.blockers[i]).removeClass("targeted");
                     }
-                    if (obj.attacker != null) {
-                        $("#obj_" + obj.attacker).removeClass("targeted");
+                    for (var i = 0; i < obj.attackers.length; ++i) {
+                        $("#obj_" + obj.attackers[i]).removeClass("targeted");
                     }
 
                     g_detail_id = null;
@@ -1975,7 +1974,6 @@ body {
 
                 <div id="card_details">
                 </div>
-
 
             </div>
 
