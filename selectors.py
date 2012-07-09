@@ -24,6 +24,9 @@ class Selector:
         return []
 
     def contains(self, game, context, obj):
+        if obj is None:
+            return False
+
         return obj.get_id() in map(lambda x:x.get_id(), self.all(game, context))
 
     def slots(self):
