@@ -575,6 +575,8 @@
 
             /* clear the "action_zone_button" classes from any zone_buttons */
             $(".action_zone_button").removeClass("action_zone_button");
+            $(".action_zone").removeClass("action_zone");
+
         }
 
         function onState(state) {
@@ -675,14 +677,35 @@
                 $("#" + rolemap[player.role] + "_name").empty(); 
                 $("#" + rolemap[player.role] + "_name").text(player.name);
 
-                $("#" + rolemap[player.role] + "_hand").empty(); 
-                $("#" + rolemap[player.role] + "_hand").text(player.hand.length);
+                if (player.library.length == 0) {
+                    $("#" + rolemap[player.role] + "_library").empty();
+                    $("#" + rolemap[player.role] + "_library").addClass("empty_stack");
+                }
+                else {
+                    if ($("#" + rolemap[player.role] + "_library").children().length == 0) {
+                        $("#" + rolemap[player.role] + "_library").removeClass("empty_stack");
+                        var img = $("<img src='./mc_back.png'/>");
+                        img.css("width", 40);
+                        img.css("height", 58);
+                        img.appendTo($("#" + rolemap[player.role] + "_library"));
+                    }
+                }
 
-                $("#" + rolemap[player.role] + "_library").empty(); 
-                $("#" + rolemap[player.role] + "_library").text(player.library.length);
+                $("#" + rolemap[player.role] + "_library").attr("title", "Library: " + player.library.length);
 
-                $("#" + rolemap[player.role] + "_graveyard").empty(); 
-                $("#" + rolemap[player.role] + "_graveyard").text(player.graveyard.length);
+                if (player.graveyard.length == 0) {
+                    $("#" + rolemap[player.role] + "_graveyard").empty();
+                    $("#" + rolemap[player.role] + "_graveyard").addClass("empty_stack");
+                }
+                else {
+                    $("#" + rolemap[player.role] + "_graveyard").removeClass("empty_stack");
+
+                    var topcard = $("<span class='card_small card_graveyard'></span>");
+                    displayCardContents(topcard, player.graveyard[player.graveyard.length - 1], false);
+                    topcard.appendTo($("#" + rolemap[player.role] + "_graveyard"));
+                }
+
+                $("#" + rolemap[player.role] + "_graveyard").attr("title", "Graveyard: " + player.graveyard.length);
 
                 $("#" + rolemap[player.role] + "_life").empty(); 
                 $("#" + rolemap[player.role] + "_life").text(player.life);
@@ -698,10 +721,32 @@
 
                 if (rolemap[player.role] == "player") {
                     displayZone("player_hand", player["hand"], player_hand);
+
+                    $("#player_hand").empty(); 
+                    $("#player_hand").text(player.hand.length);
+
                 }
                 else {
                     $("#" + rolemap[player.role] + "_hand_zone").empty();
                     displayZone(rolemap[player.role] + "_hand", player["hand"], $("#" + rolemap[player.role] + "_hand_zone"));
+
+                    if ($("#" + rolemap[player.role] + "_hand").children().length != player.hand.length) {
+
+                        $("#" + rolemap[player.role] + "_hand").empty();
+                        $("#" + rolemap[player.role] + "_hand").attr("title", "Hand: " + player.hand.length);
+
+                        for (var j = 0; j < player.hand.length; j++) {
+                            var img = $("<img src='./mc_back.png'/>");
+                            
+                            img.css("position", "absolute");
+                            img.css("width", 40);
+                            img.css("height", 58);
+
+                            img.css("left", ((180 - 40) / (player.hand.length - 1)) * j);
+    
+                            img.appendTo($("#" + rolemap[player.role] + "_hand"));
+                        }
+                    }
                 }
             }
 
@@ -770,9 +815,9 @@
 
                             /* Highlight the zone button if the object is in a zone that is not visible by default  */
                             if (g_zone_map[action["object"]] !== undefined) {
-                                var zone_button = $("#" + g_zone_map[action["object"]] + "_zone_button");
-                                if (zone_button !== undefined) {
-                                    zone_button.addClass("action_zone_button");
+                                var zone = $("#" + g_zone_map[action["object"]]);
+                                if (zone !== undefined) {
+                                    zone.addClass("action_zone");
                                 }
                             }
                         }
@@ -1674,6 +1719,65 @@
   width: 200px;
 }
 
+#opponent_life {
+    float: right;
+    text-align: right;
+}
+
+#opponent_hand {
+    position: relative;
+    width: 180px;
+    height: 58px;
+    display: block;
+    margin-bottom: 10px;
+    border: 1px solid black;
+    left: 10px;
+}
+
+.library_graveyard {
+    position: relative;
+    width: 180px;
+    height: 58px;
+    margin-bottom: 10px;
+    left: 10px; 
+}
+
+.library {
+    position: absolute;
+    width: 40px;
+    height: 58px;
+    left: 45px;
+    display: inline-block;
+    border: 1px solid black;
+}
+
+.graveyard {
+    position: absolute;
+    width: 40px;
+    height: 58px;
+    display: inline-block;
+    border: 1px solid black;
+    left: 95px;
+}
+
+.card_graveyard {
+   position: absolute !important;
+   -webkit-transform: translate(-33px, -45px) scale(0.4);
+   -moz-transform: translate(-33px, -45px) scale(0.4);
+}
+
+#player_life {
+    float: right;
+    text-align: right;
+}
+
+.action_zone{
+   border: solid 1px yellow !important;
+
+   box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+   -webkit-box-shadow: 0 0 5px rgba(255, 255, 0, 1); 
+   -moz-box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+}
 
 #timer {
  width: 200px;
@@ -1956,21 +2060,24 @@ body {
 
             <div id="status">
                 <div id="opponent">
-                    <h3 id="opponent_name"></h3>
-                    <div>Life: <span id="opponent_life"></span></div>
-                    <div>Manapool: <span id="opponent_manapool"></span></div>
-                    <button id="opponent_hand_zone_button" class="zone_button" onclick="showZone($('#opponent_hand_zone'));">Hand: <span id="opponent_hand"></span></button>
-                    <button id="opponent_library_zone_button" class="zone_button" onclick="showZone($('#opponent_library_zone'));">Library: <span id="opponent_library"></span></button>
-                    <button id="opponent_graveyard_zone_button" class="zone_button" onclick="showZone($('#opponent_graveyard_zone'));">Graveyard:<span id="opponent_graveyard"></span></button>
+                    <h3 id="opponent_header"><span id="opponent_name"></span> <span id="opponent_life"></span></h3>
+                    <div><span id="opponent_manapool"></span></div>
+                    <div id="opponent_hand_zone_button" onclick="showZone($('#opponent_hand_zone'));"><span id="opponent_hand"></span></div>
+
+                    <div id="opponent_library_graveyard" class="library_graveyard">
+                        <span class="library" id="opponent_library" onclick="showZone($('#opponent_library_zone'));"></span>
+                        <span class="graveyard" id="opponent_graveyard" onclick="showZone($('#opponent_graveyard_zone'));"></span>
+                    </div>
                 </div>
 
                 <div id="player">
-                    <h3 id="player_name"></h3>
-                    <div>Life: <span id="player_life"></span></div>
-                    <div>Manapool: <span id="player_manapool"></span></div>
-                    <div>Hand: <span id="player_hand"></span></div>
-                    <button id="player_library_zone_button" class="zone_button" onclick="showZone($('#player_library_zone'));">Library: <span id="player_library"></span></button>
-                    <button id="player_graveyard_zone_button" class="zone_button" onclick="showZone($('#player_graveyard_zone'));">Graveyard:<span id="player_graveyard"></span></button>
+                    <h3 id="player_header"><span id="player_name"></span> <span id="player_life"></span></h3>
+                    <div><span id="player_manapool"></span></div>
+
+                    <div id="player_library_graveyard" class="library_graveyard">
+                        <span class="library" id="player_library" onclick="showZone($('#player_library_zone'));"></span>
+                        <span class="graveyard" id="player_graveyard" onclick="showZone($('#player_graveyard_zone'));"></span>
+                    </div>
                 </div>
 
                 <div>Turn: <span id="turn"></span></div>
