@@ -120,6 +120,33 @@ def zone_to_list(game, zone):
         ret.append (object_to_map(game, o))
     return ret
 
+def game_state(game):
+    state = {}
+    state["turn"] = player_to_role(game, game.get_active_player())
+    state["phase"] = game.current_phase
+    state["step"] = game.current_step
+   
+    state["in_play"] = zone_to_list(game, game.get_in_play_zone())
+    state["stack"] = zone_to_list(game, game.get_stack_zone())
+
+    players = []
+    for player in game.players:
+        p = {}
+        p["role"] = player_to_role(game, player)
+        p["name"] = player.name
+        p["life"] = player.life
+        p["manapool"] = player.manapool
+        p["hand"] = zone_to_list(game, game.get_hand(player))
+        p["library"] = zone_to_list(game, game.get_library(player))
+        p["graveyard"] = zone_to_list(game, game.get_graveyard(player))
+
+        players.append(p)
+
+    state["players"] = players
+
+    return state
+   
+
 def ab_input_generator(ab_game):
     seed = random.randint(0,2**64)
     random.seed(seed)
@@ -129,32 +156,9 @@ def ab_input_generator(ab_game):
     while True:
 
         # send the game state
-
-
-        state = {}
+        state = game_state(_as.game)
         state["player"] = player_to_role(_as.game, _as.player)
         state["text"] = _as.text
-        state["turn"] = player_to_role(_as.game, _as.game.get_active_player())
-        state["phase"] = _as.game.current_phase
-        state["step"] = _as.game.current_step
-       
-        state["in_play"] = zone_to_list(_as.game, _as.game.get_in_play_zone())
-        state["stack"] = zone_to_list(_as.game, _as.game.get_stack_zone())
-
-        players = []
-        for player in _as.game.players:
-            p = {}
-            p["role"] = player_to_role(_as.game, player)
-            p["name"] = player.name
-            p["life"] = player.life
-            p["manapool"] = player.manapool
-            p["hand"] = zone_to_list(_as.game, _as.game.get_hand(player))
-            p["library"] = zone_to_list(_as.game, _as.game.get_library(player))
-            p["graveyard"] = zone_to_list(_as.game, _as.game.get_graveyard(player))
-
-            players.append(p)
-
-        state["players"] = players
 
         actions = None
         query = None
@@ -326,6 +330,11 @@ class ABGame:
         try:
             process_game(self.game)
         finally:
+
+            # send the final game state
+            state = game_state(self.game)
+            g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/state", state)
+
             players = self.players[:]
             for player in players:
                 self.remove(player)
@@ -337,7 +346,6 @@ class ABGame:
         dispatchGames()
         print "game " + str(self.id) + " ending"
         reactor.callLater(1, startDuels)
-
         
 
 class ABPlayer:

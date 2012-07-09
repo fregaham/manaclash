@@ -717,7 +717,7 @@
             var pass = $("#pass");
             pass.attr("disabled", "disabled");
 
-            if (state["text"] != "You have priority") {
+            if (state["text"] != "You have priority" && state["player"] != null) {
                 appendLog("" + g_playermap[state["player"]].name + ", " + state["text"]);
             }
 
@@ -813,12 +813,18 @@
                 }
             } 
             else {
-                $("#text").append("Waiting for " + g_playermap[state["player"]].name);
+                if (state["player"] != null) {
+                    $("#text").append("Waiting for " + g_playermap[state["player"]].name);
 
-                // It is not our turn
-                $("#autopass").empty();
-                $("<div class='autopass_wait'></div>").text("Waiting for " + g_playermap[state["player"]].name).appendTo($("#autopass"));
-                $("#autopass").show();
+                    // It is not our turn
+                    $("#autopass").empty();
+                    $("<div class='autopass_wait'></div>").text("Waiting for " + g_playermap[state["player"]].name).appendTo($("#autopass"));
+                    $("#autopass").show();
+                }
+                else {
+                    // game ended, do nothing
+                    $("#autopass").hide();
+                }
             }
         }
 
