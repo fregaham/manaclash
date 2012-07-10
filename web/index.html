@@ -495,12 +495,17 @@
                 var img = $("<img/>");
                 img.attr("src", "mc_back.png");
                 img.appendTo(objSpan);
+
+                img = $("<img/>");
+                img.attr("src", "mc_back.png");
+                img.css("width", "190px");
+                img.appendTo(detailSpan);
             }
 
             detailSpan.hide();
             detailSpan.appendTo($("#card_details"));
 
-            // Display card details on the currently hovered card, also, highlight any card targets, blockers and attackers
+            /* Display card details on the currently hovered card, also, highlight any card targets, blockers and attackers */
             objSpan.hover(
                 function(id) {
                     // hide the old detail and unhighlight targets
@@ -519,6 +524,8 @@
                         }
                     }
                     $("#detail_" + id).show();
+                    $("#card_details").stop(true, true);
+                    $("#card_details").fadeIn("fast");
                     g_detail_id = id;
 
                     var obj = g_objects[id];
@@ -534,7 +541,7 @@
 
                 }.partial(obj.id),
                 function(id) {
-                    $("#detail_" + id).hide();
+                    $("#card_details").fadeOut("fast");
 
                     var obj = g_objects[id];
                     for (var i = 0; i < obj.targets.length; ++i) {
@@ -547,7 +554,6 @@
                         $("#obj_" + obj.attackers[i]).removeClass("targeted");
                     }
 
-                    g_detail_id = null;
                 }.partial(obj.id)
             );
 
@@ -1853,17 +1859,22 @@
 
 #card_details {
     margin-top: 1em;
+    position: absolute;
+    z-index: 10; 
 }
 
 .card_detail {
     position: relative;
     color: black;
-    width: 180px;
+    width: 190px;
+    border: 4px solid white;
+    background: white;
+    width: 194px;
 }
 
 .card_detail .power {
     display: block;
-    width: 178px;
+    width: 188px;
     text-align: right;
 }
 
@@ -1888,9 +1899,9 @@
 
 .card_detail > .card_content {
     position: relative;
-    left:3px;
-    width:180px;
-    top:3px;
+/*    left:3px;*/
+    width:190px;
+/*    top:3px;*/
     background: gray;
     border: 1px solid black;
     padding: 1px;
@@ -1901,7 +1912,7 @@
     display: block;
     position: relative;
     height: 17px;
-    width: 177px;
+    width: 187px;
 }
 
 
@@ -2112,6 +2123,9 @@ body {
             <div id="autopass"><span>3</span></div>
 
             <div id="status">
+                <div id="card_details">
+                </div>
+
                 <div id="opponent">
                     <h3 id="opponent_header"><span id="opponent_name"></span> <span id="opponent_life"></span></h3>
                     <div><span id="opponent_manapool"></span></div>
@@ -2156,8 +2170,6 @@ body {
                     </div>
                 </div>
 
-                <div id="card_details">
-                </div>
 
             </div>
 
