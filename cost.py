@@ -76,6 +76,9 @@ def mana_format(mp):
 
     ret += str(colorless)
 
+    if ret == "0":
+        ret = ""
+
     return ret
 
 def mana_greater_than(m1, m2):
