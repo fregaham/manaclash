@@ -739,6 +739,15 @@
                         $("#" + rolemap[player.role] + "_hand").empty();
                         $("#" + rolemap[player.role] + "_hand").attr("title", "Hand: " + player.hand.length);
 
+                        if (40 * player.hand.length < 180) {
+                            $("#" + rolemap[player.role] + "_hand").css("left", 10 + ((180 - 40 * player.hand.length) / 2));
+                            $("#" + rolemap[player.role] + "_hand").css("width", 40 * player.hand.length);
+                        }
+                        else {
+                            $("#" + rolemap[player.role] + "_hand").css("left", 10);
+                            $("#" + rolemap[player.role] + "_hand").css("width", 180);
+                        }
+
                         for (var j = 0; j < player.hand.length; j++) {
                             var img = $("<img src='./mc_back.png'/>");
                             
@@ -746,7 +755,12 @@
                             img.css("width", 40);
                             img.css("height", 58);
 
-                            img.css("left", ((180 - 40) / (player.hand.length - 1)) * j);
+                            if (40 * player.hand.length < 180) {
+                                img.css("left", 40 * j);
+                            }
+                            else {
+                                img.css("left", ((180 - 40) / (player.hand.length - 1)) * j);
+                            }
     
                             img.appendTo($("#" + rolemap[player.role] + "_hand"));
                         }
@@ -1302,6 +1316,7 @@
     border-radius: 6px;
     background: white;
     margin:3px;
+    color: black;
 }
 
 .card_small > img {
@@ -1652,9 +1667,13 @@
     -moz-box-shadow: 0 0 5px rgba(255, 0, 0, 1); 
 }
 
+#pass {
+    width: 200px;
+}
+
 .action_button {
-   display:block;
-   width: 200px;
+    display:block;
+    width: 200px;
 }
 
 .zone_button {
@@ -1665,6 +1684,11 @@
 
 .action_zone_button {
     border: 1px solid yellow;
+}
+
+#view_game {
+    background: #202020;
+    color: white;
 }
 
 #table {
@@ -1684,6 +1708,7 @@
     right:0px;
     height:100px;
     background: #ffbd6d;
+    color: black;
     z-index:10;
     border: 1px solid black;
 }
@@ -1696,6 +1721,7 @@
     top: 0px;
     height: auto !important;
     background: #ffbd6d;
+    color: black;
     opacity: 0.9;
     border: 1px solid black;
 }
@@ -1740,6 +1766,7 @@
    -moz-box-shadow: 0 0 5px rgba(255, 255, 0, 1);
 
    background: yellow;
+   color: black;
 }
 
 #opponent_life {
@@ -1806,9 +1833,6 @@
  width: 200px;
 }
 
-#pass {
- width: 200px;
-}
 
 #zones {
     position:absolute;
@@ -1817,7 +1841,7 @@
     right:100px;
     bottom:100px;
     z-index: 5;
-    background: #aaccaa;
+    background: #202020;
     border: 1px solid black;
     overflow: auto;
 }
@@ -1833,6 +1857,7 @@
 
 .card_detail {
     position: relative;
+    color: black;
     width: 180px;
 }
 
@@ -2021,11 +2046,16 @@ body {
 }
 
 #view_menu .current_view {
-    background: #f0f0f0 !important;
+    background: #f0f0f0;
     border-bottom: 1px solid #f0f0f0;
     border-left: 1px solid black;
     border-right: 1px solid black;
     border-top: 1px solid black;
+}
+
+#view_game_button.current_view {
+   background: #202020 !important;
+   color: white;
 }
 
     </style>
