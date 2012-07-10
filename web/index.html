@@ -576,7 +576,11 @@
             /* clear the "action_zone_button" classes from any zone_buttons */
             $(".action_zone_button").removeClass("action_zone_button");
             $(".action_zone").removeClass("action_zone");
+            $(".player_action").removeClass("player_action");
 
+            /* clear the player header click handlers */
+            $("#player_header").off("click");
+            $("#opponent_header").off("click");
         }
 
         function onState(state) {
@@ -783,8 +787,17 @@
                     for (var i = 0; i < state["actions"].length; ++i) {
                         var action = state["actions"][i];
 
-                        if (action["object"] == null) {
-                            /* action with now object, display it as a button in the actions list */
+                        if (action["player_object"] != null) {
+                            var role = rolemap[action["player_object"]];
+                            $("#" + role + "_header").addClass("player_action");
+                            $("#" + role + "_header").on("click", {'i':i}, function(event) {
+                                    selectAction(event.data.i);
+                                }
+                            );
+                        }
+                        else if (action["object"] == null) {
+
+                            /* action with no object, display it as a button in the actions list */
 
                             if (action["text"] != "Pass") {
                                 autopass = false;
@@ -1717,6 +1730,16 @@
   left:4px;
   top:4px;
   width: 200px;
+}
+
+.player_action {
+   border: solid 1px yellow !important;
+
+   box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+   -webkit-box-shadow: 0 0 5px rgba(255, 255, 0, 1); 
+   -moz-box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+
+   background: yellow;
 }
 
 #opponent_life {

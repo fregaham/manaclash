@@ -170,7 +170,7 @@ def ab_input_generator(ab_game):
                 if a.object is not None:
                     # We don't treat players as objects on the client side
                     if isinstance(a.object, Player):
-                        am["player"] = player_to_role(_as.game, a.object) 
+                        am["player_object"] = player_to_role(_as.game, a.object) 
                     else:
                         am["object"] = a.object.id
                 if a.ability is not None:
