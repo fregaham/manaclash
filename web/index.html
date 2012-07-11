@@ -1079,7 +1079,33 @@
 
                     if(typeof(Storage)!=="undefined") {
                         var decks = localStorage.cardsDecks;
-                        if (decks != null) {
+
+                        if (decks == null || decks == "") {
+                            sess.call("http://manaclash.org/getInitialDecks").then(
+                                /* array of (deckname, [(count, card)]) */
+                                function (decks) {
+                                    for (var i = 0; i < decks.length; i++) {
+                                        var deckname = decks[i][0];
+                                        var decklist = decks[i][1];
+
+                                        var deck = [];
+                                        for (var j = 0; j < decklist.length; j++) {
+                                            deck.push([decklist[j][0], decklist[j][1]]);
+                                        }
+                                        g_cards_decknames.push(deckname);
+                                        g_cards_decks[deckname] = deck;
+                                    }
+
+                                    $("#cards_decks").empty();
+                                    for (var i = 0; i < g_cards_decknames.length; i++) {
+                                        $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
+                                    }
+                                    $("#cards_decks").val(decks[0][0]);
+                                    cardsSelectDeck();
+                                }
+                            );
+                        }
+                        else {
                             decks = decks.split("\n");
                             var deck = [];
                             var deckname = null;
@@ -1107,15 +1133,15 @@
                                 g_cards_decknames.push(deckname);
                                 g_cards_decks[deckname] = deck;
                             }
-                        }
 
-                        $("#cards_decks").empty();
-                        for (var i = 0; i < g_cards_decknames.length; i++) {
-                            $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
+                            $("#cards_decks").empty();
+                            for (var i = 0; i < g_cards_decknames.length; i++) {
+                                $("<option>" + g_cards_decknames[i] + "</option>").appendTo($("#cards_decks"));
+                            }
+                            $("#cards_decks").val(localStorage.cardsDeckname);
+    
+                            cardsSelectDeck();
                         }
-                        $("#cards_decks").val(localStorage.cardsDeckname);
-
-                        cardsSelectDeck();
                     }
                 },
                 function(){ alert("failed to fetch available cards!"); }

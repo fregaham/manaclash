@@ -27,6 +27,8 @@ from oracle import getParseableCards, createCardObject
 from actions import *
 from abilities import BasicManaAbility
 
+import os
+import os.path
 import time
 import random
 import threading
@@ -56,6 +58,23 @@ for card in getParseableCards(oracleFile):
     g_card_names.append (card.name)
 
 oracleFile.close()
+
+# read the initial decks
+g_decks = {}
+for fname in os.listdir("decks"):
+    f = open(os.path.join("decks", fname), "r")
+    if fname.endswith(".txt"):
+        fname = fname[:-len(".txt")]
+    deck = []
+    for line in f:
+        line = line.decode("utf8")
+        count, card = line.split(None, 1)
+        count = int(count)
+        card = card.rstrip()
+
+        if card in g_cards:
+            deck.append ( (count, card) )
+    g_decks[fname] = deck
 
 def player_to_role(game, player):
     for i in range(len(game.players)):
@@ -523,6 +542,7 @@ class MyServerProtocol(WampServerProtocol):
         self.registerMethodForRpc("http://manaclash.org/refresh", self, MyServerProtocol.onRefresh)
 
         self.registerMethodForRpc("http://manaclash.org/getAvailableCards", self, MyServerProtocol.getAvailableCards)
+        self.registerMethodForRpc("http://manaclash.org/getInitialDecks", self, MyServerProtocol.getInitialDecks)
 
         self.registerHandlerForSub("http://manaclash.org/chat",  self, MyServerProtocol.onChatSub, prefixMatch=False)
         self.registerHandlerForSub("http://manaclash.org/chat_history",  self, MyServerProtocol.onChatHistorySub, prefixMatch=False)
@@ -570,6 +590,9 @@ class MyServerProtocol(WampServerProtocol):
 
             ret.append(o)
         return ret
+
+    def getInitialDecks(self):
+        return g_decks.items()
 
     def onUsersSub(self, url, foo):
         # send a list of current users to the client subscribing for http://manaclash.org/users
