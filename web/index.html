@@ -201,6 +201,9 @@
         function onGames(gamesUri, games) {
             $("#gameslist").empty();
 
+            $("#lobby_continue_game").attr("disabled", "disabled");
+            $("#lobby_random_duel").removeAttr("disabled");
+
             for (var i = 0; i < games.length; i++) {
                 var gameElement = $("<div class='lobby_table'></div>").appendTo($("#gameslist"));
 
@@ -220,6 +223,7 @@
 
                     if (games[i].players[j].login == g_login) {
                         have_me = true;
+                        $("#lobby_random_duel").attr("disabled", "disabled");
                     }
 
                     if (games[i].players[j].login == g_login && !(g_gameuri == games[i].uri && g_role == games[i].players[j].role)) {
@@ -241,9 +245,9 @@
                             );
                         }
                         else {
-                            gameElement.addClass("lobby_table_takeover");
-                            gameElement.append(" (click to takeover)");
-                            gameElement.click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
+                            $("#lobby_continue_game").removeAttr("disabled");
+                            $("#lobby_random_duel").attr("disabled", "disabled");
+                            $("#lobby_continue_game").click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
                                 sess.call("http://manaclash.org/takeover", event.data.game_id, event.data.role).then(
                                     function(ret) {
                                         g_waiting_for_game = true;
@@ -1859,7 +1863,8 @@
 
 #card_details {
     margin-top: 1em;
-    position: absolute;
+    position: fixed;
+    bottom: 8px;
     z-index: 10; 
 }
 
@@ -2099,6 +2104,7 @@ body {
             <h3>Lobby</h3>
 
             <div id="lobby_buttons">
+                <button id="lobby_continue_game">Continue Game</button>
                 <button id="lobby_random_duel" onclick="lobbyRandomDuel();">Random Duel</button>
             </div>
 
