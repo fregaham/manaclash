@@ -28,7 +28,7 @@ ManaClash only implements the MTG rules and doesn't contain information about an
 * Go to the MTG Gatherer web site
 * Select "Eight edition"
 * Select "Text spoiler" output format
-* copy the resulting text into a plain text (UTF-8 encoded) file named <code>oracle/8th_edition.txt</code>.
+* copy the resulting text into a plain text (UTF-8 encoded) file named oracle/8th_edition.txt.
 
     Note that ManaClash currently only understand a subset of the 8th Edition, so the other editions and sets will not work very well.
 
@@ -41,7 +41,7 @@ The resulting file should look like this:
     Rules Text:     Flying
     Whenever Abyssal Specter deals damage to a player, that player discards a card.
     Set/Rarity:     ...
-    %br
+
     Name:   Air Elemental
     Cost:   3UU
     Type:   Creature — Elemental
