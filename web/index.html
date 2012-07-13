@@ -2118,6 +2118,11 @@ body {
                     <tr><td>Password:</td><td><input id="password" name="password" type="password"/></td>
                     <tr><td colspan="2"><center><button onclick="login();">Login</button></center></td></tr>
                     </table>
+
+                    <div style="background: rgb(252,248,227);width:600px;margin-top:2em;font-size:12pt;text-align:left;padding:1em;border:1px solid rgb(251,238,213);">
+                        This demo server doesn't persist any data between restarts, so there is no registration required. Just use the same username/password combination every time.
+                    </div>
+
                     </center>
                 </div>
             </div>
@@ -2143,7 +2148,7 @@ body {
             <div id="lobby_chat">
                 <div id="lobby_chat_messages"></div>
                 <div id="lobby_chat_form">
-                    <input size=60" id="lobby_chat_input" name="lobby_chat_input" /> <button id="lobby_chat_send" onclick="lobbyChatSend();">Send</button>
+                    <input size="60" id="lobby_chat_input" name="lobby_chat_input" /> <button id="lobby_chat_send" onclick="lobbyChatSend();">Send</button>
                 </div>
             </div>
 
