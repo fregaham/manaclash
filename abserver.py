@@ -51,13 +51,16 @@ g_factory = None
 # read the oracle
 g_card_names = []
 g_cards = {}
-oracleFile = open("oracle/8th_edition.txt", "r")
-for card in getParseableCards(oracleFile):
-    print card.name
-    g_cards[card.name] = card
-    g_card_names.append (card.name)
 
-oracleFile.close()
+for fname in os.listdir("oracle"):
+    print ("reading %s " % fname)
+    oracleFile = open(os.path.join("oracle", fname), "r")
+    for card in getParseableCards(oracleFile):
+        print card.name
+        g_cards[card.name] = card
+        g_card_names.append (card.name)
+
+    oracleFile.close()
 
 # read the initial decks
 g_decks = {}
@@ -75,6 +78,8 @@ for fname in os.listdir("decks"):
         if card in g_cards:
             deck.append ( (count, card) )
     g_decks[fname] = deck
+
+    f.close()
 
 def player_to_role(game, player):
     for i in range(len(game.players)):
