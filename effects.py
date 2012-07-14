@@ -985,3 +985,32 @@ class XPowerAndToughnessAreEachEqualToTheNumberOfY(ContinuousEffect):
     def __str__ (self):
         return "XPowerAndToughnessAreEachEqualToTheNumberOfY(%s, %s)" % (self.x_selector, self.y_selector)
 
+class AddNManaOfAnyColorToYourManapool(OneShotEffect):
+    def __init__ (self, n):
+        self.n = n
+
+    def resolve(self, game, obj):
+        controller = game.objects[obj.get_state().controller_id]
+
+        for i in range(self.n):
+            colors = ["W","R","B","U","G"]
+            names = ["White", "Red", "Black", "Blue", "Green"] 
+
+            actions = []
+            for name in names:
+                a = Action()
+                a.text = name
+                actions.append(a)
+
+            _as = ActionSet (game, controller, ("Choose a color"), actions)
+            a = game.input.send(_as)
+
+            color = colors[actions.index(a)]
+            controller.manapool += color
+
+        return True
+
+    def __str__ (self):
+        return "AddNManaOfAnyColorToYourManapool(%s)" % str(self.n)
+
+

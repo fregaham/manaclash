@@ -267,6 +267,8 @@ r = [
 
     R("effect", [selector, "'s power and toughness are each equal to the number of ", selector, "."], lambda t,x,y:XPowerAndToughnessAreEachEqualToTheNumberOfY(x,y)),
 
+    R("effect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
+
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
 
     R("costs", [N("cost")], lambda t, c: [c]),
