@@ -263,6 +263,10 @@ r = [
     R("effect", [selector, " costs ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
     R("effect", [selector, " cost ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
 
+    R("effect", ["if target ", selector, " has more cards in hand than you, draw cards equal to the difference."], lambda t,s:IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(s)),
+
+    R("effect", [selector, "'s power and toughness are each equal to the number of ", selector, "."], lambda t,x,y:XPowerAndToughnessAreEachEqualToTheNumberOfY(x,y)),
+
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
 
     R("costs", [N("cost")], lambda t, c: [c]),
@@ -291,6 +295,7 @@ r = [
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["a creature"], lambda t:CreatureSelector()),
+    R("basicSelector", ["creatures on the battlefield"], lambda t:CreatureSelector()),
     R("basicSelector", ["creature with flying"], lambda t:CreatureWithFlyingSelector()),
     R("basicSelector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),

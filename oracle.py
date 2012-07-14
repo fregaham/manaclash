@@ -157,10 +157,16 @@ def createCardObject(game, card):
     toughness = card.toughness
 
     if power != None:
-        power = int(power)
+        if power == "*":
+            power = 0
+        else:
+            power = int(power)
 
     if toughness != None:
-        toughness = int(toughness)
+        if toughness == "*":
+            toughness = 0
+        else:
+            toughness = int(toughness)
 
     obj = game.create_card(card.name, card.cost, card.supertypes, card.types, card.subtypes, set(), r, power, toughness)
 

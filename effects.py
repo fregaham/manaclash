@@ -954,3 +954,34 @@ class XCostsNLessToCast(ContinuousEffect):
     def isSelf(self):
         return isinstance(self.selector, SelfSelector)
 
+class IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(SingleTargetOneShotEffect):
+    def __init__(self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+        for you in YouSelector().all(game, obj):
+            for player in self.targetSelector.all(game, obj):
+                you_hand = game.get_hand(you)
+                player_hand = game.get_hand(player)
+
+                if len(player_hand.objects) > len(you_hand.objects):
+                    for i in range(len(player_hand.objects) - len(you_hand.objects)):
+                        game.doDrawCard(you)
+
+    def __str__ (self):
+        return "IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(%s)" % (self.targetSelector)
+
+class XPowerAndToughnessAreEachEqualToTheNumberOfY(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def apply(self, game, obj):
+        for o in self.x_selector.all(game, obj):
+            n = len([p for p in self.y_selector.all(game, obj)])
+            o.get_state().power = n
+            o.get_state().toughness = n
+
+    def __str__ (self):
+        return "XPowerAndToughnessAreEachEqualToTheNumberOfY(%s, %s)" % (self.x_selector, self.y_selector)
+
