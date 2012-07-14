@@ -108,6 +108,7 @@ r = [
     R("ability", ["first strike (this creature deals combat damage before creatures without first strike.)"], lambda t:TagAbility("first strike")),
     R("ability", [tag], lambda t,tag:TagAbility(tag)),
     R("ability", ["SELF is unblockable."], lambda t:TagAbility("unblockable")),
+    R("ability", ["SELF can block any number of creatures."], lambda t:TagAbility("can block any number of creatures")),
 
     R("abilities", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " and have ", tag, "."], lambda t,x,g,a,b,tag:[ContinuousEffectStaticAbility(XGetsNN(x,a,b)), ContinuousEffectStaticAbility(XGetsTag(x, tag))]),
     R("abilities", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " and have ", tag, ". (they're unblockable as long as defending player controls ", selector, ".)"], lambda t,x,g,a,b,tag,s:[ContinuousEffectStaticAbility(XGetsNN(x,a,b)), ContinuousEffectStaticAbility(XGetsTag(x, tag))]),
