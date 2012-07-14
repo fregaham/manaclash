@@ -69,6 +69,8 @@ class Game:
         # ids of cards looked at by a controller (e.g. from a library)
         self.looked_at = []
 
+        self.play_cost_replacement_effects = []
+
     def add_object (self, object):
         self.obj_max_id += 1
         object.id = self.obj_max_id
@@ -421,4 +423,10 @@ class Game:
 
     def onPlay(self, spell):
         self.raise_event ("play", spell)
+
+    def replacePlayCost(self, ability, obj, player, costs):
+        for effect in self.play_cost_replacement_effects:
+            costs = effect(self, ability, obj, player, costs)
+
+        return costs
 

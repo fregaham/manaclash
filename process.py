@@ -55,6 +55,7 @@ def evaluate (game):
 
     game.volatile_events = {}
     game.volatile_effects = []
+    game.play_cost_replacement_effects = []
 
     for player in game.players:
         player.maximum_hand_size = 7
@@ -243,6 +244,9 @@ def process_play_spell (game, ability, player, obj):
 
     costs = ability.determineCost(game, obj, player)
     costs = costs[:]
+
+    costs = game.replacePlayCost(ability, obj, player, costs)
+
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
         if not process_pay_cost(game, player, obj, costs):

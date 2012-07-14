@@ -21,6 +21,7 @@
 from abilities import *
 from effects import *
 from selectors import *
+from conditions import *
 from rules import *
 from cost import *
 from Parser import *
@@ -44,6 +45,7 @@ manaCost = N("manaCost")
 basicLand = N("basicLand")
 costs = N("costs")
 tag = N("tag")
+condition = N("condition")
 
 NUMBER = N("NUMBER")
 
@@ -59,6 +61,7 @@ r = [
     R("abilities", [N("ability")], lambda t,x:[x]),
 
     R("ability", [N("continuousAbility")], id),
+    R("ability", [N("conditionalContinuousAbility")], id),
     R("ability", [N("triggeredAbility")], id),
     R("ability", [N("activatedAbility")], id),
 
@@ -104,6 +107,8 @@ r = [
     R("continuousAbility", [effect], lambda t,e:ContinuousEffectStaticAbility(e)),
 
     R("continuousAbility", ["SELF can't block."], lambda t:TagAbility("can't block")),
+
+    R("conditionalContinuousAbility", ["if ", condition, ", ", effect], lambda t,c,e:ConditionalContinuousEffectStaticAbility(c,e)),
 
     R("ability", ["first strike (this creature deals combat damage before creatures without first strike.)"], lambda t:TagAbility("first strike")),
     R("ability", [tag], lambda t,tag:TagAbility(tag)),
@@ -254,6 +259,11 @@ r = [
     R("effect", [selector, " ", N("draw"), " ", N("numberOfCards"), " and ", selector, " ", N("lose"), " ", N("number"), " life."], lambda t,x,d,n,y,l,m: XAndY(DrawCards(x,n), PlayerLooseLifeEffect(y, m))),
 
     R("effect", ["if ", selector, " would deal damage to ", selector,", prevent ", number, " of that damage."], lambda t,x,y,n:IfXWouldDealDamageToYPreventNOfThatDamage(x,y,n)),
+
+    R("effect", [selector, " costs ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
+    R("effect", [selector, " cost ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
+
+    R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
 
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),

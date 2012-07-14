@@ -17,6 +17,7 @@
 #
 # 
 
+from cost import ManaCost, mana_diff
 from objects import  *
 from selectors import *
 from actions import *
@@ -32,9 +33,14 @@ class Effect:
     def getSlots(self):
         return []
 
+
 class ContinuousEffect(Effect):
     def apply (self, game, obj):
         pass
+
+    # does this effect handles self, or other? (if self, it is active all the time, not only when the object is in play)
+    def isSelf(self):
+        return False
 
 class OneShotEffect(Effect):
     def resolve(self, game, obj):
@@ -918,4 +924,33 @@ class XAndY(OneShotEffect):
 
     def __str__(self):
         return "XAndY(%s, %s)" % (self.x, self.y)
+
+class XCostsNLessToCast(ContinuousEffect):
+    def __init__ (self, selector, n):
+        self.selector = selector
+        self.n = n
+
+    def apply(self, game, obj):
+        game.play_cost_replacement_effects.append (partial(self.replace, obj))
+
+    def replace(self, context, game, ability, obj, player, costs):
+        if self.selector.contains(game, context, obj):
+            ret = []
+            for c in costs:
+                if isinstance(c, ManaCost):
+                    manacost = mana_diff(c.manacost, self.n)
+                    rc = ManaCost(manacost)
+                    ret.append(rc)
+                else:
+                    ret.append(c)
+
+            return ret
+
+        return costs
+
+    def __str__ (self):
+        return "XCostsNLessToCast(%s, %s)" % (self.selector, self.n)
+
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
 

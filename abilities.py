@@ -131,7 +131,7 @@ class ContinuousEffectStaticAbility(StaticAbility):
         self.effect = effect
 
     def isActive(self, game, obj):
-        return game.isInPlay(obj)
+        return self.effect.isSelf() or game.isInPlay(obj)
 
     def evaluate(self, game, obj):
         # TODO: add the effect to the proper bucket
@@ -139,6 +139,22 @@ class ContinuousEffectStaticAbility(StaticAbility):
 
     def __str__ (self):
         return "ContinuousEffectStaticAbility(%s)" % str(self.effect)
+
+class ConditionalContinuousEffectStaticAbility(StaticAbility):
+    def __init__ (self, condition, effect):
+        self.condition = condition
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return self.effect.isSelf() or game.isInPlay(obj)
+
+    def evaluate(self, game, obj):
+        # TODO: add the effect to the proper bucket
+        if self.condition.evaluate(game, obj):
+            game.volatile_effects.append ( (obj, self.effect) )
+
+    def __str__ (self):
+        return "ConditionalContinuousEffectStaticAbility(%s, %s)" % (str(self.condition), str(self.effect))
 
 class TapCostDoEffectAbility(ActivatedAbility):
     def __init__ (self, costs, effect):
