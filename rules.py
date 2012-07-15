@@ -39,7 +39,8 @@ class BasicLandRules(ObjectRules):
         self.color = color
 
     def evaluate(self, game, obj):
-        obj.state.abilities.append (BasicManaAbility(self.color))
+        pass
+#        obj.state.abilities.append (BasicManaAbility(self.color))
 
     def __str__(self):
         return "BasicLandRules()"

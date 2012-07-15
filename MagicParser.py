@@ -275,6 +275,8 @@ r = [
 
     R("effect", [selector, " skips his or her next combat phase."], lambda t,s:PlayerSkipsNextCombatPhase(s)),
 
+    R("effect", [selector, " are ", basicLand, "."], lambda t,x,l: XIsBasicLandType(x,l)),
+
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
@@ -327,6 +329,8 @@ r = [
     R("basicSelector", [basicLand], lambda t,x:SubTypeSelector(x)),
     R("basicSelector", ["a ", basicLand], lambda t,x:SubTypeSelector(x)),
     R("basicSelector", [basicLand, " you control"], lambda t,x:SubtypeYouControlSelector(x)),
+    R("basicSelector", ["nonbasic land"], lambda t:NonBasicLandSelector()),
+    R("basicSelector", ["nonbasic lands"], lambda t:NonBasicLandSelector()),
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
     R("basicSelector", ["artifact or land"], lambda t:ArtifactOrLandSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),

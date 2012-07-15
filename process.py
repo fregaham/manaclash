@@ -176,6 +176,20 @@ def evaluate (game):
             if object.damage >= object.state.toughness:
                 game.doDestroy(object)
 
+    # lands
+    for obj in _as.all(game, None):
+        if "land" in obj.state.types:
+            if "forest" in obj.state.subtypes:
+                obj.state.abilities.append (BasicManaAbility("G"))
+            if "island" in obj.state.subtypes:
+                obj.state.abilities.append (BasicManaAbility("U"))
+            if "plains" in obj.state.subtypes:
+                obj.state.abilities.append (BasicManaAbility("W"))
+            if "swamp" in obj.state.subtypes:
+                obj.state.abilities.append (BasicManaAbility("B"))
+            if "mountain" in obj.state.subtypes:
+                obj.state.abilities.append (BasicManaAbility("R"))
+
     lost = []
     for player in game.players:
         if player.life <= 0:

@@ -185,6 +185,14 @@ class LandSelector(Selector):
     def __str__ (self):
         return "land"
 
+class NonBasicLandSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "land" in item.state.types and "mountain" not in item.state.subtypes and "island" not in item.state.subtypes and "plains" not in item.state.subtypes and "forest" not in item.state.subtypes and "swamp" not in item.state.subtypes:
+                yield item
+    def __str__ (self):
+        return "nonbasic land"
+
 class ArtifactOrLandSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():

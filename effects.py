@@ -1053,3 +1053,19 @@ class PlayerSkipsNextCombatPhase(OneShotEffect):
     def __str__ (self):
         return "PlayerSkipsNextCombatPhase(%s)" % (self.selector)
 
+class XIsBasicLandType(ContinuousEffect):
+    def __init__ (self, selector, subtype):
+        self.selector = selector
+        self.subtype = subtype
+
+    def apply(self, game, obj):
+        for o in self.selector.all(game, obj):
+            o.get_state().subtypes.add(self.subtype)
+
+            # remove any rule-based abilities
+            for ability in o.get_object().rules.abilities:
+                o.get_state().abilities.remove(ability)
+
+    def __str__ (self):
+        return "XIsBasicLandType(%s, %s)" % (self.selector, self.subtype)
+
