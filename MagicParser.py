@@ -54,6 +54,7 @@ r = [
     R("sorceryOrInstantRules", [effect, ";", N("abilities")], lambda t, e, ax:BasicNonPermanentRules(e, ax)),
 
     R("effectRules", [effect], lambda t, x:EffectRules(x)),
+
     R("permanentRules", [N("abilities")], lambda t, x:BasicPermanentRules(x)),
     R("permanentRules", [""], lambda t:BasicPermanentRules([])),
     R("abilities", [N("ability"), ";", N("abilities")], lambda t,x,y:[x] + y),
@@ -66,6 +67,7 @@ r = [
     R("ability", [N("activatedAbility")], id),
 
     R("effectText", [effect], lambda t,e: t),
+    R("manaEffectText", [N("manaEffect")], lambda t,e: t),
 
     R("effect", [N("playerLooseLifeEffect")], id),
     R("effect", [N("playerGainLifeEffect")], id),
@@ -157,6 +159,7 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " causes ", selector, " to discard ", selector, ", ", N("effectText")], lambda t,w,x,y,z,e:WhenXCausesYToDiscardZ(x,y,z,e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
+    R("activatedAbility", [N("tappingActivatedManaAbility")], id),
 
     R("tappingActivatedAbility", [costs, ", {t}: ", N("effectText")], lambda t, c, e: TapCostDoEffectAbility(c, e)),
     R("tappingActivatedAbility", [costs, ", {t}, ", costs, ": ", N("effectText")], lambda t, c1, c2, e: TapCostDoEffectAbility(c1 + c2, e)),
@@ -165,6 +168,8 @@ r = [
 
     R("tappingActivatedAbility", ["{t}: ", N("effectText")], lambda t, e: TapCostDoEffectAbility([], e)),
     R("tappingActivatedAbility", ["{t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, e: SelfTurnTapCostDoEffectAbility([], e)),
+
+    R("tappingActivatedManaAbility", ["{t}: ", N("manaEffectText")], lambda t, e: TapDoManaEffectAbility(e)),
 
     R("ability", [costs, ": ", N("effectText")], lambda t, c, e: CostDoEffectAbility(c, e)),
 
@@ -193,6 +198,7 @@ r = [
     R("dontUntapDuringItsControllersUntapStep", [N("selector"), " doesn't untap during its controller's untap step."], lambda t,x:XDontUntapDuringItsControllersUntapStep(x)),
 
     R("xGetsNN", [N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), "."], lambda t, x,g,a,b: XGetsNN(x,a,b)),
+    R("effect", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " for each ", selector, "."], lambda t,x,g,a,b,y:XGetsNNForEachY(x,a,b,y)),
     
     R("destroyTargetX", ["destroy target ", N("selector"), "."], lambda t,x: DestroyTargetX(x)),
     R("buryTargetX", ["destroy target ", N("selector"), ". it can't be regenerated."], lambda t,x: BuryTargetX(x)),
@@ -267,7 +273,7 @@ r = [
 
     R("effect", [selector, "'s power and toughness are each equal to the number of ", selector, "."], lambda t,x,y:XPowerAndToughnessAreEachEqualToTheNumberOfY(x,y)),
 
-    R("effect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
+    R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
 
@@ -318,6 +324,7 @@ r = [
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
     R("basicSelector", [basicLand], lambda t,x:SubTypeSelector(x)),
     R("basicSelector", ["a ", basicLand], lambda t,x:SubTypeSelector(x)),
+    R("basicSelector", [basicLand, " you control"], lambda t,x:SubtypeYouControlSelector(x)),
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
     R("basicSelector", ["artifact or land"], lambda t:ArtifactOrLandSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),

@@ -173,13 +173,31 @@ class TapCostDoEffectAbility(ActivatedAbility):
         return "Activate \"%s\" [T %s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        #if self.manacost != "":
-        #    c = ManaCost(self.manacost)
-        #    return [c]
         return self.costs
 
     def __str__ (self):
         return "TapCostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
+
+class TapDoManaEffectAbility(ManaAbility):
+    def __init__ (self, effect):
+        self.effect = effect
+
+    def canActivate(self, game, obj, player):
+        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags or "haste" in obj.state.tags))
+
+    def activate(self, game, obj, player):
+        game.doTap(obj)
+
+        # mana abilities don't use stack, resolve immediately
+        from rules import manaEffect
+        effect = manaEffect(self.effect)
+        effect.resolve(game, obj)
+
+    def get_text(self, game, obj):
+        return "Activate \"%s\" [T]" % (self.effect)
+
+    def __str__ (self):
+        return "TapDoManaEffectAbility(%s)" % (str(self.effect))
 
 class CostDoEffectAbility(ActivatedAbility):
     def __init__ (self, costs, effect):
@@ -197,9 +215,6 @@ class CostDoEffectAbility(ActivatedAbility):
         return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        #if self.manacost != "":
-        #    c = ManaCost(self.manacost)
-        #    return [c]
         return self.costs
 
     def __str__ (self):

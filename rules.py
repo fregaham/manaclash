@@ -195,4 +195,7 @@ def parse(obj):
 def effectRules(text):
     return caching_magic_parser("effectRules", text)
 
+def manaEffect(text):
+    # note that it doesn't return object, just the effect, as mana effects don't use stack
+    return caching_magic_parser("manaEffect", text)
 

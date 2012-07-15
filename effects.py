@@ -250,6 +250,35 @@ class XGetsNN(ContinuousEffect):
     def __str__ (self):
         return "XGetsNN(%s, %s, %s)" % (self.selector, self.power, self.toughness)
 
+class XGetsNNForEachY(ContinuousEffect):
+    def __init__ (self, x_selector, power, toughness, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.power = power
+        self.toughness = toughness
+
+    def apply(self, game, obj):
+        power = self.power
+        toughness = self.toughness
+        if power == "+X":
+            power = obj.x
+        elif power == "-X":
+            power = - obj.x
+        if toughness == "+X":
+            toughness = obj.x
+        elif toughness == "-X":
+            toughness = - obj.x
+
+        mult = len([x for x in self.y_selector.all(game, obj)])
+
+        for o in self.x_selector.all(game, obj):
+            if not o.is_moved():
+                o.get_state().power += power * mult
+                o.get_state().toughness += toughness * mult
+
+    def __str__ (self):
+        return "XGetsNNForEachY(%s, %s, %s, %s)" % (self.x_selector, self.power, self.toughness, self.y_selector)
+
 class XGetsTag(ContinuousEffect):
     def __init__ (self, selector, tag):
         self.selector = selector
