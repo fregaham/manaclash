@@ -1034,7 +1034,13 @@ def process_turn (game, player):
 
     process_phase_beginning (game)
     process_phase_main (game, "precombat main")
-    process_phase_combat (game)
+
+    active_player = game.objects[game.active_player_id]
+    if active_player.skip_next_combat_phase:
+        active_player.skip_next_combat_phase = False
+    else:
+        process_phase_combat (game)
+
     process_phase_main (game, "postcombat main")
     process_phase_end (game)
 

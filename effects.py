@@ -1042,4 +1042,14 @@ class AddNManaOfAnyColorToYourManapool(OneShotEffect):
     def __str__ (self):
         return "AddNManaOfAnyColorToYourManapool(%s)" % str(self.n)
 
+class PlayerSkipsNextCombatPhase(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for player in self.selector.all(game, obj):
+            player.skip_next_combat_phase = True
+
+    def __str__ (self):
+        return "PlayerSkipsNextCombatPhase(%s)" % (self.selector)
 

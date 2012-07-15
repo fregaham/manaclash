@@ -163,6 +163,7 @@ class Player (Object):
         self.maximum_hand_size = 0
         self.land_play_limit = 0
         self.land_played = 0
+        self.skip_next_combat_phase = False
 
     def copy(self):
         return Player(self.name)._copy(self)
@@ -178,6 +179,7 @@ class Player (Object):
         self.maximum_hand_size = src.maximum_hand_size
         self.land_play_limit = src.land_play_limit
         self.land_played = src.land_played
+        self.skip_next_combat_phase = src.skip_next_combat_phase
 
 class DamageAssignment (Object):
     def __init__ (self, damage_assignment_list, combat):

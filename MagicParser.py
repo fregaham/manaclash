@@ -273,6 +273,8 @@ r = [
 
     R("effect", [selector, "'s power and toughness are each equal to the number of ", selector, "."], lambda t,x,y:XPowerAndToughnessAreEachEqualToTheNumberOfY(x,y)),
 
+    R("effect", [selector, " skips his or her next combat phase."], lambda t,s:PlayerSkipsNextCombatPhase(s)),
+
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
