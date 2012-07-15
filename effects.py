@@ -1048,7 +1048,7 @@ class PlayerSkipsNextCombatPhase(OneShotEffect):
 
     def resolve(self, game, obj):
         for player in self.selector.all(game, obj):
-            player.skip_next_combat_phase = True
+            player.get_object().skip_next_combat_phase = True
 
     def __str__ (self):
         return "PlayerSkipsNextCombatPhase(%s)" % (self.selector)
