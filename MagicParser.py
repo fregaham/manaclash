@@ -213,6 +213,7 @@ r = [
     R("destroyXAtEndOfCombat", ["destroy ", N("selectorText"), " at end of combat."], lambda t,x: DoXAtEndOfCombat("destroy " + x + ".")),
 
     R("destroyX", ["destroy ", selector, "."], lambda t,x: DestroyX(x)),
+    R("destroyX", ["destroy all ", selector, "."], lambda t,x: DestroyX(x)),
 
     R("discard", ["discards"], lambda t:t),
     R("discard", ["discard"], lambda t:t),
@@ -345,6 +346,7 @@ r = [
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
     R("basicSelector", ["a spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
+    R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
 
     R("numberOfCards", ["a card"], lambda t:1),
     R("numberOfCards", [N("number"), " cards"], lambda t,n:n),
@@ -417,6 +419,7 @@ r = [
     R("tag", ["islandwalk"], lambda t:t),
     R("tag", ["plainswalk"], lambda t:t),
     R("tag", ["swampwalk"], lambda t:t),
+    R("tag", ["swampwalk (this creature is unblockable as long as defending player controls a swamp.)"], lambda t:"swampwalk"),
     R("tag", ["vigilance"], lambda t:t),
     R("tag", ["first strike"], lambda t:t),
 
