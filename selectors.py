@@ -39,6 +39,11 @@ class Selector:
     def __str__(self):
         return "selector"
 
+    def only(self, game, context):
+        ret = [x for x in self.all(game, context)]
+        assert len(ret) == 1
+        return ret[0]
+
 class AllSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():
@@ -140,6 +145,15 @@ class ThatCreatureSelector(Selector):
 
     def __str__ (self):
         return "that creature"
+
+class SacrificedCreatureSelector(Selector):
+    def all(self, game, context):
+        creature_lki = context.get_slot("sacrificed")
+        assert creature_lki is not None
+        yield creature_lki
+
+    def __str__ (self):
+        return "sacrificed creature"
 
 class YouSelector(Selector):
     def all(self, game, context):

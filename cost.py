@@ -18,6 +18,7 @@
 # 
 
 from actions import *
+from objects import LastKnownInformation
 
 class Cost:
     def __init__ (self):
@@ -26,7 +27,7 @@ class Cost:
     def get_text(self, game, obj, player):
         return "Pay Cost"
 
-    def pay(self, game, obj, player):
+    def pay(self, game, obj, effect, player):
         return False
 
     def canPay(self, game, obj, player):
@@ -130,7 +131,7 @@ class ManaCost(Cost):
     def get_text(self, game, obj, player):
         return "Pay " + self.manacost
 
-    def pay(self, game, obj, player):
+    def pay(self, game, obj, effect, player):
         print("paying cost, manapool: %s, manacost: %s" % (player.manapool, self.manacost))
         player.manapool = mana_diff (player.manapool, self.manacost)
         print("after payed: manapool: %s" % (player.manapool))
@@ -157,7 +158,7 @@ class TapSelectorCost(Cost):
     def get_text(self, game, obj, player):
         return "Tap %s" % self.selector
 
-    def pay(self, game, obj, player):
+    def pay(self, game, obj, effect, player):
         actions = []
         for o in self.selector.all(game, obj):
 
@@ -195,7 +196,7 @@ class SacrificeSelectorCost(Cost):
     def get_text(self, game, obj, player):
         return "Sacrifice %s" % self.selector
 
-    def pay(self, game, obj, player):
+    def pay(self, game, obj, effect, player):
         actions = []
         for o in self.selector.all(game, obj):
 
@@ -211,6 +212,8 @@ class SacrificeSelectorCost(Cost):
         if len(actions) > 0:
             _as = ActionSet (game, player, "Choose %s to sacrifice" % self.selector, actions)
             a = game.input.send (_as)
+
+            effect.slots["sacrificed"] = LastKnownInformation(game, a.object)
 
             game.doSacrifice(a.object)
 

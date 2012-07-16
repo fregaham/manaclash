@@ -203,7 +203,7 @@ def evaluate (game):
         raise GameEndException(None)
 
 
-def process_pay_cost (game, player, obj, costs):
+def process_pay_cost (game, player, obj, effect, costs):
     notpaid = costs
     while len(notpaid) > 0:
         actions = []
@@ -213,11 +213,11 @@ def process_pay_cost (game, player, obj, costs):
         actions.append (_pass)
 
         _al = AllSelector()
-        for obj in _al.all(game, None):
-            for ability in obj.state.abilities:
+        for o in _al.all(game, None):
+            for ability in o.state.abilities:
                 if isinstance(ability, ManaAbility):
-                    if ability.canActivate(game, obj, player):
-                        actions.append (AbilityAction(player, obj, ability, ability.get_text(game, obj)))
+                    if ability.canActivate(game, o, player):
+                        actions.append (AbilityAction(player, o, ability, ability.get_text(game, o)))
 
         for cost in notpaid:
             if cost.canPay(game, obj, player):
@@ -230,7 +230,7 @@ def process_pay_cost (game, player, obj, costs):
             return False
 
         if isinstance(a, PayCostAction):
-            if a.cost.pay(game, obj, player):
+            if a.cost.pay(game, obj, effect, player):
                 notpaid.remove(a.cost)
 
         if isinstance(a, AbilityAction):
@@ -263,7 +263,7 @@ def process_play_spell (game, ability, player, obj):
 
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
-        if not process_pay_cost(game, player, obj, costs):
+        if not process_pay_cost(game, player, obj, obj, costs):
 
             print("not payed, returning to previous state")
 
@@ -293,7 +293,7 @@ def process_activate_tapping_ability(game, ability, player, obj, effect):
     costs = costs[:]
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
-        if not process_pay_cost(game, player, obj, costs):
+        if not process_pay_cost(game, player, obj, e, costs):
 
             print("not payed, returning to previous state")
             game.delete(e)
@@ -320,7 +320,7 @@ def process_activate_ability(game, ability, player, obj, effect):
     costs = costs[:]
     # cost = ability.get_cost(game, player, obj)
     if len(costs) > 0:
-        if not process_pay_cost(game, player, obj, costs):
+        if not process_pay_cost(game, player, obj, e, costs):
 
             print("not payed, returning to previous state")
             game.delete(e)

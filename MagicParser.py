@@ -17,7 +17,7 @@
 #
 # 
 
-
+from numbers import *
 from abilities import *
 from effects import *
 from selectors import *
@@ -163,6 +163,7 @@ r = [
 
     R("tappingActivatedAbility", [costs, ", {t}: ", N("effectText")], lambda t, c, e: TapCostDoEffectAbility(c, e)),
     R("tappingActivatedAbility", [costs, ", {t}, ", costs, ": ", N("effectText")], lambda t, c1, c2, e: TapCostDoEffectAbility(c1 + c2, e)),
+    R("tappingActivatedAbility", ["{t}, ", costs, ": ", N("effectText")], lambda t, c, e: TapCostDoEffectAbility(c, e)),
 
     R("tappingActivatedAbility", [costs, ", {t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, c, e: SelfTurnTapCostDoEffectAbility(c, e)),
 
@@ -185,7 +186,9 @@ r = [
 
     R("playerGainLifeForEachXEffect", [N("selector"), " ", N("gain"), " ", N("number"), " life for each ", N("selector"), "."], lambda t,x,g,n,y: PlayerGainLifeForEachXEffect(x, n, y)),
 
-    R("xDealNDamageToTargetYEffect", [N("selector"), " ", N("deal"), " ", N("number"), " damage to target ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
+    R("xDealNDamageToTargetYEffect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
+
+    R("effect", [selector, " ", N("deal"), " damage equal to ", N("Number"), " to target ", selector, "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
 
     R("xDealNDamageToY", [N("selector"), " ", N("deal"), " ", N("number"), " damage to ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToY(x, y, n)),
 
@@ -313,6 +316,7 @@ r = [
     R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
+    R("basicSelector", ["the sacrificed creature"], lambda t:SacrificedCreatureSelector()),
     R("basicSelector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
     R("basicSelector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
     R("basicSelector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
@@ -355,6 +359,10 @@ r = [
     R("manaCostElement", ["{w}"], lambda t: "W"),
     R("manaCostElement", ["{u}"], lambda t: "U"),
 
+    R("Number", [N("number")], lambda t,n:NNumber(n)),
+    R("Number", [selector, "'s power"], lambda t,s:SelectorsPower(s)),
+
+    R("number", ["a"], lambda t: 1),
     R("number", ["one"], lambda t: 1),
     R("number", ["two"], lambda t: 2),
     R("number", ["three"], lambda t: 3),
