@@ -795,6 +795,71 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
     def __str__ (self):
         return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n
 
+class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYourLibraryInAnyOrder(OneShotEffect):
+    def __init__ (self, n, selector):
+        self.n = n
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        from process import evaluate
+
+        player = game.objects[obj.get_controller_id()]
+        library = game.get_library(player)
+
+        if self.n == "X":
+            n = obj.x
+        else:
+            n = self.n
+
+        n = int(n)
+
+        cards = []
+        for i in range(n):
+           if i < len(library.objects):
+                cards.append(library.objects[-i-1])
+
+        old_revealed = game.revealed
+        revealed = old_revealed[:]
+        for card in cards:
+            game.revealed.append(card.get_id())
+
+        hand = game.get_hand(player)
+
+        for card in cards[:]:
+            if self.selector.contains(game, obj, card):
+                game.doZoneTransfer(card, hand)
+                cards.remove(card)
+
+        while len(cards) > 0:
+
+            old_looked_at = game.looked_at
+            game.looked_at = game.looked_at[:]
+
+            options = []
+            for card in cards:
+                _option = Action()
+                _option.text = str(card)
+                _option.object = card
+                options.append (_option)
+
+                game.looked_at.append(card.get_id())
+        
+            evaluate(game)
+
+            _as = ActionSet (game, player, "Put card to the bottom of your library", options)
+            a = game.input.send(_as)
+
+            cards.remove (a.object)
+            library.objects.remove(a.object)
+            library.objects.insert(0, a.object)
+
+            game.looked_at = old_looked_at
+
+        evaluate(game)
+
+    def __str__ (self):
+        return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n
+
 class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, costs):
         SingleTargetOneShotEffect.__init__(self, targetSelector)

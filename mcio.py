@@ -155,6 +155,8 @@ def input_generator ():
                     i += 1
             elif isinstance(_as, QueryNumber):
                 print("Enter number: ")
+            elif isinstance(_as, QueryString):
+                print("Enter answer: ")
 
 
             try:
@@ -173,7 +175,7 @@ def input_generator ():
                 if autopass:
                     _input = "0"
                 else:
-                    _input = input()
+                    _input = raw_input()
 
                 if _input == "log":
                     print("seed: %d" % seed)
@@ -187,7 +189,12 @@ def input_generator ():
                     for line in lf:
                         print(line.rstrip())
                     lf.close()
-                selected = int(_input)
+
+                if not isinstance(_as, QueryString):
+                    selected = int(_input)
+                else:
+                    selected = _input
+
                 log.append(selected)
             except ValueError:
                 selected = -1
@@ -196,6 +203,8 @@ def input_generator ():
                 if selected >= 0 and selected < len(_as.actions):
                     action = _as.actions[selected]
             elif isinstance(_as, QueryNumber):
+                action = selected
+            elif isinstance(_as, QueryString):
                 action = selected
 
         _as = yield action

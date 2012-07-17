@@ -135,6 +135,9 @@ class Object:
 
         return ret
 
+    def get_modal(self):
+        return self.modal
+
 class Zone(Object):
     def __init__ (self, type=None, player_id=None):
         Object.__init__ (self)
@@ -233,12 +236,18 @@ class EffectObject(Object):
     def _copy(self, src):
         Object._copy(self, src)
 
+    def get_modal(self):
+        if self.modal is None:
+            return self.source_lki.get_modal()
+        return self.modal
+
 class LastKnownInformation(Object):
     def __init__ (self, game, object):
         self.game = game
         self.object = object
         self._state = None
         self.moved = False
+        self.modal = None
         self.game.add_event_handler ("pre_zone_transfer", self.onPreMoveObject)
 
     def get_id(self):
@@ -260,10 +269,17 @@ class LastKnownInformation(Object):
         if self._state is None and object == self.object:
             self._state = self.object.get_state()
             self.moved = True
+            self.modal = self.object.modal
 
     def is_moved(self):
         return self.moved
 
     def __str__ (self):
         return str(self.object)
+
+    def get_modal(self):
+        if self._state == None:
+            return self.object.get_modal()
+        else:
+            return self.modal
 

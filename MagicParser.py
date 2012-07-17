@@ -22,6 +22,7 @@ from abilities import *
 from effects import *
 from selectors import *
 from conditions import *
+from dialogs import *
 from rules import *
 from cost import *
 from Parser import *
@@ -46,6 +47,7 @@ basicLand = N("basicLand")
 costs = N("costs")
 tag = N("tag")
 condition = N("condition")
+dialog = N("dialog")
 
 NUMBER = N("NUMBER")
 
@@ -157,6 +159,8 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " ", N("cast"), " ", selector, ", ", N("effectText")], lambda t,w,x,c,y,e:WhenXCastsYDoEffectAbility(x,y,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " causes ", selector, " to discard ", selector, ", ", N("effectText")], lambda t,w,x,y,z,e:WhenXCausesYToDiscardZ(x,y,z,e)),
+
+    R("triggeredAbility", ["as SELF enters the battlefield, ", dialog], lambda t,d: AsSelfComesIntoPlayAnswerDialog(d)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
     R("activatedAbility", [N("tappingActivatedManaAbility")], id),
@@ -281,9 +285,13 @@ r = [
 
     R("effect", [selector, " are ", basicLand, "."], lambda t,x,l: XIsBasicLandType(x,l)),
 
+    R("effect", ["reveal the top ", number, " cards of your library. put all ", selector, " revealed this way into your hand and the rest on the bottom of your library in any order."], lambda t,n,s: RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYourLibraryInAnyOrder(n, s)),
+
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
+
+    R("dialog", ["choose a creature type."], lambda t:ChooseCreatureType()),
 
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),
@@ -318,6 +326,7 @@ r = [
     R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
     R("basicSelector", ["the sacrificed creature"], lambda t:SacrificedCreatureSelector()),
+    R("basicSelector", ["creatures of the chosen type"], lambda t:CreatureOfTheChosenType()),
     R("basicSelector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
     R("basicSelector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
     R("basicSelector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
@@ -329,6 +338,7 @@ r = [
     R("basicSelector", ["a card"], lambda t:CardSelector()),
     R("basicSelector", ["a land"], lambda t:LandSelector()),
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
+    R("basicSelector", ["creature cards of the chosen type"], lambda t:CreatureCardOfTheChosenType()),
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
     R("basicSelector", [basicLand], lambda t,x:SubTypeSelector(x)),

@@ -58,3 +58,9 @@ class QueryNumber:
         self.player = player
         self.text = text
 
+class QueryString:
+    def __init__ (self, game, player, text):
+        self.game = game
+        self.player = player
+        self.text = text
+

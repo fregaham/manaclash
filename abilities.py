@@ -266,6 +266,24 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXComesIntoPlayDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
 
+class AsSelfComesIntoPlayAnswerDialog(TriggeredAbility):
+    def __init__(self, dialog):
+        self.dialog = dialog
+
+    def isActive(self, game, obj):
+        return True
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
+
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
+        if SelfSelector().contains(game, SELF, obj) and zone_to.type == "in play":
+            self.dialog.doModal(game, SELF)
+
+    def __str__ (self):
+        return "AsSelfComesIntoPlayAnswerDialog(%s)" % (str(self.dialog))
+
+
 class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
     def __init__(self, selector, effect):
         self.selector = selector

@@ -178,6 +178,15 @@ class CreatureSelector(Selector):
     def __str__ (self):
         return "creature"
 
+class CreatureOfTheChosenType(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types and context.get_modal() in item.state.subtypes:
+                yield item
+
+    def __str__ (self):
+        return "creature of the chosen type"
+
 class OtherXCreaturesSelector(Selector):
 
     def __init__ (self, creatureType):
@@ -375,6 +384,15 @@ class CreatureCardSelector(Selector):
 
     def __str__ (self):
         return "creature card"
+
+class CreatureCardOfTheChosenType(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "creature" in item.state.types and context.get_modal() in item.state.subtypes:
+                yield item
+
+    def __str__ (self):
+        return "creature card of the chosen type"
 
 class BasicLandCardSelector(Selector):
     def all(self, game, context):
