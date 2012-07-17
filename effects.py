@@ -642,6 +642,57 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 
+class SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, cardSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, True)
+        self.cardSelector = cardSelector
+
+    def doResolve(self, game, obj, target):
+        from process import evaluate
+
+        player = target.get_object()
+
+        old_revealed = game.revealed
+        game.revealed = game.revealed[:]
+
+        actions = []
+        for card in game.get_library(player).objects:
+
+            game.revealed.append (card.get_id())
+            
+            if self.cardSelector.contains(game, obj, card):
+                _p = Action ()
+                _p.object = card
+                _p.text = "Put " + str(card) + " into play"
+                actions.append (_p)
+
+        if len(actions) > 0:
+
+            _pass = PassAction (player)
+            _pass.text = "Pass"
+
+            actions = [_pass] + actions
+
+            evaluate(game)
+
+            _as = ActionSet (game, player, "Choose a card to put into play under your control", actions)
+            a = game.input.send (_as)
+
+            a.object.controller_id = obj.get_controller_id()
+            game.doZoneTransfer (a.object, game.get_in_play_zone())
+
+            game.doShuffle(game.get_library(player))
+
+        game.revealed = old_revealed
+
+        evaluate(game)
+
+        return True
+
+    def __str__ (self):
+        return "SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(%s,%s)" % (self.targetSelector, self.cardSelector)
+
+
 class SacrificeXUnlessYouCost(OneShotEffect):
     def __init__ (self, selector, costs):
         self.selector = selector

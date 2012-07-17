@@ -287,6 +287,8 @@ r = [
 
     R("effect", ["reveal the top ", number, " cards of your library. put all ", selector, " revealed this way into your hand and the rest on the bottom of your library in any order."], lambda t,n,s: RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYourLibraryInAnyOrder(n, s)),
 
+    R("effect", ["search target ", selector, "'s library for a ", selector, " and put that card onto the battlefield under your control. then that player shuffles his or her library."], lambda t,x,y:SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(x,y)),
+
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
@@ -338,6 +340,7 @@ r = [
     R("basicSelector", ["a card"], lambda t:CardSelector()),
     R("basicSelector", ["a land"], lambda t:LandSelector()),
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
+    R("basicSelector", ["creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature cards of the chosen type"], lambda t:CreatureCardOfTheChosenType()),
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),

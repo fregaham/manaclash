@@ -302,6 +302,10 @@ class Game:
             object.preventNextDamage = 0
             object.tapped = False
 
+        if zone_from.id == self.get_in_play_zone().id:
+            # coming out of play resets controller
+            object.controller_id = object.owner_id
+
         self.output.zoneTransfer(zone_from, zone, object)
         #print("post zone transfer %s to %s" % (object, object.zone_id))
 
