@@ -236,12 +236,12 @@ r = [
     R("effect", ["search your library for ", selector, " and put that card onto the battlefield. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, False)),
     R("effect", ["search your library for ", selector, " and put that card onto the battlefield tapped. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, True)),
 
-    R("effect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
-
+    
     R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeXUnlessYouCost(s, c)),
 
     R("effect", ["regenerate ", selector, ". (the next time this creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),
-    
+    R("effect", ["regenerate ", selector, "."], lambda t,s: RegenerateX(s)),
+   
     R("effect", ["all creatures able to block ", selector, " do so."], lambda t,s: XGetsTag(s, "lure")),
 
     R("effect", ["you may tap target ", selector, "."], lambda t,s: YouMayTapTargetX(s)),
@@ -291,6 +291,7 @@ r = [
 
     R("effect", ["reveal the top card of your library. if it's a ", selector, ", put it onto the battlefield. otherwise, put it into your graveyard."], lambda t,y: XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(YouSelector(), y)),
 
+    R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
@@ -437,6 +438,8 @@ r = [
     R("tag", ["swampwalk (this creature is unblockable as long as defending player controls a swamp.)"], lambda t:"swampwalk"),
     R("tag", ["vigilance"], lambda t:t),
     R("tag", ["first strike"], lambda t:t),
+    R("tag", ["reach (this creature can block creatures with flying.)"], lambda t:"reach"),
+    R("tag", ["defender (this creature can't attack.)"], lambda t:"defender"),
 
     R("creatureType", ["goblin"], lambda t:t)
 ]
