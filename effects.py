@@ -642,6 +642,32 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 
+class XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(OneShotEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def resolve(self, game, obj):
+
+        for player in self.x_selector.all(game, obj):
+
+            library = game.get_library(player)
+            graveyard = game.get_graveyard(player)
+            in_play = game.get_in_play_zone()
+            if len(library.objects) > 0:
+                card = library.objects[-1]
+
+                if self.y_selector.contains(game, obj, card):
+                    game.doZoneTransfer(card, in_play)
+                else:
+                    game.doZoneTransfer(card, graveyard)
+
+        return True
+
+    def __str__ (self):
+        return "XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(%s, %s)" % (self.x_selector, self.y_selector)
+
+
 class SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, cardSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector, True)

@@ -289,6 +289,8 @@ r = [
 
     R("effect", ["search target ", selector, "'s library for a ", selector, " and put that card onto the battlefield under your control. then that player shuffles his or her library."], lambda t,x,y:SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(x,y)),
 
+    R("effect", ["reveal the top card of your library. if it's a ", selector, ", put it onto the battlefield. otherwise, put it into your graveyard."], lambda t,y: XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(YouSelector(), y)),
+
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
