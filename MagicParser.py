@@ -430,16 +430,30 @@ r = [
     R("NUMBER", [N("NUMERAL")], lambda t,n:n),
     R("NUMBER", [N("NUMERAL"),N("NUMBER")], lambda t,n,m:n+m),
 
+    # we need to keep the grammaticaly incorrect versions also for the text replacement effects
     R("tag", ["mountainwalk"], lambda t:t),
+    R("tag", ["mountainwalk (this creature is unblockable as long as defending player controls a mountain.)"], lambda t:"mountainwalk"),
+
     R("tag", ["forestwalk"], lambda t:t),
+    R("tag", ["forestwalk (this creature is unblockable as long as defending player controls a forest.)"], lambda t:"forestwalk"),
+
     R("tag", ["islandwalk"], lambda t:t),
+    R("tag", ["islandwalk (this creature is unblockable as long as defending player controls a island.)"], lambda t:"islandwalk"),
+
     R("tag", ["plainswalk"], lambda t:t),
+    R("tag", ["plainswalk (this creature is unblockable as long as defending player controls a plains.)"], lambda t:"plainswalk"),
+
     R("tag", ["swampwalk"], lambda t:t),
     R("tag", ["swampwalk (this creature is unblockable as long as defending player controls a swamp.)"], lambda t:"swampwalk"),
+
     R("tag", ["vigilance"], lambda t:t),
     R("tag", ["first strike"], lambda t:t),
     R("tag", ["reach (this creature can block creatures with flying.)"], lambda t:"reach"),
     R("tag", ["defender (this creature can't attack.)"], lambda t:"defender"),
+    R("tag", ["defender"], lambda t:"defender"),
+
+    # hack for flying defender combo
+    R("tag", ["flying (this creature can't attack, and it can block creatures with flying.)"], lambda t:"flying"),
 
     R("creatureType", ["goblin"], lambda t:t)
 ]
