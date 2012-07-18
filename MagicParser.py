@@ -271,6 +271,7 @@ r = [
     R("effect", ["you may draw a card."], lambda t: YouMayDrawACard()),
     R("effect", ["draw ", N("numberOfCards"), "."], lambda t,n: DrawCards(YouSelector(), n)),
     R("effect", [selector, " ", N("draw"), " ", N("numberOfCards"), " and ", selector, " ", N("lose"), " ", N("number"), " life."], lambda t,x,d,n,y,l,m: XAndY(DrawCards(x,n), PlayerLooseLifeEffect(y, m))),
+    R("effect", ["draw ", N("numberOfCards"), ", then discard ", N("numberOfCards"), "."], lambda t,n,m:XAndY(DrawCards(YouSelector(), n), PlayerDiscardsCardEffect(YouSelector(), m))),
 
     R("effect", ["if ", selector, " would deal damage to ", selector,", prevent ", number, " of that damage."], lambda t,x,y,n:IfXWouldDealDamageToYPreventNOfThatDamage(x,y,n)),
 
