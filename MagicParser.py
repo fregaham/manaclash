@@ -151,6 +151,7 @@ r = [
     R("whenXBlocksOrBecomesBlockedByYDoEffectAbility", [N("when"), " ", N("selector"), " blocks or becomes blocked by ", N("a"), " ", N("selector"), ", ", N("effectText")], lambda t,w,x,a,y,e:WhenXBlocksOrBecomesBlockedByYDoEffectAbility(x,y,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " attacks, ", N("effectText")], lambda t,w,s,e: WhenXAttacksDoEffectAbility(s,e)),
+    R("triggeredAbility", [N("when"), " ", selector, " blocks, ", N("effectText")], lambda t,w,s,e: WhenXBlocksDoEffectAbility(s,e)),
 
     R("whenXDiscardsACardDoEffectAbility", [N("when"), " ", N("selector"), " discards a card, ", N("effectText")], lambda t,w,x,e:WhenXDiscardsACardDoEffectAbility(x,e)),
 
