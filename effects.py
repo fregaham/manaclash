@@ -439,18 +439,6 @@ class DestroyX(OneShotEffect):
     def __str__ (self):
         return "DestroyX(%s)" % self.selector
 
-class XDontUntapDuringItsControllersUntapStep(ContinuousEffect):
-    def __init__ (self, selector):
-        self.selector = selector
-
-    def apply(self, game, obj):
-        for o in self.selector.all(game, obj):
-            if not o.is_moved():
-                o.get_state().tags.add ("does not untap")
-
-    def __str__ (self):
-        return "XDontUntapDuringItsControllersUntapStep(%s)" % self.selector
-
 class TargetXDiscardsACard(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, count):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
