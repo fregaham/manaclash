@@ -169,6 +169,8 @@ class LKISelector(Selector):
         if not self.lki.is_moved():
             yield self.lki.get_object()
         return    
+    def __str__ (self):
+        return str(self.lki)
 
 class CreatureSelector(Selector):
     def all(self, game, context):

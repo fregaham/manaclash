@@ -69,7 +69,6 @@ class Object:
         self.x = None
         self.enchanted_id = None
         self.regenerated = False
-        self.preventNextDamage = 0
         # chosen modal options
         self.modal = None
 
@@ -114,7 +113,6 @@ class Object:
         self.x = src.x
         self.enchanted_id = src.enchanted_id
         self.regenerated = src.regenerated
-        self.preventNextDamage = src.preventNextDamage
         self.modal = src.modal
 
     def __str__ (self):
@@ -183,6 +181,9 @@ class Player (Object):
         self.land_play_limit = src.land_play_limit
         self.land_played = src.land_played
         self.skip_next_combat_phase = src.skip_next_combat_phase
+
+    def get_controller_id(self):
+        return self.id
 
 class DamageAssignment (Object):
     def __init__ (self, damage_assignment_list, combat):
@@ -282,4 +283,10 @@ class LastKnownInformation(Object):
             return self.object.get_modal()
         else:
             return self.modal
+
+    def get_controller_id(self):
+        if self._state == None:
+            return self.object.get_controller_id()
+        else:
+            return self.get_state().controller_id
 

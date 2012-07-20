@@ -53,6 +53,7 @@ def resolve (game, resolvable):
 def evaluate (game):
     """ evaluate all continuous effects """
 
+    game.damage_preventions = []
     game.volatile_events = {}
     game.volatile_effects = []
     game.play_cost_replacement_effects = []

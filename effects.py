@@ -52,6 +52,13 @@ class OneShotEffect(Effect):
     def validateTargets(self, game, obj):
         return True
 
+class DamagePrevention(Effect):
+    def canApply(self, game, damage):
+        return False
+
+    def apply(self, game, damage):
+        return damage
+
 class PlayerLooseLifeEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
         self.selector = playerSelector
@@ -287,6 +294,26 @@ class XGetsTag(ContinuousEffect):
     def __str__ (self):
         return "XGetsTag(%s, %s)" % (self.selector, self.tag)
 
+class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention):
+    def __init__ (self, context, x_selector, y_selector, n):
+        self.context = context
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.n = n
+
+        self.text = "If " + str(self.x_selector) + " would deal damage to " + str(self.y_selector) + ", prevent " + str(n) + " of that damage."
+
+    def canApply(self, game, damage):
+        source, dest, n = damage
+        if self.x_selector.contains(game, self.context, source) and self.y_selector.contains(game, self.context, dest):
+            return True
+
+        return False
+
+    def apply(self, game, damage):
+        source, dest, n = damage
+        return (source, dest, n - self.n)
+
 class IfXWouldDealDamageToYPreventNOfThatDamage(ContinuousEffect):
     def __init__ (self, x_selector, y_selector, n):
         self.x_selector = x_selector
@@ -299,19 +326,7 @@ class IfXWouldDealDamageToYPreventNOfThatDamage(ContinuousEffect):
         if self.n == "X":
             n = obj.x
 
-        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, game, obj, int(n)))
-
-    def onDamageReplacement(self, game, ctx, n, dr):
-        list = []
-        for source, dest, on in dr.list:
-            if self.x_selector.contains(game, ctx, source) and self.y_selector.contains(game, ctx, dest):
-                nn = on - n
-                if nn > 0:
-                    list.append ( (source, dest, nn) )
-            else:
-                list.append ( (source, dest, on) )
-
-        dr.list = list
+        game.damage_preventions.append(IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(obj, self.x_selector, self.y_selector, n))
 
     def __str__ (self):
         return "IfXWouldDealDamageToYPreventNOfThatDamage(%s, %s, %s)" % (self.x_selector, self.y_selector, self.n)
@@ -538,6 +553,41 @@ class YouMayPayCostIfYouDoY(OneShotEffect):
     def __str__ (self):
         return "YouMayPayCostIfYouDoY(%s, %s)" % (self.cost, self.effectText)
 
+class PreventNextNDamageThatWouldBeDealtToXDamagePrevention(DamagePrevention):
+
+    def __init__ (self, obj, effect):
+        self.obj = obj
+        self.effect = effect
+
+    def canApply(self, game, damage):
+        source, dest, n = damage
+        if self.effect.n <= 0:
+            return False
+
+        return self.effect.selector.contains(game, self.obj, dest)
+
+    def apply(self, game, damage):
+        source, dest, n = damage
+
+        if n <= self.effect.n:
+            self.effect.n -= n
+            return (source, dest, 0)
+
+        nd = self.effect.n
+        self.effect.n = 0
+        return (source, dest, n - nd)
+
+    def getText(self):
+        return "Prevent next " + str(self.effect.n) + " damage that would be dealt to " + str(self.effect.selector)
+
+class PreventNextNDamageThatWouldBeDealtToX(ContinuousEffect):
+    def __init__ (self, selector, n):
+        self.selector = selector
+        self.n = n
+
+    def apply(self, game, obj):
+        game.damage_preventions.append(PreventNextNDamageThatWouldBeDealtToXDamagePrevention(obj, self))
+
 class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, n):
         SingleTargetOneShotEffect.__init__(self, targetSelector, True)
@@ -547,7 +597,8 @@ class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEff
         n = self.n
         if n == "X":
             n = obj.x
-        game.doPreventNextDamge(target.get_object(), n)
+
+        game.until_end_of_turn_effects.append ( (obj, PreventNextNDamageThatWouldBeDealtToX(LKISelector(target), n)))
 
     def __str__ (self):
         return "PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(%s, %s)" % (self.targetSelector, str(self.n))

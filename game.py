@@ -20,6 +20,7 @@
 import random
 
 from objects import *
+from actions import Action,ActionSet
 
 class DamageReplacement:
     def __init__ (self, list, combat):
@@ -70,6 +71,8 @@ class Game:
         self.looked_at = []
 
         self.play_cost_replacement_effects = []
+
+        self.damage_preventions = []
 
     def add_object (self, object):
         self.obj_max_id += 1
@@ -299,7 +302,6 @@ class Game:
             object.enchanted_id = None
             object.damage = 0
             object.regenerated = False
-            object.preventNextDamage = 0
             object.tapped = False
 
         if zone_from.id == self.get_in_play_zone().id:
@@ -338,13 +340,47 @@ class Game:
         for a, b, n in dr.list:
             if not b.is_moved():
 
-                ndiff = b.get_object().preventNextDamage
-                if ndiff > n:
-                    ndiff = n
-                n -= ndiff
-                b.get_object().preventNextDamage -= ndiff
+                # go through all applicable damage prevention effects
+                applicable = []
+                for damage_prevention in self.damage_preventions:
+                    if damage_prevention.canApply(self, (a,b,n)):
+                        applicable.append (damage_prevention)
 
-                if n == 0:
+                while len(applicable) > 0:
+                    # do we have a unique applicable effect?
+                    if len(applicable) == 1:
+                        a,b,n = applicable[0].apply(self, (a,b,n))
+                        applicable = []
+                    else:
+                        # we let the reciever's controller choose
+                        controller = self.objects[b.get_controller_id()]
+
+                        actions = []
+                        for damage_prevention in applicable:
+                            action = Action()
+                            action.text = damage_prevention.getText()
+                            action.damage_prevention = damage_prevention
+                            actions.append(action)
+
+                        _as = ActionSet (self, controller, "Which damage prevention effect apply first for %d damage to %s?" % (n, str(b)), actions)
+                        action = self.input.send (_as)
+
+                        damage_prevention = action.damage_prevention
+
+                        a,b,n = damage_prevention.apply(self, (a,b,n))
+                        applicable.remove(damage_prevention)
+
+                        if n <= 0:
+                            break
+
+                        new_applicable = []
+                        for damage_prevention in applicable[:]:
+                            if damage_prevention.canApply(self, (a,b,n)):
+                                new_applicable.append(damage_prevention)
+                        applicable = new_applicable
+
+
+                if n <= 0:
                     continue
 
                 if combat:
@@ -409,9 +445,6 @@ class Game:
             if b.get_id() == id:
                 self.declared_attackers.remove (b)
                 return
-
-    def doPreventNextDamage(self, obj, n):
-        obj.preventNextDamage += n
 
     def delete(self, obj):
         print("deleting object %s" % obj)
