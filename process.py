@@ -1088,6 +1088,28 @@ def process_trigger_effect(game, source, effect, slots):
 
     game.triggered_abilities.append (e)
 
+def process_select_selector(game, player, source, selector, text, optional=False):
+    actions = []
+    _pass = PassAction(player)
+    _pass.text = "Cancel"
+
+    for obj in selector.all(game, source):
+        _p = Action()
+        _p.object = obj
+        _p.text = str(obj)
+        actions.append(_p)
+
+    if len(actions) == 0 or optional:
+        actions = [_pass] + actions
+
+    _as = ActionSet(game, player, text, actions)
+    a = game.input.send(_as)
+
+    if a == _pass:
+        return None
+
+    return a.object
+
 def _is_valid_target(game, source, target):
     # TODO: protections and stuff 
     return True
@@ -1141,5 +1163,4 @@ def process_ask_x(game, obj, player):
     ret += str(a)
 
     return ret
-
 

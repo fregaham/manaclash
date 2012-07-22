@@ -294,6 +294,8 @@ r = [
 
     R("effect", ["reveal the top card of your library. if it's a ", selector, ", put it onto the battlefield. otherwise, put it into your graveyard."], lambda t,y: XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(YouSelector(), y)),
 
+    R("effect", ["the next time a ", selector, " of your choice would deal damage to ", selector, " this turn, prevent that damage."], lambda t,x,y: TheNextTimeXOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(x,y)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
 
@@ -366,6 +368,7 @@ r = [
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
     R("basicSelector", ["a spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
+    R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
 
     R("numberOfCards", ["a card"], lambda t:1),
     R("numberOfCards", [N("number"), " cards"], lambda t,n:n),

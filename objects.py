@@ -245,9 +245,10 @@ class EffectObject(Object):
 class LastKnownInformation(Object):
     def __init__ (self, game, object):
         self.game = game
-        self.object = object
+        self.object = object.get_object()
         self._state = None
         self.moved = False
+        self.valid = True
         self.modal = None
         self.game.add_event_handler ("pre_zone_transfer", self.onPreMoveObject)
 
@@ -267,13 +268,29 @@ class LastKnownInformation(Object):
             return self._state
 
     def onPreMoveObject (self, object, zone_from, zone_to):
-        if self._state is None and object == self.object:
-            self._state = self.object.get_state()
-            self.moved = True
-            self.modal = self.object.modal
+
+        if not self.moved:
+            # only movements from the inplay zone require LKI
+            if zone_from.type != "in play":
+                return
+
+            if self._state is None and object == self.object:
+                self._state = self.object.get_state()
+                self.moved = True
+                self.modal = self.object.modal
+
+        else:
+            # after it's moved, the LKI is valid until it is put into play again
+            if zone_to.type != "in play":
+                return
+
+            self.valid = False
 
     def is_moved(self):
         return self.moved
+
+    def is_valid(self):
+        return self.valid
 
     def __str__ (self):
         return str(self.object)

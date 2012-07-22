@@ -166,7 +166,7 @@ class LKISelector(Selector):
     def __init__ (self, lki):
         self.lki = lki
     def all(self, game, context):
-        if not self.lki.is_moved():
+        if self.lki.is_valid():
             yield self.lki.get_object()
         return    
     def __str__ (self):
@@ -476,6 +476,18 @@ class ColorSpellSelector(Selector):
 
     def __str__ (self):
         return "%s spell" % (self.color)
+
+class ColorSourceSelector(Selector):
+    def __init__ (self, color):
+        self.color = color
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if self.color in item.get_state().tags and ("permanent" in item.get_state().tags or "spell" in item.get_state().tags or "effect" in item.get_state().tags):
+                yield item
+
+    def __str__ (self):
+        return "%s source" % (self.color)
 
 class SpellOrAbilityAnOpponentControls(Selector):
     def __init__ (self):

@@ -331,6 +331,7 @@ class IfXWouldDealDamageToYPreventNOfThatDamage(ContinuousEffect):
     def __str__ (self):
         return "IfXWouldDealDamageToYPreventNOfThatDamage(%s, %s, %s)" % (self.x_selector, self.y_selector, self.n)
 
+
 class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, power, toughness):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -602,6 +603,54 @@ class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEff
 
     def __str__ (self):
         return "PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(%s, %s)" % (self.targetSelector, str(self.n))
+
+class TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(DamagePrevention):
+    def __init__ (self, obj, effect):
+        self.obj = obj
+        self.effect = effect
+
+    def canApply(self, game, damage):
+        source, dest, n = damage
+
+        if self.effect.used_up:
+            return False
+
+        return self.effect.x_selector.contains(game, self.obj, source) and self.effect.y_selector.contains(game, self.obj, dest)
+
+    def apply(self, game, damage):
+        source, dest, n = damage
+
+        self.effect.used_up = True
+
+        return (source, dest, 0)
+
+    def getText(self):
+        return "Prevent damage that " + str(self.effect.x_selector) + " would deal to " + str(self.effect.y_selector) + "."
+  
+
+class TheNextTimeXWouldDealDamageToYPreventThatDamage(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.used_up = False
+
+    def apply(self, game, obj):
+        game.damage_preventions.append(TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(obj, self))
+
+class TheNextTimeXOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(OneShotEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def resolve(self, game, obj):
+        from process import process_select_selector
+
+        source = process_select_selector(game, game.objects[obj.get_controller_id()], obj, self.x_selector, "Choose a damage source", True)
+        if source != None:
+            game.until_end_of_turn_effects.append ( (obj, TheNextTimeXWouldDealDamageToYPreventThatDamage(LKISelector(LastKnownInformation(game, source)), self.y_selector)))
+
+    def __str__(self):
+        return "TheNextTimeXWouldDealDamageToYThisTurnPreventThatDamage(%s, %s)" % (self.x_selector, self.y_selector) 
 
 class AddXToYourManaPool(OneShotEffect):
     def __init__ (self, mana):
