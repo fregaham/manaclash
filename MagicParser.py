@@ -213,6 +213,7 @@ r = [
 
     R("xGetsNN", [N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), "."], lambda t, x,g,a,b: XGetsNN(x,a,b)),
     R("effect", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " for each ", selector, "."], lambda t,x,g,a,b,y:XGetsNNForEachY(x,a,b,y)),
+    R("effect", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " for each other creature on the battlefield that shares at least one creature type with it. (for example, if two goblin warriors and a goblin shaman are on the battlefield, each gets +2/+2.)"], lambda t,x,g,a,b:XGetsNNForEachOtherCreatureInPlayThatSharesAtLeastOneCreatureTypeWithIt(x,a,b)),
     
     R("destroyTargetX", ["destroy target ", N("selector"), "."], lambda t,x: DestroyTargetX(x)),
     R("buryTargetX", ["destroy target ", N("selector"), ". it can't be regenerated."], lambda t,x: BuryTargetX(x)),
@@ -335,6 +336,7 @@ r = [
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["a creature"], lambda t:CreatureSelector()),
+    R("basicSelector", ["each creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["creatures on the battlefield"], lambda t:CreatureSelector()),
     R("basicSelector", ["creature with flying"], lambda t:CreatureWithFlyingSelector()),
     R("basicSelector", ["a creature you control"], lambda t:CreatureYouControlSelector()),

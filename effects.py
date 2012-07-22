@@ -281,6 +281,44 @@ class XGetsNNForEachY(ContinuousEffect):
     def __str__ (self):
         return "XGetsNNForEachY(%s, %s, %s, %s)" % (self.x_selector, self.power, self.toughness, self.y_selector)
 
+class XGetsNNForEachOtherCreatureInPlayThatSharesAtLeastOneCreatureTypeWithIt(ContinuousEffect):
+    def __init__ (self, x_selector, power, toughness):
+        self.x_selector = x_selector
+        self.power = power
+        self.toughness = toughness
+
+    def apply(self, game, obj):
+        power = self.power
+        toughness = self.toughness
+        if power == "+X":
+            power = obj.x
+        elif power == "-X":
+            power = - obj.x
+        if toughness == "+X":
+            toughness = obj.x
+        elif toughness == "-X":
+            toughness = - obj.x
+
+        creature_selector = CreatureSelector()
+
+        for o in self.x_selector.all(game, obj):
+            if not o.is_moved():
+
+                mult = 0
+                for creature in creature_selector.all(game, obj):
+                    if creature.get_id() != o.get_id():
+                        for otype in o.get_state().subtypes:
+                            if otype in creature.get_state().subtypes:
+                                mult += 1
+                                break
+
+                o.get_state().power += power * mult
+                o.get_state().toughness += toughness * mult
+
+    def __str__ (self):
+        return "XGetsNNForEachOtherCreatureInPlayThatSharesAtLeastOneCreatureTypeWithIt(%s, %s, %s)" % (self.x_selector, self.power, self.toughness)
+
+
 class XGetsTag(ContinuousEffect):
     def __init__ (self, selector, tag):
         self.selector = selector
