@@ -117,7 +117,7 @@ class TagAbility(StaticAbility):
         self.tag = tag
 
     def isActive(self, game, obj):
-        return obj.zone_id == game.get_in_play_zone().id
+        return True
 
     def evaluate(self, game, obj):
         obj.state.tags.add(self.tag)

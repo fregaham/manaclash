@@ -57,6 +57,9 @@ r = [
 
     R("effectRules", [effect], lambda t, x:EffectRules(x)),
 
+    R("nonBasicLandRules", [N("abilities")], lambda t, x:NonBasicLandRules(x)),
+    R("nonBasicLandRules", [""], lambda t:NonBasicLandRules([])),
+
     R("permanentRules", [N("abilities")], lambda t, x:BasicPermanentRules(x)),
     R("permanentRules", [""], lambda t:BasicPermanentRules([])),
     R("abilities", [N("ability"), ";", N("abilities")], lambda t,x,y:[x] + y),
@@ -300,6 +303,7 @@ r = [
 
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
+    R("manaEffect", ["add ", manaCost, " or ", manaCost, " to your mana pool."], lambda t,m1,m2: AddOneOfTheseManaToYourManaPool([m1,m2])),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
 
@@ -459,6 +463,8 @@ r = [
     R("tag", ["reach (this creature can block creatures with flying.)"], lambda t:"reach"),
     R("tag", ["defender (this creature can't attack.)"], lambda t:"defender"),
     R("tag", ["defender"], lambda t:"defender"),
+
+    R("tag", ["SELF enters the battlefield tapped."], lambda t:"comes into play tapped"),
 
     # hack for flying defender combo
     R("tag", ["flying (this creature can't attack, and it can block creatures with flying.)"], lambda t:"flying"),

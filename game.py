@@ -311,6 +311,10 @@ class Game:
         self.output.zoneTransfer(zone_from, zone, object)
         #print("post zone transfer %s to %s" % (object, object.zone_id))
 
+        if zone.type == "in play":
+            if "comes into play tapped" in object.state.tags:
+                object.tapped = True
+
         from process import evaluate
         evaluate(self)
 

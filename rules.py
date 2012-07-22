@@ -45,6 +45,21 @@ class BasicLandRules(ObjectRules):
     def __str__(self):
         return "BasicLandRules()"
 
+class NonBasicLandRules(ObjectRules):
+    def __init__(self, abilities):
+        self.abilities = abilities
+
+    def evaluate(self, game, obj):
+        obj.state.abilities.extend (self.abilities)
+
+    def resolve(self, game, obj):
+        game.onResolve(obj)
+        game.doZoneTransfer(obj, game.get_in_play_zone())
+        return True
+
+    def __str__(self):
+        return "NonBasicLandRules(" + (",".join(map(str, self.abilities))) + ")"
+
 class BasicPermanentRules(ObjectRules):
     def __init__(self, abilities):
         self.abilities = abilities
@@ -181,8 +196,10 @@ def parse(obj):
 
     if isinstance(obj, EffectObject):
         rules = caching_magic_parser("effectRules", text)
-    elif "artifact" in obj.state.types or "creature" in obj.state.types or ("land" in obj.state.types and "basic" not in obj.state.supertypes):
+    elif "artifact" in obj.state.types or "creature" in obj.state.types:
         rules = caching_magic_parser("permanentRules", text)
+    elif "land" in obj.state.types and "basic" not in obj.state.supertypes:
+        rules = caching_magic_parser("nonBasicLandRules", text)
     elif "enchantment" in obj.state.types:
         rules = caching_magic_parser("enchantmentRules", text)
     elif "sorcery" in obj.state.types or "instant" in obj.state.types:

@@ -1267,6 +1267,28 @@ class AddNManaOfAnyColorToYourManapool(OneShotEffect):
     def __str__ (self):
         return "AddNManaOfAnyColorToYourManapool(%s)" % str(self.n)
 
+class AddOneOfTheseManaToYourManaPool(OneShotEffect):
+    def __init__ (self, options):
+        self.options = options
+
+    def resolve(self, game, obj):
+        actions = []
+        for o in self.options:
+            a = Action()
+            a.text = o
+            actions.append(a)
+
+        controller =  game.objects[obj.get_controller_id()]
+        _as = ActionSet (game, controller, ("Choose mana"), actions)
+        a = game.input.send(_as)
+
+        mana = a.text
+        controller.manapool += mana
+        return True
+
+    def __str__ (self):
+        return "AddOneOfTheseManaToYourManaPool(%s)" % (str(self.options))
+
 class PlayerSkipsNextCombatPhase(OneShotEffect):
     def __init__ (self, selector):
         self.selector = selector
