@@ -161,6 +161,8 @@ r = [
 
     R("triggeredAbility", [N("when"), " ", selector, " causes ", selector, " to discard ", selector, ", ", N("effectText")], lambda t,w,x,y,z,e:WhenXCausesYToDiscardZ(x,y,z,e)),
 
+    R("triggeredAbility", [N("when"), " ", selector, " becomes tapped, ", N("effectText")], lambda t,w,x,e: WhenXBecomesTappedDoEffectAbility(x, e)),
+
     R("triggeredAbility", ["as SELF enters the battlefield, ", dialog], lambda t,d: AsSelfComesIntoPlayAnswerDialog(d)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),

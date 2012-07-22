@@ -543,3 +543,26 @@ class WhenXCastsYDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXCastsYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
 
+class WhenXBecomesTappedDoEffectAbility(TriggeredAbility):
+    def __init__ (self, x_selector, effect):
+        self.x_selector = x_selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return game.isInPlay(obj)
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("post_tap", partial(self.onTap, game, obj))
+
+    def onTap(self, game, SELF, obj):
+        from process import process_trigger_effect
+        if self.x_selector.contains(game, SELF, obj):
+            slots = {}
+            for slot in self.x_selector.slots():
+                slots[slot] = obj
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+       
+    def __str__ (self):
+        return "WhenXBecomesTappedDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
+

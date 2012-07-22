@@ -181,7 +181,7 @@ def parse(obj):
 
     if isinstance(obj, EffectObject):
         rules = caching_magic_parser("effectRules", text)
-    elif "artifact" in obj.state.types or "creature" in obj.state.types: 
+    elif "artifact" in obj.state.types or "creature" in obj.state.types or ("land" in obj.state.types and "basic" not in obj.state.supertypes):
         rules = caching_magic_parser("permanentRules", text)
     elif "enchantment" in obj.state.types:
         rules = caching_magic_parser("enchantmentRules", text)
