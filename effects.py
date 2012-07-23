@@ -127,9 +127,10 @@ class PlayerDiscardsCardEffect(OneShotEffect):
         self.count = count
 
     def resolve(self, game, obj):
+        n = self.count.evaluate(game, obj)
         for player in self.selector.all(game, obj):
             assert player is not None
-            for i in range(self.count):
+            for i in range(n):
                 from process import process_discard_a_card
                 process_discard_a_card(game, player.get_object(), obj)
 
@@ -500,7 +501,8 @@ class TargetXDiscardsACard(SingleTargetOneShotEffect):
     
     def doResolve(self, game, obj, target):
         from process import process_discard_a_card
-        for i in range(self.count):
+        n = self.count.evaluate(game, obj)
+        for i in range(n):
             process_discard_a_card(game, target.get_object(), obj)
 
     def __str__ (self):
@@ -1186,17 +1188,13 @@ class YouMayDrawACard(OneShotEffect):
         return "YouMayDrawACard()"
 
 class DrawCards(OneShotEffect):
-    def __init__ (self, selector, n):
+    def __init__ (self, selector, number):
         self.selector = selector
-        self.n = n
+        self.number = number
 
     def resolve(self, game, obj):
 
-        if self.n == "X":
-            n = int(obj.x)
-        else:
-            n = int(self.n)
-
+        n = self.number.evalute(game, obj)
         for o in self.selector.all(game, obj):
             for i in range(n):
                 game.doDrawCard(controller)
@@ -1204,7 +1202,7 @@ class DrawCards(OneShotEffect):
         return True
 
     def __str__ (self):
-        return "DrawCards(%s, %s)" % (self.selector, str(self.n))
+        return "DrawCards(%s, %s)" % (self.selector, str(self.number))
 
 class XAndY(OneShotEffect):
     def __init__ (self, x, y):

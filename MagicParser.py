@@ -278,6 +278,8 @@ r = [
 
     R("effect", ["you may draw a card."], lambda t: YouMayDrawACard()),
     R("effect", ["draw ", N("numberOfCards"), "."], lambda t,n: DrawCards(YouSelector(), n)),
+    R("effect", ["draw a card for each ", selector, "."], lambda t,x: DrawCards(YouSelector(), EachSelectorNumber(x))),
+
     R("effect", [selector, " ", N("draw"), " ", N("numberOfCards"), " and ", selector, " ", N("lose"), " ", N("number"), " life."], lambda t,x,d,n,y,l,m: XAndY(DrawCards(x,n), PlayerLooseLifeEffect(y, m))),
     R("effect", ["draw ", N("numberOfCards"), ", then discard ", N("numberOfCards"), "."], lambda t,n,m:XAndY(DrawCards(YouSelector(), n), PlayerDiscardsCardEffect(YouSelector(), m))),
 
@@ -378,8 +380,8 @@ r = [
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
 
-    R("numberOfCards", ["a card"], lambda t:1),
-    R("numberOfCards", [N("number"), " cards"], lambda t,n:n),
+    R("numberOfCards", ["a card"], lambda t:NNumber(1)),
+    R("numberOfCards", [N("number"), " cards"], lambda t,n:NNumber(n)),
 
     R("manaCost", [N("manaCostElement"), N("manaCost")], lambda t,e,c: e + c),
     R("manaCost", [N("manaCostElement")], lambda t,e: e),

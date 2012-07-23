@@ -37,6 +37,17 @@ class SelectorsPower(Number):
     def __str__ (self):
         return "SelectorsPower(%s)" % (self.selector)
 
+class EachSelectorNumber(Number):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def evaluate(self, game, context):
+        ret = [x for x in self.all(game, context)]
+        return len(ret)
+
+    def __str__ (self):
+        return "EachSelector(%s)" % (self.selector)
+
 class XNumber(Number):
 
     def evaluate(self, game, context):
