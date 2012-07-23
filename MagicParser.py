@@ -304,6 +304,8 @@ r = [
 
     R("effect", ["the next time a ", selector, " of your choice would deal damage to ", selector, " this turn, prevent that damage."], lambda t,x,y: TheNextTimeXOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(x,y)),
 
+    R("effect", [selector, " control ", selector, "."], lambda t,x,y:XControlsY(x,y)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
     R("manaEffect", ["add ", manaCost, " or ", manaCost, " to your mana pool."], lambda t,m1,m2: AddOneOfTheseManaToYourManaPool([m1,m2])),
@@ -353,6 +355,7 @@ r = [
     R("basicSelector", ["creature attacking you"], lambda t:CreatureAttackingYouSelector()),
     R("basicSelector", ["non", color, " creature"], lambda t,c:NonColorCreatureSelector(c)),
     R("basicSelector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
+    R("basicSelector", ["enchanted permanent"], lambda t:EnchantedPermanentSelector()),
     R("basicSelector", ["opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["an opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["a card"], lambda t:CardSelector()),

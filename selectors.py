@@ -344,6 +344,15 @@ class EnchantedCreatureSelector(Selector):
     def __str__ (self):
         return "enchanted creature"
 
+class EnchantedPermanentSelector(Selector):
+    def all(self, game, context):
+        if context.enchanted_id != None:
+            ret = game.objects[context.enchanted_id]
+            if "permanent" in ret.state.tags:
+                yield ret
+
+    def __str__ (self):
+        return "enchanted permanent"
 
 class OpponentSelector(Selector):
     def all(self, game, context):

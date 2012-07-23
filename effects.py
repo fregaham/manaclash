@@ -1352,3 +1352,20 @@ class XIsBasicLandType(ContinuousEffect):
     def __str__ (self):
         return "XIsBasicLandType(%s, %s)" % (self.selector, self.subtype)
 
+class XControlsY(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def apply(self, game, obj):
+
+        controller = self.x_selector.only(game, obj)
+
+        for o in self.y_selector.all(game, obj):
+            if controller.id != o.get_state().controller_id:
+                o.get_state().controller_id = controller.id
+
+    def __str__ (self):
+        return "XControlsY(%s, %s)" % (self.x_selector, self.y_selector)
+
+

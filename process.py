@@ -62,9 +62,15 @@ def evaluate (game):
         player.maximum_hand_size = 7
         player.land_play_limit = 1
 
+    old_controller_map = {}
+
     # clear states of all objects and evalute card texts
     _as = AllSelector ()
     for object in _as.all(game, None):
+
+        # remember old controller so we notice controller change
+        old_controller_map[object.id] = object.state.controller_id
+
         object.state = object.initial_state.copy ()
 
         # show_to rules
@@ -165,17 +171,22 @@ def evaluate (game):
     for source, effect in game.until_end_of_turn_effects:
         effect.apply(game, source)
 
-    # Playing lands
-    _al = AllTypeSelector("land")
-    for land in _al.all(game, None):
-        land.state.abilities.append (PlayLandAbility())
-
     # state based effects
     _ap = AllPermanentSelector()
     for object in _ap.all(game, None):
         if "creature" in object.state.types:
             if object.damage >= object.state.toughness:
                 game.doDestroy(object)
+
+            if old_controller_map[object.id] != None and old_controller_map[object.id] != object.state.controller_id:
+                # controller change, add summoning sickness
+                object.initial_state.tags.add("summoning sickness")
+                object.state.tags.add("summoning sickness")
+
+    # Playing lands
+    _al = AllTypeSelector("land")
+    for land in _al.all(game, None):
+        land.state.abilities.append (PlayLandAbility())
 
     # lands
     for obj in _as.all(game, None):
