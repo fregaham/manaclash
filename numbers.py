@@ -42,7 +42,7 @@ class EachSelectorNumber(Number):
         self.selector = selector
 
     def evaluate(self, game, context):
-        ret = [x for x in self.all(game, context)]
+        ret = [x for x in self.selector.all(game, context)]
         return len(ret)
 
     def __str__ (self):
