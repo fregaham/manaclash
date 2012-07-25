@@ -197,6 +197,8 @@ class SingleTargetOneShotEffect(OneShotEffect):
 
         obj.targets["target"] = LastKnownInformation(game, target)
 
+        game.raise_event ("target", obj, target)
+
         return self.doModal(game, player, obj)
     
     def doModal(self, game, player, obj):

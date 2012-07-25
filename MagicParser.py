@@ -168,6 +168,8 @@ r = [
 
     R("triggeredAbility", ["as SELF enters the battlefield, ", dialog], lambda t,d: AsSelfComesIntoPlayAnswerDialog(d)),
 
+    R("triggeredAbility", [N("when"), " ", selector, " becomes the target of a ", selector, ", ", N("effectText"), " (it won't be affected by the spell or ability.)"], lambda t,w,x,y,e:WhenXBecomesTargetOfYDoEffectAbility(x,y,e)),
+
     R("activatedAbility", [N("tappingActivatedAbility")], id),
     R("activatedAbility", [N("tappingActivatedManaAbility")], id),
 
@@ -380,6 +382,7 @@ r = [
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
     R("basicSelector", ["a spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
+    R("basicSelector", ["spell or ability"], lambda t:SpellOrAbilitySelector()),
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
 

@@ -177,6 +177,10 @@ class CreatureSelector(Selector):
         for item in game.objects.values():
             if "permanent" in item.state.tags and "creature" in item.state.types:
                 yield item
+
+    def slots(self):
+        return ["that creature"]
+
     def __str__ (self):
         return "creature"
 
@@ -510,4 +514,16 @@ class SpellOrAbilityAnOpponentControls(Selector):
 
     def __str__ (self):
         return "spell or ability an opponent controls"
+
+class SpellOrAbilitySelector(Selector):
+    def __init__ (self):
+        pass
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if ("effect" in item.get_state().tags or "spell" in item.get_state().tags):
+                yield item
+
+    def __str__ (self):
+        return "spell or ability"
 
