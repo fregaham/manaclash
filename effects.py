@@ -879,6 +879,18 @@ class SacrificeXUnlessYouCost(OneShotEffect):
     def __str__ (self):
         return "SacrificeXUnlessYouCost(%s, %s)" % (self.selector, str(map(str,self.costs)))
 
+class SacrificeX(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            game.doSacrifice(o)
+
+        return True
+        
+    def __str__ (self):
+        return "SacrificeX(%s)" % (self.selector)
 
 class ChooseEffect(Effect):
 

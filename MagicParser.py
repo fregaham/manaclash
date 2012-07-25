@@ -248,6 +248,7 @@ r = [
 
     
     R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeXUnlessYouCost(s, c)),
+    R("effect", ["sacrifice ", selector, "."], lambda t,s: SacrificeX(s)),
 
     R("effect", ["regenerate ", selector, ". (the next time this creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),
     R("effect", ["regenerate ", selector, "."], lambda t,s: RegenerateX(s)),
@@ -348,6 +349,7 @@ r = [
     R("basicSelector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
+    R("basicSelector", ["all creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
     R("basicSelector", ["the sacrificed creature"], lambda t:SacrificedCreatureSelector()),
     R("basicSelector", ["creatures of the chosen type"], lambda t:CreatureOfTheChosenType()),
@@ -374,6 +376,7 @@ r = [
     R("basicSelector", ["nonbasic lands"], lambda t:NonBasicLandSelector()),
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
     R("basicSelector", ["artifact or land"], lambda t:ArtifactOrLandSelector()),
+    R("basicSelector", ["artifact, enchantment, or land"], lambda t:ArtifactEnchantmentOrLandSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
