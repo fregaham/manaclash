@@ -147,6 +147,8 @@ r = [
 
     R("whenXDealsCombatDamageToYDoEffectAbility", [N("when"), " ", selector, " ", N("deal"), " combat damage to ", selector, ", ", N("effectText")], lambda t,w,x,d,y,e:WhenXDealsCombatDamageToYDoEffectAbility(x,y,e)),
 
+    R("triggeredAbility", [N("when"), " ", selector, " is dealt damage, ", N("effectText")], lambda t,w,x,e:WhenXDealsDamageToYDoEffectAbility(AllSelector(),x,e)),
+
     R("ability", [N("when"), " ", selector, " ", N("deal"), " damage, ", N("effectText")], lambda t,w,x,d,e:WhenXDealsDamageDoEffectAbility(x,e)),
 
     R("a", ["a"], lambda t:t),
@@ -228,6 +230,8 @@ r = [
 
     R("destroyX", ["destroy ", selector, "."], lambda t,x: DestroyX(x)),
     R("destroyX", ["destroy all ", selector, "."], lambda t,x: DestroyX(x)),
+
+    R("effect", ["destroy ", selector, ". it can't be regenerated."], lambda t,x:BuryX(x)),
 
     R("discard", ["discards"], lambda t:t),
     R("discard", ["discard"], lambda t:t),

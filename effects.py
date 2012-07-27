@@ -496,6 +496,20 @@ class DestroyX(OneShotEffect):
     def __str__ (self):
         return "DestroyX(%s)" % self.selector
 
+class BuryX(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            if not o.is_moved():
+                game.doBury(o)
+
+        return True
+
+    def __str__ (self):
+        return "BuryX(%s)" % self.selector
+
 class TargetXDiscardsACard(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, count):
         SingleTargetOneShotEffect.__init__(self, targetSelector)

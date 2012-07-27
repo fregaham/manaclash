@@ -179,7 +179,7 @@ class CreatureSelector(Selector):
                 yield item
 
     def slots(self):
-        return ["that creature"]
+        return ["that creature", "it"]
 
     def __str__ (self):
         return "creature"
