@@ -336,6 +336,9 @@ class Game:
     def doGainLife(self, player, count):
         player.life += count
 
+    def doPayLife(self, player, count):
+        player.life -= count
+
     def doDealDamage(self, list, combat=False):
 
         dr = DamageReplacement(list, combat)

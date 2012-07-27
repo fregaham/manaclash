@@ -224,3 +224,19 @@ class SacrificeSelectorCost(Cost):
     def __str__ (self):
         return "sacrifice %s" % self.selector
 
+
+class PayLifeCost(Cost):
+    def __init__ (self, n):
+        Cost.__init__ (self)
+        self.n = n
+
+    def get_text(self, game, obj, player):
+        return "Pay %d life" % self.n
+
+    def pay(self, game, obj, effect, player):
+        game.doPayLife(player, self.n)
+        return True
+
+    def __str__ (self):
+        return "pay %d life" % self.n
+
