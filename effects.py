@@ -1426,4 +1426,13 @@ class XControlsY(ContinuousEffect):
     def __str__ (self):
         return "XControlsY(%s, %s)" % (self.x_selector, self.y_selector)
 
+class ChangeTargetOfTargetX(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+        target.get_object().rules.selectTargets(game, game.objects[obj.get_controller_id()], target.get_object())
+
+    def __str__ (self):
+        return "ChangeTargetOfTargetX(%s)" % (self.targetSelector)
 

@@ -275,6 +275,8 @@ r = [
     R("effect", ["counter target ", selector, " unless its controller ", costs, "."], lambda t,x,c: CounterTargetXUnlessItsControllerPaysCost(x,c)),
     R("effect", ["counter target ", selector, "."], lambda t,x: CounterTargetX(x)),
 
+    R("effect", ["change the target of target ", selector, "."], lambda t,x: ChangeTargetOfTargetX(x)),
+
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
 
@@ -388,6 +390,7 @@ r = [
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
     R("basicSelector", ["each spell"], lambda t:SpellSelector()),
     R("basicSelector", ["a spell"], lambda t:SpellSelector()),
+    R("basicSelector", ["spell with a single target"], lambda t:SpellWithSingleTargetSelector()),
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),

@@ -475,6 +475,18 @@ class SpellSelector(Selector):
     def __str__ (self):
         return "spell"
 
+class SpellWithSingleTargetSelector(Selector):
+    def __init__ (self):
+        pass
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "spell" in item.get_state().tags and item.targets.get("target") is not None:
+                yield item
+
+    def __str__ (self):
+        return "spell with single target"
+
 class CreatureSpellSelector(Selector):
     def __init__ (self):
         pass
