@@ -405,6 +405,7 @@ r = [
     R("basicSelector", ["spell or ability"], lambda t:SpellOrAbilitySelector()),
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
+    R("basicSelector", [N("creatureType")], lambda t,c:SubTypeSelector(c)),
 
     R("numberOfCards", ["a card"], lambda t:NNumber(1)),
     R("numberOfCards", [N("number"), " cards"], lambda t,n:NNumber(n)),
@@ -499,7 +500,8 @@ r = [
     # hack for flying defender combo
     R("tag", ["flying (this creature can't attack, and it can block creatures with flying.)"], lambda t:"flying"),
 
-    R("creatureType", ["goblin"], lambda t:t)
+    R("creatureType", ["goblin"], lambda t:t),
+    R("creatureType", ["wall"], lambda t:t)
 ]
 
 def magic_parser(label, text):
