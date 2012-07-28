@@ -1272,6 +1272,36 @@ class XCostsNLessToCast(ContinuousEffect):
     def isSelf(self):
         return isinstance(self.selector, SelfSelector)
 
+class XCostsNMoreToCastExceptDuringItsControllersTurn(ContinuousEffect):
+    def __init__ (self, selector, n):
+        self.selector = selector
+        self.n = n
+
+    def apply(self, game, obj):
+        game.play_cost_replacement_effects.append (partial(self.replace, obj))
+
+    def replace(self, context, game, ability, obj, player, costs):
+        if self.selector.contains(game, context, obj) and player.id != game.active_player_id:
+            ret = []
+            replaced = False
+            for c in costs:
+                if isinstance(c, ManaCost):
+                    c.manacost += self.n
+                    ret.append(c)
+                    replaced = True
+                else:
+                    ret.append(c)
+
+            if not replaced:
+                ret.append(ManaCost(self.n))
+
+            return ret
+
+        return costs
+
+    def __str__ (self):
+        return "XCostsNMoreToCastExceptDuringItsControllersTurn(%s, %s)" % (self.selector, self.n)
+
 class IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)

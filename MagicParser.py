@@ -294,6 +294,7 @@ r = [
 
     R("effect", [selector, " costs ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
     R("effect", [selector, " cost ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
+    R("effect", [selector, " costs ", manaCost, " more to cast except during its controller's turn."], lambda t,s,c:XCostsNMoreToCastExceptDuringItsControllersTurn(s,c)),
 
     R("effect", ["if target ", selector, " has more cards in hand than you, draw cards equal to the difference."], lambda t,s:IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(s)),
 
@@ -385,6 +386,7 @@ r = [
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
+    R("basicSelector", ["each spell"], lambda t:SpellSelector()),
     R("basicSelector", ["a spell"], lambda t:SpellSelector()),
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),

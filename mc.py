@@ -26,7 +26,7 @@ import random
 from mcio import Output, input_generator
 from game import Game
 from process import process_game
-from oracle import getParseableCards, createCardObject
+from oracle import getParseableCards, createCardObject, parseOracle
 
 def parse_deckfile(deckfile):
     f = open(deckfile, 'r')
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     for fname in os.listdir("oracle"):
         print ("reading %s " % fname)
         oracleFile = open(os.path.join("oracle", fname), "r")
-        for card in getParseableCards(oracleFile):
+        for card in parseOracle(oracleFile):
             print card.name
             cards[card.name] = card
 
