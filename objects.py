@@ -20,7 +20,6 @@
 class ObjectState:
     def __init__ (self):
         self.title = None
-        self.colors = set()
         self.power = None
         self.toughness = None
         self.owner_id = None
@@ -38,7 +37,6 @@ class ObjectState:
     def copy (self):
         ret = ObjectState ()
         ret.title = self.title
-        ret.colors = self.colors.copy()
         ret.power = self.power
         ret.toughness = self.toughness
         ret.owner_id = self.owner_id

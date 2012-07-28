@@ -212,6 +212,8 @@ r = [
     R("effect", [N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:XGetsNNUntilEndOfTurn(x, a, b)),
     R("effect", [N("selector"), " gains flying until end of turn."], lambda t,x:XGetsTagUntilEndOfTurn(x, "flying")),
 
+    R("effect", ["target ", selector, " becomes the color of your choice until end of turn."], lambda t,x:TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(x)),
+
     R("dontUntapDuringItsControllersUntapStep", [N("selector"), " doesn't untap during its controller's untap step."], lambda t,x:XGetsTag(x, "does not untap")),
     R("dontUntapDuringItsControllersUntapStep", [N("selector"), " don't untap during their controllers' untap steps."], lambda t,x:XGetsTag(x, "does not untap")),
 

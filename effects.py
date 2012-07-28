@@ -335,6 +335,7 @@ class XGetsTag(ContinuousEffect):
     def __str__ (self):
         return "XGetsTag(%s, %s)" % (self.selector, self.tag)
 
+
 class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention):
     def __init__ (self, context, x_selector, y_selector, n):
         self.context = context
@@ -1487,4 +1488,30 @@ class ChangeTargetOfTargetX(SingleTargetOneShotEffect):
 
     def __str__ (self):
         return "ChangeTargetOfTargetX(%s)" % (self.targetSelector)
+
+class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doResolve(self, game, obj, target):
+
+        # choose color
+        controller = game.objects[obj.get_controller_id()]
+        names = ["White", "Red", "Black", "Blue", "Green"] 
+
+        actions = []
+        for name in names:
+            a = Action()
+            a.text = name
+            actions.append(a)
+
+        _as = ActionSet (game, controller, ("Choose a color"), actions)
+        a = game.input.send(_as)
+
+        color = a.text.lower()
+
+        game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target), color)))
+
+    def __str__ (self):
+        return "TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(%s)" % (self.targetSelector)
 
