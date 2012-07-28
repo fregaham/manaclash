@@ -786,6 +786,58 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 
+class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def resolve(self, game, obj):
+
+        from process import evaluate
+        
+        for player in self.x_selector.all(game, obj):
+
+            old_looked_at = game.looked_at
+            game.looked_at = game.looked_at[:]
+
+            actions = []
+            for card in game.get_library(player).objects:
+
+                game.looked_at.append (card.get_id())
+                
+                if self.y_selector.contains(game, obj, card):
+                    _p = Action ()
+                    _p.object = card
+                    _p.text = "Put " + str(card) + " into your hand"
+                    actions.append (_p)
+
+            if len(actions) > 0:
+
+                _pass = PassAction (player)
+                _pass.text = "Pass"
+
+                actions = [_pass] + actions
+
+                evaluate(game)
+
+                _as = ActionSet (game, player, "Choose a card to put into hand", actions)
+                a = game.input.send (_as)
+ 
+                a.object.tapped = self.tapped
+                game.doZoneTransfer (a.object, game.get_hand(player))
+
+                game.doShuffle(game.get_library(player))
+
+            game.looked_at = old_looked_at
+
+        evaluate(game)
+
+        return True
+
+    def __str__ (self):
+        return "XSearchLibraryForXAndPutItIntoHand(%s, %s)" % (self.x_selector, self.y_selector)
+
+
 class XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(OneShotEffect):
     def __init__ (self, x_selector, y_selector):
         self.x_selector = x_selector

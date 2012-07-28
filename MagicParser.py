@@ -249,6 +249,7 @@ r = [
 
     R("effect", ["search your library for ", selector, " and put that card onto the battlefield. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, False)),
     R("effect", ["search your library for ", selector, " and put that card onto the battlefield tapped. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, True)),
+    R("effect", ["search your library for ", selector, " and put that card into your hand. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutItIntoHand(YouSelector(), x)),
 
     
     R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeXUnlessYouCost(s, c)),
@@ -359,6 +360,8 @@ r = [
     R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["all creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
+    R("basicSelector", ["that land"], lambda t:ThatLandSelector()),
+    R("basicSelector", ["that land's controller"], lambda t:ThatLandsControllerSelector()),
     R("basicSelector", ["the sacrificed creature"], lambda t:SacrificedCreatureSelector()),
     R("basicSelector", ["creatures of the chosen type"], lambda t:CreatureOfTheChosenType()),
     R("basicSelector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
@@ -372,6 +375,8 @@ r = [
     R("basicSelector", ["an opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["a card"], lambda t:CardSelector()),
     R("basicSelector", ["a land"], lambda t:LandSelector()),
+    R("basicSelector", ["land"], lambda t:LandSelector()),
+
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature cards of the chosen type"], lambda t:CreatureCardOfTheChosenType()),

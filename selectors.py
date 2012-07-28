@@ -146,6 +146,24 @@ class ThatCreatureSelector(Selector):
     def __str__ (self):
         return "that creature"
 
+class ThatLandSelector(Selector):
+    def all(self, game, context):
+        land_lki = context.get_slot("that land")
+        assert land_lki is not None
+        yield land_lki
+
+    def __str__ (self):
+        return "that land"
+
+class ThatLandsControllerSelector(Selector):
+    def all(self, game, context):
+        land_lki = context.get_slot("that land")
+        assert land_lki is not None
+        yield game.objects[land_lki.get_controller_id()]
+
+    def __str__ (self):
+        return "that land's controller"
+
 class SacrificedCreatureSelector(Selector):
     def all(self, game, context):
         creature_lki = context.get_slot("sacrificed")
@@ -211,6 +229,10 @@ class LandSelector(Selector):
         for item in game.objects.values():
             if "permanent" in item.state.tags and "land" in item.state.types:
                 yield item
+
+    def slots(self):
+        return ["that land"]
+
     def __str__ (self):
         return "land"
 
