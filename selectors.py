@@ -146,6 +146,15 @@ class ThatCreatureSelector(Selector):
     def __str__ (self):
         return "that creature"
 
+class ThatCreaturesControllerSelector(Selector):
+    def all(self, game, context):
+        creature_lki = context.get_slot("that creature")
+        assert creature_lki is not None
+        yield game.objects[creature_lki.get_controller_id()]
+
+    def __str__ (self):
+        return "that creature's controller"
+
 class ThatLandSelector(Selector):
     def all(self, game, context):
         land_lki = context.get_slot("that land")

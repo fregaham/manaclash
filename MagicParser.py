@@ -295,7 +295,7 @@ r = [
     R("draw", ["draw"], lambda t:t),
     R("draw", ["draws"], lambda t:t),
 
-    R("effect", ["you may draw a card."], lambda t: YouMayDrawACard()),
+    R("effect", [selector, " may draw a card."], lambda t,x: XMayDrawACard(x)),
     R("effect", ["draw ", N("numberOfCards"), "."], lambda t,n: DrawCards(YouSelector(), n)),
     R("effect", ["draw a card for each ", selector, "."], lambda t,x: DrawCards(YouSelector(), EachSelectorNumber(x))),
 
@@ -372,6 +372,8 @@ r = [
     R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["all creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
+    R("basicSelector", ["that creature's controller"], lambda t:ThatCreaturesControllerSelector()),
+
     R("basicSelector", ["that land"], lambda t:ThatLandSelector()),
     R("basicSelector", ["that land's controller"], lambda t:ThatLandsControllerSelector()),
     R("basicSelector", ["the sacrificed creature"], lambda t:SacrificedCreatureSelector()),

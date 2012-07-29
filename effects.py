@@ -1245,28 +1245,28 @@ class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
     def __str__ (self):
         return "YouMayTapOrUntapTargetX(%s)" % (self.targetSelector)
 
-class YouMayDrawACard(OneShotEffect):
-    def __init__ (self):
-        pass
+class XMayDrawACard(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
 
     def resolve(self, game, obj):
-        controller = game.objects[obj.get_state().controller_id]
+        player = self.selector.only(game, obj)
         _yes = Action()
         _yes.text = "Yes"
         
         _no = Action()
         _no.text = "No"
 
-        _as = ActionSet (game, controller, ("Draw a card?"), [_yes, _no])
+        _as = ActionSet (game, player, ("Draw a card?"), [_yes, _no])
         a = game.input.send(_as)
 
         if a == _yes:
-            game.doDrawCard(controller)
+            game.doDrawCard(player)
      
         return True
 
     def __str__ (self):
-        return "YouMayDrawACard()"
+        return "XMayDrawACard(%s)" % self.selector
 
 class DrawCards(OneShotEffect):
     def __init__ (self, selector, number):
