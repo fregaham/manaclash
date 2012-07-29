@@ -73,3 +73,10 @@ class NNumber(Number):
     def __str__ (self):
         return "NNumber(%s)" % self.n
 
+class NumberOfCardsInYourHand(Number):
+    def evaluate(self, game, context):
+        player = game.objects[context.get_controller_id()]
+        return len(game.get_hand(player).objects)
+
+    def __str__ (self):
+        return "number of cards in your hand"

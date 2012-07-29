@@ -41,6 +41,7 @@ gain = N("gain")
 discard = N("discard")
 color = N("color")
 number = N("number")
+Number = N("Number")
 numberOfCards = N("numberOfCards")
 manaCost = N("manaCost")
 basicLand = N("basicLand")
@@ -272,6 +273,7 @@ r = [
     R("effect", ["choose one - target player gains ", number, " life; or prevent the next ", number, " damage that would be dealt to target creature or player this turn."], lambda t,n1,n2: ChooseEffect("target player gains " + str(n1) + " life.", "prevent the next " + str(n2) +" damage that would be dealt to target creature or player this turn.")),
 
     R("effect", [selector, " can't attack or block."], lambda t,s:XGetsTag(s, "can't attack or block")),
+    R("effect", [selector, " can't attack."], lambda t,s:XGetsTag(s, "can't attack")),
 
     R("effect", ["you may ", costs, ". if you do, ", N("effectText")], lambda t,c,e: YouMayPayCostIfYouDoY(c, e)),
 
@@ -355,6 +357,7 @@ r = [
     R("basicSelector", ["it"], lambda t:ItSelector()),
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
+    R("basicSelector", ["creatures with power greater than ", Number], lambda t,n:CreatureWithPowerGreaterThanNSelector(n)),
     R("basicSelector", ["creatures"], lambda t:CreatureSelector()),
     R("basicSelector", ["a creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["each creature"], lambda t:CreatureSelector()),
@@ -426,6 +429,7 @@ r = [
 
     R("Number", [N("number")], lambda t,n:NNumber(n)),
     R("Number", [selector, "'s power"], lambda t,s:SelectorsPower(s)),
+    R("Number", ["the number of cards in your hand"], lambda t:NumberOfCardsInYourHand()),
 
     R("number", ["a"], lambda t: 1),
     R("number", ["one"], lambda t: 1),
