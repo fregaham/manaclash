@@ -19,14 +19,14 @@
 
 from objects import *
 
-class Number:
+class NumberOf:
     def evaluate (self, game, context):
         return 0
     
     def __str__(self):
         return "number"
 
-class SelectorsPower(Number):
+class SelectorsPower(NumberOf):
     def __init__ (self, selector):
         self.selector = selector
 
@@ -37,7 +37,7 @@ class SelectorsPower(Number):
     def __str__ (self):
         return "SelectorsPower(%s)" % (self.selector)
 
-class EachSelectorNumber(Number):
+class EachSelectorNumber(NumberOf):
     def __init__ (self, selector):
         self.selector = selector
 
@@ -48,7 +48,7 @@ class EachSelectorNumber(Number):
     def __str__ (self):
         return "EachSelector(%s)" % (self.selector)
 
-class XNumber(Number):
+class XNumber(NumberOf):
 
     def evaluate(self, game, context):
         return context.x
@@ -56,7 +56,7 @@ class XNumber(Number):
     def __str__ (self):
         return "XNumber()"
 
-class NNumber(Number):
+class NNumber(NumberOf):
     def __init__ (self, n):
         self.n = n
 
@@ -73,7 +73,7 @@ class NNumber(Number):
     def __str__ (self):
         return "NNumber(%s)" % self.n
 
-class NumberOfCardsInYourHand(Number):
+class NumberOfCardsInYourHand(NumberOf):
     def evaluate(self, game, context):
         player = game.objects[context.get_controller_id()]
         return len(game.get_hand(player).objects)

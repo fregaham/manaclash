@@ -17,7 +17,7 @@
 #
 # 
 
-from numbers import *
+from numberof import *
 from abilities import *
 from effects import *
 from selectors import *
