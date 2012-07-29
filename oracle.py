@@ -138,7 +138,8 @@ def getParseableCards(f):
 
 def isParseable(game, card):
 
-    r = card.rules.lower().replace(card.name.lower(), "SELF").replace("\n", ";").replace("—", "-")
+    r = card.rules.replace(card.name, "<<self>>").lower().replace("<<self>>", "SELF").replace("\n", ";").replace("—", "-")
+
     obj = game.create_card(card.name, card.cost, card.supertypes, card.types, card.subtypes, set(), r, card.power, card.toughness)
     obj.state = obj.initial_state.copy()
 
@@ -152,7 +153,8 @@ def isParseable(game, card):
     return False
 
 def createCardObject(game, card):
-    r = card.rules.lower().replace(card.name.lower(), "SELF").replace("\n", ";").replace("—", "-")
+    r = card.rules.replace(card.name, "<<self>>").lower().replace("<<self>>", "SELF").replace("\n", ";").replace("—", "-")
+
     power = card.power
     toughness = card.toughness
 
@@ -185,7 +187,7 @@ if __name__ == "__main__":
     for card in parseOracle(sys.stdin):
 
         # create_card (u"Hasty Moggie Bird", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying",u"haste"]), "when SELF comes into play, each player loses 1 life.", 1, 1)
-        r = card.rules.lower().replace(card.name.lower(), "SELF").replace("\n", ";").replace("—", "-")
+        r = card.rules.replace(card.name, "<<self>>").lower().replace("<<self>>", "SELF").replace("\n", ";").replace("—", "-")
         obj = g.create_card(card.name, card.cost, card.supertypes, card.types, card.subtypes, set(), r, card.power, card.toughness)
         obj.state = obj.initial_state.copy()
 

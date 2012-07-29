@@ -275,6 +275,8 @@ r = [
     R("effect", [selector, " can't attack or block."], lambda t,s:XGetsTag(s, "can't attack or block")),
     R("effect", [selector, " can't attack."], lambda t,s:XGetsTag(s, "can't attack")),
 
+    R("effect", [selector, " has fear. (it can't be blocked except by artifact creatures and/or black creatures.)"], lambda t,s:XGetsTag(s, "fear")),
+
     R("effect", ["you may ", costs, ". if you do, ", N("effectText")], lambda t,c,e: YouMayPayCostIfYouDoY(c, e)),
 
     R("effect", ["look at the top ", number, " cards of your library, then put them back in any order."], lambda t,n: LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(n)),
@@ -286,6 +288,7 @@ r = [
 
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
+    R("effect", ["return ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
 
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
 
@@ -358,6 +361,7 @@ r = [
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["creatures with power greater than ", Number], lambda t,n:CreatureWithPowerGreaterThanNSelector(n)),
+    R("basicSelector", ["all creatures"], lambda t:CreatureSelector()),
     R("basicSelector", ["creatures"], lambda t:CreatureSelector()),
     R("basicSelector", ["a creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["each creature"], lambda t:CreatureSelector()),
