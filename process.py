@@ -1092,12 +1092,14 @@ def process_game (game):
 def process_trigger_effect(game, source, effect, slots):
     e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, effect, slots)
 
+    game.triggered_abilities.append (e)
+
     evaluate(game)
 
     if not e.rules.selectTargets(game, game.objects[e.get_state().controller_id], e):
         game.delete(e)
+        game.triggered_abilities.remove(e)
 
-    game.triggered_abilities.append (e)
 
 def process_select_selector(game, player, source, selector, text, optional=False):
     actions = []

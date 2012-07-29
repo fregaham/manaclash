@@ -172,6 +172,8 @@ r = [
 
     R("triggeredAbility", [N("when"), " ", selector, " becomes the target of a ", selector, ", ", N("effectText"), " (it won't be affected by the spell or ability.)"], lambda t,w,x,y,e:WhenXBecomesTargetOfYDoEffectAbility(x,y,e)),
 
+    R("triggeredAbility", [N("when"), " ", selector, " control no other ", selector, ", ", N("effectText")], lambda t,w,x,y,e:WhenXControlsNoOtherYDoEffectAbility(x,y,e)),
+
     R("activatedAbility", [N("tappingActivatedAbility")], id),
     R("activatedAbility", [N("tappingActivatedManaAbility")], id),
 
@@ -353,6 +355,7 @@ r = [
     R("basicSelector", ["it"], lambda t:ItSelector()),
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
+    R("basicSelector", ["creatures"], lambda t:CreatureSelector()),
     R("basicSelector", ["a creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["each creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["creatures on the battlefield"], lambda t:CreatureSelector()),

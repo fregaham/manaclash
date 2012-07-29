@@ -593,3 +593,38 @@ class WhenXBecomesTargetOfYDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXBecomesTargetOfYDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
 
+class WhenXControlsNoOtherYDoEffectAbility(TriggeredAbility):
+    def __init__ (self, x_selector, y_selector, effect):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return game.isInPlay(obj)
+
+    def register(self, game, obj):
+        from process import process_trigger_effect
+
+        player = self.x_selector.only(game, obj)
+        for o in self.y_selector.all(game, obj):
+            if o.get_controller_id() == player.get_id() and o.get_id() != obj.get_id():
+                return
+
+        # this is a state-based trigger, check stack for an existing effect
+        for so in game.get_stack_zone().objects:
+            if isinstance(so, EffectObject):
+                if obj.get_id() == so.get_source_lki().get_id() and self.effect == so.get_state().text:
+                    return
+
+        # maybe it hasn't triggered yet...
+        for so in game.triggered_abilities:
+            if isinstance(so, EffectObject):
+                if obj.get_id() == so.get_source_lki().get_id() and self.effect == so.get_state().text:
+                    return
+
+        slots = {}
+        process_trigger_effect(game, obj, self.effect, slots)
+                   
+    def __str__ (self):
+        return "WhenXControlsNoOtherYDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
+
