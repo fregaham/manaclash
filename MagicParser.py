@@ -371,6 +371,7 @@ r = [
     R("basicSelector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
     R("basicSelector", ["creature attacking you"], lambda t:CreatureAttackingYouSelector()),
     R("basicSelector", ["non", color, " creature"], lambda t,c:NonColorCreatureSelector(c)),
+    R("basicSelector", [color, " creature"], lambda t,c:ColorCreatureSelector(c)),
     R("basicSelector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
     R("basicSelector", ["enchanted permanent"], lambda t:EnchantedPermanentSelector()),
     R("basicSelector", ["opponent"], lambda t:OpponentSelector()),
@@ -501,6 +502,7 @@ r = [
     R("tag", ["flying (this creature can't attack, and it can block creatures with flying.)"], lambda t:"flying"),
 
     R("creatureType", ["goblin"], lambda t:t),
+    R("creatureType", ["elf"], lambda t:t),
     R("creatureType", ["wall"], lambda t:t)
 ]
 

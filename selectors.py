@@ -368,6 +368,21 @@ class NonColorCreatureSelector(Selector):
     def __str__ (self):
         return "non%s creature" % (self.color)
 
+class ColorCreatureSelector(Selector):
+    def __init__ (self, color):
+        self.color = color
+
+    def all(self, game, context):
+        for obj in game.objects.values():
+            if "permanent" in obj.state.tags and "creature" in obj.state.types and self.color in obj.state.tags:
+                yield obj
+
+    def slots(self):
+        return ["that creature"]
+
+    def __str__ (self):
+        return "%s creature" % (self.color)
+
 
 class EnchantedCreatureSelector(Selector):
     def all(self, game, context):
