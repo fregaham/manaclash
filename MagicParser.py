@@ -168,6 +168,7 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " causes ", selector, " to discard ", selector, ", ", N("effectText")], lambda t,w,x,y,z,e:WhenXCausesYToDiscardZ(x,y,z,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " becomes tapped, ", N("effectText")], lambda t,w,x,e: WhenXBecomesTappedDoEffectAbility(x, e)),
+    R("triggeredAbility", [N("when"), " ", selector, " is tapped for mana, ", N("manaEffectText")], lambda t,w,x,e: WhenXBecomesTappedForManaDoManaEffectAbility(x, e)),
 
     R("triggeredAbility", ["as SELF enters the battlefield, ", dialog], lambda t,d: AsSelfComesIntoPlayAnswerDialog(d)),
 
@@ -326,9 +327,10 @@ r = [
 
     R("effect", [selector, " control ", selector, "."], lambda t,x,y:XControlsY(x,y)),
 
-    R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: AddXToYourManaPool(m)),
-    R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: AddNManaOfAnyColorToYourManapool(n)),
-    R("manaEffect", ["add ", manaCost, " or ", manaCost, " to your mana pool."], lambda t,m1,m2: AddOneOfTheseManaToYourManaPool([m1,m2])),
+    R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
+    R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
+    R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
+    R("manaEffect", ["add ", manaCost, " or ", manaCost, " to your mana pool."], lambda t,m1,m2: XAddOneOfTheseManaToYourManaPool(YouSelector(), [m1,m2])),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
 
@@ -358,6 +360,8 @@ r = [
     R("basicSelector", ["that player"], lambda t:ThatPlayerSelector()),
     R("basicSelector", ["you"], lambda t:YouSelector()),
     R("basicSelector", ["it"], lambda t:ItSelector()),
+    R("basicSelector", ["its controller"], lambda t:ItsControllerSelector()),
+
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["creatures with power greater than ", Number], lambda t,n:CreatureWithPowerGreaterThanNSelector(n)),
@@ -386,6 +390,8 @@ r = [
     R("basicSelector", [color, " creature"], lambda t,c:ColorCreatureSelector(c)),
     R("basicSelector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
     R("basicSelector", ["enchanted permanent"], lambda t:EnchantedPermanentSelector()),
+    R("basicSelector", ["enchanted land"], lambda t:EnchantedLandSelector()),
+
     R("basicSelector", ["opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["an opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["a card"], lambda t:CardSelector()),

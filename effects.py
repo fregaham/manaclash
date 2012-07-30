@@ -709,17 +709,19 @@ class TheNextTimeXOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(OneSho
     def __str__(self):
         return "TheNextTimeXWouldDealDamageToYThisTurnPreventThatDamage(%s, %s)" % (self.x_selector, self.y_selector) 
 
-class AddXToYourManaPool(OneShotEffect):
-    def __init__ (self, mana):
+class XAddXToYourManaPool(OneShotEffect):
+    def __init__ (self, selector, mana):
+        self.selector = selector
         self.mana = mana
 
     def resolve(self, game, obj):
-        game.objects[obj.get_state().controller_id].manapool += self.mana
+        for player in self.selector.all(game, obj):
+            player.get_object().manapool += self.mana
 
         return True
 
     def __str__ (self):
-        return "AddXToYourManaPool(%s)" % self.mana
+        return "XAddXToYourManaPool(%s, %s)" % (self.selector, self.mana)
 
 class RegenerateX(OneShotEffect):
     def __init__ (self, selector):
@@ -1386,55 +1388,58 @@ class XPowerAndToughnessAreEachEqualToTheNumberOfY(ContinuousEffect):
     def __str__ (self):
         return "XPowerAndToughnessAreEachEqualToTheNumberOfY(%s, %s)" % (self.x_selector, self.y_selector)
 
-class AddNManaOfAnyColorToYourManapool(OneShotEffect):
-    def __init__ (self, n):
+class XAddNManaOfAnyColorToYourManapool(OneShotEffect):
+    def __init__ (self, selector, n):
+        self.selector = selector
         self.n = n
 
     def resolve(self, game, obj):
-        controller = game.objects[obj.get_state().controller_id]
+        for player in self.selector.all(game, obj):
+            for i in range(self.n):
+                colors = ["W","R","B","U","G"]
+                names = ["White", "Red", "Black", "Blue", "Green"] 
 
-        for i in range(self.n):
-            colors = ["W","R","B","U","G"]
-            names = ["White", "Red", "Black", "Blue", "Green"] 
+                actions = []
+                for name in names:
+                    a = Action()
+                    a.text = name
+                    actions.append(a)
 
-            actions = []
-            for name in names:
-                a = Action()
-                a.text = name
-                actions.append(a)
+                _as = ActionSet (game, player, ("Choose a color"), actions)
+                a = game.input.send(_as)
 
-            _as = ActionSet (game, controller, ("Choose a color"), actions)
-            a = game.input.send(_as)
-
-            color = colors[actions.index(a)]
-            controller.manapool += color
+                color = colors[actions.index(a)]
+                player.manapool += color
 
         return True
 
     def __str__ (self):
-        return "AddNManaOfAnyColorToYourManapool(%s)" % str(self.n)
+        return "XAddNManaOfAnyColorToYourManapool(%s, %s)" % (self.selector, str(self.n))
 
-class AddOneOfTheseManaToYourManaPool(OneShotEffect):
-    def __init__ (self, options):
+class XAddOneOfTheseManaToYourManaPool(OneShotEffect):
+    def __init__ (self, selector, options):
         self.options = options
+        self.selector = selector
 
     def resolve(self, game, obj):
-        actions = []
-        for o in self.options:
-            a = Action()
-            a.text = o
-            actions.append(a)
 
-        controller =  game.objects[obj.get_controller_id()]
-        _as = ActionSet (game, controller, ("Choose mana"), actions)
-        a = game.input.send(_as)
+        for player in self.selector.all(game, obj):
+            actions = []
+            for o in self.options:
+                a = Action()
+                a.text = o
+                actions.append(a)
 
-        mana = a.text
-        controller.manapool += mana
+            _as = ActionSet (game, player, ("Choose mana"), actions)
+            a = game.input.send(_as)
+
+            mana = a.text
+            player.manapool += mana
+
         return True
 
     def __str__ (self):
-        return "AddOneOfTheseManaToYourManaPool(%s)" % (str(self.options))
+        return "XAddOneOfTheseManaToYourManaPool(%s, %s)" % (self.selector, str(self.options))
 
 class PlayerSkipsNextCombatPhase(OneShotEffect):
     def __init__ (self, selector):

@@ -137,6 +137,15 @@ class ItSelector(Selector):
     def __str__ (self):
         return "it"
 
+class ItsControllerSelector(Selector):
+    def all(self, game, context):
+        it_lki = context.get_slot("it")
+        assert it_lki is not None
+        yield game.objects[it_lki.get_controller_id()]
+
+    def __str__ (self):
+        return "its controller"
+
 class ThatCreatureSelector(Selector):
     def all(self, game, context):
         creature_lki = context.get_slot("that creature")
@@ -415,8 +424,24 @@ class EnchantedCreatureSelector(Selector):
             if "permanent" in ret.state.tags:
                 yield ret
 
+    def slots(self):
+        return ["it"]
+
     def __str__ (self):
         return "enchanted creature"
+
+class EnchantedLandSelector(Selector):
+    def all(self, game, context):
+        if context.enchanted_id != None:
+            ret = game.objects[context.enchanted_id]
+            if "permanent" in ret.state.tags:
+                yield ret
+
+    def slots(self):
+        return ["it"]
+
+    def __str__ (self):
+        return "enchanted land"
 
 class EnchantedPermanentSelector(Selector):
     def all(self, game, context):
@@ -424,6 +449,9 @@ class EnchantedPermanentSelector(Selector):
             ret = game.objects[context.enchanted_id]
             if "permanent" in ret.state.tags:
                 yield ret
+
+    def slots(self):
+        return ["it"]
 
     def __str__ (self):
         return "enchanted permanent"
