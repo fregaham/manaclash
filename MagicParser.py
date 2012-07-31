@@ -416,6 +416,7 @@ r = [
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
     R("basicSelector", ["each spell"], lambda t:SpellSelector()),
     R("basicSelector", ["a spell"], lambda t:SpellSelector()),
+    R("basicSelector", ["instant spell"], lambda t:InstantSpellSelector()),
     R("basicSelector", ["spell with a single target"], lambda t:SpellWithSingleTargetSelector()),
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
