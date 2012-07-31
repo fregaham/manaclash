@@ -420,6 +420,17 @@ class XGetsTagUntilEndOfTurn(OneShotEffect):
     def __str__ (self):
         return "XGetsTagUntilEndOfTurn(%s, %s)" % (self.selector, self.tag)
 
+class TargetXGetsTagUntilEndOfTurn(SingleTargetOneShotEffect):
+    def __init__ (self, selector, tag):
+        SingleTargetOneShotEffect.__init__(self, selector)
+        self.tag = tag
+
+    def doResolve(self, game, obj, target):
+        game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target), self.tag)) )
+
+    def __str__ (self):
+        return "TargetXGetsTagUntilEndOfTurn(%s, %s)" % (self.targetSelector, self.tag)
+
 class DestroyTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
