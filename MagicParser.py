@@ -49,6 +49,7 @@ costs = N("costs")
 tag = N("tag")
 condition = N("condition")
 dialog = N("dialog")
+counter = N("counter")
 
 NUMBER = N("NUMBER")
 
@@ -330,6 +331,8 @@ r = [
 
     R("effect", [selector, " control ", selector, "."], lambda t,x,y:XControlsY(x,y)),
 
+    R("effect", ["put a ", counter, " counter on ", selector, "."], lambda t,c,s:PutXCounterOnY(c, s)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -528,7 +531,9 @@ r = [
 
     R("creatureType", ["goblin"], lambda t:t),
     R("creatureType", ["elf"], lambda t:t),
-    R("creatureType", ["wall"], lambda t:t)
+    R("creatureType", ["wall"], lambda t:t),
+
+    R("counter", ["+1/+1"], lambda t:t)
 ]
 
 def magic_parser(label, text):

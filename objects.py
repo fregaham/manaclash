@@ -69,6 +69,7 @@ class Object:
         self.regenerated = False
         # chosen modal options
         self.modal = None
+        self.counters = []
 
     def get_id(self):
         return self.id
@@ -112,6 +113,7 @@ class Object:
         self.enchanted_id = src.enchanted_id
         self.regenerated = src.regenerated
         self.modal = src.modal
+        self.counters = src.counters[:]
 
     def __str__ (self):
 
@@ -126,6 +128,9 @@ class Object:
 
         if self.tapped:
             ret += " tapped"
+
+        if len(self.counters) > 0:
+            ret += " [" + ", ".join(self.counters) + "]"
 
         ret += "]"
 

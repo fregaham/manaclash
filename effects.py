@@ -1531,3 +1531,19 @@ class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(SingleTargetOneShotEffect
     def __str__ (self):
         return "TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(%s)" % (self.targetSelector)
 
+class PutXCounterOnY(OneShotEffect):
+    def __init__ (self, counter, selector):
+        self.counter = counter
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            if not o.is_moved():
+                o.get_object().counters.append (self.counter)
+
+        return True
+
+    def __str__ (self):
+        return "PutXCounterOnY(%s, %s)" % (self.counter, self.selector)
+
+

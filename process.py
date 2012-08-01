@@ -108,6 +108,16 @@ def evaluate (game):
 
         object.rules.evaluate(game, object)
 
+        # counters
+        for counter in object.counters:
+            if "+1/+1" == counter:
+                object.state.power += 1
+                object.state.toughness += 1
+            elif "-1/-1" == counter:
+                object.state.power -= 1
+                object.state.toughness -= 1
+
+
     # 306.2
     if game.current_phase == "combat":
         game.get_active_player().state.tags.add ("attacking")
