@@ -1201,7 +1201,7 @@ class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
             if process_pay_cost(game, controller, obj, self.costs):
                 return
             # else, counter.
-        game.doCounter(target)
+        return game.doCounter(target)
 
     def __str__ (self):
         return "CounterTargetXUnlessItsControllerPaysCost(%s, %s)" % (self.targetSelector, str(map(str,self.costs)))
@@ -1211,7 +1211,7 @@ class CounterTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
-        game.doCounter(target)
+        return game.doCounter(target)
 
     def __str__ (self):
         return "CounterTargetX(%s)" % (self.targetSelector)

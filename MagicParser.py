@@ -276,6 +276,7 @@ r = [
 
     R("effect", [selector, " can't attack or block."], lambda t,s:XGetsTag(s, "can't attack or block")),
     R("effect", [selector, " can't attack."], lambda t,s:XGetsTag(s, "can't attack")),
+    R("effect", [selector, " can't be countered."], lambda t,s:XGetsTag(s, "can't be countered")),
 
     R("effect", [selector, " has fear. (it can't be blocked except by artifact creatures and/or black creatures.)"], lambda t,s:XGetsTag(s, "fear")),
     R("effect", [selector, " has flying. (it can't be blocked except by creatures with flying or reach.)"], lambda t,s:XGetsTag(s, "flying")),
@@ -427,6 +428,7 @@ r = [
     R("basicSelector", ["instant spell"], lambda t:InstantSpellSelector()),
     R("basicSelector", ["spell with a single target"], lambda t:SpellWithSingleTargetSelector()),
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
+    R("basicSelector", ["creature spells"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
     R("basicSelector", ["a spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),

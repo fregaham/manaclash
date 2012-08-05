@@ -429,8 +429,13 @@ class Game:
 
     def doCounter(self, obj):
         obj = obj.get_object()
-        self.output.counter(obj)
-        self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
+        if "can't be countered" not in obj.get_state().tags:
+            self.output.counter(obj)
+            self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+            return True
+
+        return False
 
     def doSacrifice(self, obj):
         obj = obj.get_object()
