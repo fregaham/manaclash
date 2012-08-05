@@ -373,6 +373,26 @@ class IfXWouldDealDamageToYPreventNOfThatDamage(ContinuousEffect):
     def __str__ (self):
         return "IfXWouldDealDamageToYPreventNOfThatDamage(%s, %s, %s)" % (self.x_selector, self.y_selector, self.n)
 
+class IfXWouldDealDamageToYItDealsDoubleThatDamageToThatYInstead(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def apply(self, game, obj):
+        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, game, obj))
+
+    def isSelf(self):
+        return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
+
+    def onDamageReplacement(self, game, SELF, dr):
+        list = []
+        for a,b,n in dr.list:
+            if self.x_selector.contains(game, SELF, a) and self.y_selector.contains(game, SELF, b):
+                list.append ( (a,b,n*2) )
+            else:
+                list.append ( (a,b,n) )
+
+        dr.list = list
 
 class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, power, toughness):

@@ -308,6 +308,7 @@ r = [
     R("effect", ["draw ", N("numberOfCards"), ", then discard ", N("numberOfCards"), "."], lambda t,n,m:XAndY(DrawCards(YouSelector(), n), PlayerDiscardsCardEffect(YouSelector(), m))),
 
     R("effect", ["if ", selector, " would deal damage to ", selector,", prevent ", number, " of that damage."], lambda t,x,y,n:IfXWouldDealDamageToYPreventNOfThatDamage(x,y,n)),
+    R("effect", ["if ", selector, " would deal damage to ", selector,", it deals double that damage to that ", selector, " instead."], lambda t,x,y,_:IfXWouldDealDamageToYItDealsDoubleThatDamageToThatYInstead(x,y)),
 
     R("effect", [selector, " costs ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
     R("effect", [selector, " cost ", manaCost, " less to cast."], lambda t,s,c:XCostsNLessToCast(s,c)),
@@ -388,6 +389,7 @@ r = [
     R("basicSelector", ["that land's controller"], lambda t:ThatLandsControllerSelector()),
     R("basicSelector", ["the sacrificed creature"], lambda t:SacrificedCreatureSelector()),
     R("basicSelector", ["creatures of the chosen type"], lambda t:CreatureOfTheChosenType()),
+    R("basicSelector", ["a creature or player"], lambda t:CreatureOrPlayerSelector()),
     R("basicSelector", ["creature or player"], lambda t:CreatureOrPlayerSelector()),
     R("basicSelector", ["attacking or blocking creature"], lambda t:AttackingOrBlockingCreatureSelector()),
     R("basicSelector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
