@@ -259,8 +259,10 @@ r = [
     R("effect", ["search your library for ", selector, " and put that card into your hand. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutItIntoHand(YouSelector(), x)),
 
     
-    R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeXUnlessYouCost(s, c)),
-    R("effect", ["sacrifice ", selector, "."], lambda t,s: SacrificeX(s)),
+    R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeAllXUnlessYouCost(s, c)),
+    R("effect", ["sacrifice all ", selector, "."], lambda t,s: SacrificeAllX(s)),
+    R("effect", ["sacrifice SELF."], lambda t: SacrificeAllX(SelfSelector())),
+    R("effect", [selector, " sacrifices ", selector, "."], lambda t,x,y:XSacrificeY(x,y)),
 
     R("effect", ["regenerate ", selector, ". (the next time this creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),
     R("effect", ["regenerate ", selector, "."], lambda t,s: RegenerateX(s)),

@@ -949,7 +949,7 @@ class SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(SingleTarget
         return "SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(%s,%s)" % (self.targetSelector, self.cardSelector)
 
 
-class SacrificeXUnlessYouCost(OneShotEffect):
+class SacrificeAllXUnlessYouCost(OneShotEffect):
     def __init__ (self, selector, costs):
         self.selector = selector
         self.costs = costs
@@ -979,7 +979,7 @@ class SacrificeXUnlessYouCost(OneShotEffect):
     def __str__ (self):
         return "SacrificeXUnlessYouCost(%s, %s)" % (self.selector, str(map(str,self.costs)))
 
-class SacrificeX(OneShotEffect):
+class SacrificeAllX(OneShotEffect):
     def __init__ (self, selector):
         self.selector = selector
 
@@ -991,6 +991,32 @@ class SacrificeX(OneShotEffect):
         
     def __str__ (self):
         return "SacrificeX(%s)" % (self.selector)
+
+class XSacrificeY(OneShotEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def resolve(self, game, obj):
+        for player in self.x_selector.all(game, obj):
+
+            _as = []
+            for o in self.y_selector.all(game, obj):
+                if o.get_controller_id() == player.get_id():
+                    a = Action()
+                    a.object = o
+                    a.text = "Sacrifice %s" % str(o)
+                    _as.append (a)
+            if len(_as) > 0:
+                _aset = ActionSet (game, player, "Sacrifice %s" % self.y_selector, _as)
+                a = game.input(_aset)
+
+                game.doSacrifice(a.object)
+
+        return True
+        
+    def __str__ (self):
+        return "XSacrificeY(%s)" % (self.x_selector, self.y_selector)
 
 class ChooseEffect(Effect):
 
