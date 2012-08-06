@@ -498,6 +498,15 @@ class CreatureCardSelector(Selector):
     def __str__ (self):
         return "creature card"
 
+class CreatureCardFromYourGraveyardSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "creature" in item.state.types and item.zone_id == game.get_graveyard(game.objects[context.get_controller_id()]).id:
+                yield item
+
+    def __str__ (self):
+        return "creature card from your graveyard"
+
 class CreatureCardOfTheChosenType(Selector):
     def all(self, game, context):
         for item in game.objects.values():

@@ -296,6 +296,7 @@ r = [
 
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
+    R("effect", ["you may return target ", selector, " to your hand."], lambda t,x: ReturnTargetXToOwnerHands(x, True)),
     R("effect", ["return ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
 
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
@@ -411,6 +412,7 @@ r = [
 
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature card"], lambda t:CreatureCardSelector()),
+    R("basicSelector", ["creature card from your graveyard"], lambda t:CreatureCardFromYourGraveyardSelector()),
     R("basicSelector", ["creature cards of the chosen type"], lambda t:CreatureCardOfTheChosenType()),
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
