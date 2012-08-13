@@ -58,6 +58,7 @@ r = [
     R("sorceryOrInstantRules", [effect, ";", N("abilities")], lambda t, e, ax:BasicNonPermanentRules(e, ax)),
 
     R("effectRules", [effect], lambda t, x:EffectRules(x)),
+    R("effectRules", [N("graveyardEffect")], lambda t, x:EffectRules(x)),
 
     R("nonBasicLandRules", [N("abilities")], lambda t, x:NonBasicLandRules(x)),
     R("nonBasicLandRules", [""], lambda t:NonBasicLandRules([])),
@@ -75,6 +76,7 @@ r = [
 
     R("effectText", [effect], lambda t,e: t),
     R("manaEffectText", [N("manaEffect")], lambda t,e: t),
+    R("graveyardEffectText", [N("graveyardEffect")], lambda t,e: t),
 
     R("effect", [N("playerLooseLifeEffect")], id),
     R("effect", [N("playerGainLifeEffect")], id),
@@ -190,6 +192,8 @@ r = [
     R("tappingActivatedAbility", ["{t}: ", N("effectText"), " activate this ability only during your turn."], lambda t, e: SelfTurnTapCostDoEffectAbility([], e)),
 
     R("tappingActivatedManaAbility", ["{t}: ", N("manaEffectText")], lambda t, e: TapDoManaEffectAbility(e)),
+
+    R("ability", [costs, ": ", N("graveyardEffectText"), " activate this ability only during your upkeep."], lambda t,c,e: CostDoEffectGraveyardUpkeepAbility(c, e)),
 
     R("ability", [costs, ": ", N("effectText")], lambda t, c, e: CostDoEffectAbility(c, e)),
 
@@ -342,6 +346,8 @@ r = [
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
     R("manaEffect", ["add ", manaCost, " or ", manaCost, " to your mana pool."], lambda t,m1,m2: XAddOneOfTheseManaToYourManaPool(YouSelector(), [m1,m2])),
+
+    R("graveyardEffect", ["return SELF from your graveyard to your hand."], lambda t: ReturnXToOwnerHands(SelfSelector())),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
 
