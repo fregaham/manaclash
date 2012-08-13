@@ -53,10 +53,10 @@ class OneShotEffect(Effect):
         return True
 
 class DamagePrevention(Effect):
-    def canApply(self, game, damage):
+    def canApply(self, game, damage, combat):
         return False
 
-    def apply(self, game, damage):
+    def apply(self, game, damage, combat):
         return damage
 
 class PlayerLooseLifeEffect(OneShotEffect):
@@ -345,14 +345,14 @@ class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention
 
         self.text = "If " + str(self.x_selector) + " would deal damage to " + str(self.y_selector) + ", prevent " + str(n) + " of that damage."
 
-    def canApply(self, game, damage):
+    def canApply(self, game, damage, combat):
         source, dest, n = damage
         if self.x_selector.contains(game, self.context, source) and self.y_selector.contains(game, self.context, dest):
             return True
 
         return False
 
-    def apply(self, game, damage):
+    def apply(self, game, damage, combat):
         source, dest, n = damage
         return (source, dest, n - self.n)
 
@@ -648,14 +648,14 @@ class PreventNextNDamageThatWouldBeDealtToXDamagePrevention(DamagePrevention):
         self.obj = obj
         self.effect = effect
 
-    def canApply(self, game, damage):
+    def canApply(self, game, damage, combat):
         source, dest, n = damage
         if self.effect.n <= 0:
             return False
 
         return self.effect.selector.contains(game, self.obj, dest)
 
-    def apply(self, game, damage):
+    def apply(self, game, damage, combat):
         source, dest, n = damage
 
         if n <= self.effect.n:
@@ -697,7 +697,7 @@ class TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(DamagePrev
         self.obj = obj
         self.effect = effect
 
-    def canApply(self, game, damage):
+    def canApply(self, game, damage, combat):
         source, dest, n = damage
 
         if self.effect.used_up:
@@ -705,7 +705,7 @@ class TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(DamagePrev
 
         return self.effect.x_selector.contains(game, self.obj, source) and self.effect.y_selector.contains(game, self.obj, dest)
 
-    def apply(self, game, damage):
+    def apply(self, game, damage, combat):
         source, dest, n = damage
 
         self.effect.used_up = True
@@ -739,6 +739,28 @@ class TheNextTimeXOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(OneSho
 
     def __str__(self):
         return "TheNextTimeXWouldDealDamageToYThisTurnPreventThatDamage(%s, %s)" % (self.x_selector, self.y_selector) 
+
+class PreventAllCombatDamagePrevention(DamagePrevention):
+    def canApply(self, game, damage, combat):
+        return combat
+
+    def apply(self, game, damage, combat):
+        source, dest, n = damage
+        return (source, dest, 0)
+
+    def getText(self):
+        return "Prevent all combat damage."
+
+class PreventAllCombatDamage(ContinuousEffect):
+    def apply(self, game, obj):
+        game.damage_preventions.append(PreventAllCombatDamagePrevention())
+
+class PreventAllCombatDamageThatWouldBeDealtThisTurn(OneShotEffect):
+    def resolve(self, game, obj):
+        game.until_end_of_turn_effects.append ( (obj, PreventAllCombatDamage()) )
+
+    def __str__(self):
+        return "PreventAllCombatDamageThatWouldBeDealtThisTurn()"
 
 class XAddXToYourManaPool(OneShotEffect):
     def __init__ (self, selector, mana):

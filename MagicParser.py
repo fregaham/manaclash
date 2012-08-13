@@ -278,6 +278,8 @@ r = [
     R("effect", ["target ", selector, " ", N("gain"), " ", N("number"), " life."], lambda t,x,l,n: TargetXGainLife(x, n)),
 
     R("effect", ["prevent the next ", number, " damage that would be dealt to target ", selector, " this turn."], lambda t,n,s: PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(s, n)),
+    R("effect", ["prevent all combat damage that would be dealt this turn."], lambda t:PreventAllCombatDamageThatWouldBeDealtThisTurn()),
+
     R("effect", ["choose one - target player gains ", number, " life; or prevent the next ", number, " damage that would be dealt to target creature or player this turn."], lambda t,n1,n2: ChooseEffect("target player gains " + str(n1) + " life.", "prevent the next " + str(n2) +" damage that would be dealt to target creature or player this turn.")),
 
     R("effect", [selector, " can't attack or block."], lambda t,s:XGetsTag(s, "can't attack or block")),
@@ -302,6 +304,7 @@ r = [
     R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
     R("effect", ["you may return target ", selector, " to your hand."], lambda t,x: ReturnTargetXToOwnerHands(x, True)),
     R("effect", ["return ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
+    R("effect", ["return all ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
 
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
 
@@ -405,6 +408,8 @@ r = [
     R("basicSelector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
     R("basicSelector", ["creature attacking you"], lambda t:CreatureAttackingYouSelector()),
     R("basicSelector", ["non", color, " creature"], lambda t,c:NonColorCreatureSelector(c)),
+    R("basicSelector", [color, " permanent"], lambda t,c:ColorPermanentSelector(c)),
+    R("basicSelector", [color, " permanents"], lambda t,c:ColorPermanentSelector(c)),
     R("basicSelector", [color, " creature"], lambda t,c:ColorCreatureSelector(c)),
     R("basicSelector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
     R("basicSelector", ["enchanted permanent"], lambda t:EnchantedPermanentSelector()),

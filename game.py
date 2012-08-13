@@ -351,13 +351,13 @@ class Game:
                 # go through all applicable damage prevention effects
                 applicable = []
                 for damage_prevention in self.damage_preventions:
-                    if damage_prevention.canApply(self, (a,b,n)):
+                    if damage_prevention.canApply(self, (a,b,n), combat):
                         applicable.append (damage_prevention)
 
                 while len(applicable) > 0:
                     # do we have a unique applicable effect?
                     if len(applicable) == 1:
-                        a,b,n = applicable[0].apply(self, (a,b,n))
+                        a,b,n = applicable[0].apply(self, (a,b,n), combat)
                         applicable = []
                     else:
                         # we let the reciever's controller choose
@@ -375,7 +375,7 @@ class Game:
 
                         damage_prevention = action.damage_prevention
 
-                        a,b,n = damage_prevention.apply(self, (a,b,n))
+                        a,b,n = damage_prevention.apply(self, (a,b,n), combat)
                         applicable.remove(damage_prevention)
 
                         if n <= 0:
@@ -383,7 +383,7 @@ class Game:
 
                         new_applicable = []
                         for damage_prevention in applicable[:]:
-                            if damage_prevention.canApply(self, (a,b,n)):
+                            if damage_prevention.canApply(self, (a,b,n), combat):
                                 new_applicable.append(damage_prevention)
                         applicable = new_applicable
 
