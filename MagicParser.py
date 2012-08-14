@@ -213,7 +213,8 @@ r = [
 
     R("effect", [selector, " ", N("deal"), " damage equal to ", N("Number"), " to target ", selector, "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
 
-    R("xDealNDamageToY", [N("selector"), " ", N("deal"), " ", N("number"), " damage to ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToY(x, y, n)),
+    R("effect", [N("selector"), " ", N("deal"), " ", N("number"), " damage to ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToY(x, y, n)),
+    R("effect", [N("selector"), " ", N("deal"), " ", N("number"), " damage to each creature and each player."], lambda t,x,d,n:XDealNDamageToY(x, CreatureOrPlayerSelector(), n)),
 
     R("get", ["get"], lambda t:t),
     R("get", ["gets"], lambda t:t),
