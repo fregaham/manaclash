@@ -42,3 +42,17 @@ class IfXHasNOrLessLife(Condition):
     def __str__ (self):
         return "IfXHasNOrLessLife(%s, %s)" % (self.selector, self.n)
 
+class ExistsUntappedX(Condition):
+    def __init__(self, selector):
+        self.selector = selector
+
+    def evaluate(self, game, context):
+        for obj in self.selector.all(game, context):
+            if not obj.tapped:
+                return True
+
+        return False
+
+    def __str__ (self):
+        return "ExistsUntappedX(%s)" % self.selector
+

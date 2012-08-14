@@ -1614,4 +1614,14 @@ class PutXCounterOnY(OneShotEffect):
     def __str__ (self):
         return "PutXCounterOnY(%s, %s)" % (self.counter, self.selector)
 
+class AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(ContinuousEffect):
+    def __init__ (self, condition):
+        self.condition = condition
+
+    def apply(self, game, obj):
+        if game.current_step == "draw" and self.condition.evaluate(game, obj):
+            game.get_active_player().draw_cards_count += 1
+
+    def __str__ (self):
+        return "AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(%s)" % (self.condition)
 

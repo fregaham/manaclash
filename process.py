@@ -61,6 +61,7 @@ def evaluate (game):
     for player in game.players:
         player.maximum_hand_size = 7
         player.land_play_limit = 1
+        player.draw_cards_count = 1
 
     old_controller_map = {}
 
@@ -449,7 +450,8 @@ def process_step_draw (game):
     game.current_step = "draw"
     process_step_pre (game)
 
-    process_draw_card (game, game.get_active_player())
+    for i in range(game.get_active_player().draw_cards_count):
+        process_draw_card (game, game.get_active_player())
 
     for ability in game.triggered_abilities:
         game.stack_push (ability)

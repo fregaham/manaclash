@@ -345,6 +345,8 @@ r = [
 
     R("effect", ["put a ", counter, " counter on ", selector, "."], lambda t,c,s:PutXCounterOnY(c, s)),
 
+    R("effect", ["at the beginning of each player's draw step, if ", condition, ", that player draws an additional card."], lambda t,c:AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(c)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -353,6 +355,7 @@ r = [
     R("graveyardEffect", ["return SELF from your graveyard to your hand."], lambda t: ReturnXToOwnerHands(SelfSelector())),
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
+    R("condition", ["SELF is untapped"], lambda t:ExistsUntappedX(SelfSelector())),
 
     R("dialog", ["choose a creature type."], lambda t:ChooseCreatureType()),
 
