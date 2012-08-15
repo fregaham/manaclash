@@ -235,6 +235,21 @@ class CreatureWithPowerGreaterThanNSelector(Selector):
     def __str__ (self):
         return "creature with power greater than %s" % self.n
 
+class CreatureWithPowerNOrGreaterSelector(Selector):
+    def __init__ (self, n):
+        self.n = n
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types and item.state.power >= self.n.evaluate(game, context):
+                yield item
+
+    def slots(self):
+        return ["that creature", "it"]
+
+    def __str__ (self):
+        return "creature with power %s or greater" % self.n
+
 class CreatureOfTheChosenType(Selector):
     def all(self, game, context):
         for item in game.objects.values():
