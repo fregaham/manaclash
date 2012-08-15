@@ -1356,7 +1356,7 @@ class DrawCards(OneShotEffect):
 
     def resolve(self, game, obj):
 
-        n = self.number.evalute(game, obj)
+        n = self.number.evaluate(game, obj)
         for o in self.selector.all(game, obj):
             for i in range(n):
                 game.doDrawCard(controller)
@@ -1365,6 +1365,19 @@ class DrawCards(OneShotEffect):
 
     def __str__ (self):
         return "DrawCards(%s, %s)" % (self.selector, str(self.number))
+
+class TargetXDrawCards(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, number):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, False)
+        self.number = number
+
+    def doResolve(self, game, obj, target):
+        n = self.number.evaluate(game, obj)
+        for i in range(n):
+            game.doDrawCard(target.get_object())
+
+    def __str__ (self):
+        return "TargetXDrawCards(%s, %s)" % (self.targetSelector, self.number)
 
 class XAndY(OneShotEffect):
     def __init__ (self, x, y):

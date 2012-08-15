@@ -315,6 +315,7 @@ r = [
     R("effect", [selector, " may draw a card."], lambda t,x: XMayDrawACard(x)),
     R("effect", ["draw ", N("numberOfCards"), "."], lambda t,n: DrawCards(YouSelector(), n)),
     R("effect", ["draw a card for each ", selector, "."], lambda t,x: DrawCards(YouSelector(), EachSelectorNumber(x))),
+    R("effect", ["target ", selector, " draws ", N("numberOfCards"), "."], lambda t,x,n: TargetXDrawCards(x, n)),
 
     R("effect", [selector, " ", N("draw"), " ", N("numberOfCards"), " and ", selector, " ", N("lose"), " ", N("number"), " life."], lambda t,x,d,n,y,l,m: XAndY(DrawCards(x,n), PlayerLooseLifeEffect(y, m))),
     R("effect", ["draw ", N("numberOfCards"), ", then discard ", N("numberOfCards"), "."], lambda t,n,m:XAndY(DrawCards(YouSelector(), n), PlayerDiscardsCardEffect(YouSelector(), m))),
