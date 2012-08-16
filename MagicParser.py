@@ -349,6 +349,8 @@ r = [
 
     R("effect", ["at the beginning of each player's draw step, if ", condition, ", that player draws an additional card."], lambda t,c:AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(c)),
 
+    R("effect", ["untap all ", selector, "."], lambda t,s: UntapAllX(s)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
