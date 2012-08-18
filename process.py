@@ -1141,6 +1141,10 @@ def process_select_selector(game, player, source, selector, text, optional=False
 
 def _is_valid_target(game, source, target):
     # TODO: protections and stuff 
+
+    if "shroud" in target.get_state().tags:
+        return False
+
     return True
 
 def process_select_target(game, player, source, selector, optional=False):
