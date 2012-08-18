@@ -579,6 +579,10 @@ def is_valid_block(game, attacker, blocker):
         print("%s cannot block %s because of the fear evasion rule" % (blocker, attacker))
         return False
 
+    if "can't be blocked except by walls" in attacker.get_state().tags and "wall" not in blocker.get_state().subtypes:
+        print("%s cannot block %s because of the invisibility evasion rule" % (blocker, attacker))
+        return False
+
     if "can't block" in blocker.get_state().tags or "can't attack or block" in blocker.get_state().tags:
         return False
 

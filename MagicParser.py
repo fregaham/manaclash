@@ -286,6 +286,7 @@ r = [
     R("effect", [selector, " can't attack or block."], lambda t,s:XGetsTag(s, "can't attack or block")),
     R("effect", [selector, " can't attack."], lambda t,s:XGetsTag(s, "can't attack")),
     R("effect", [selector, " can't be countered."], lambda t,s:XGetsTag(s, "can't be countered")),
+    R("effect", [selector, " can't be blocked except by walls."], lambda t,s:XGetsTag(s, "can't be blocked except by walls")),
 
     R("effect", [selector, " has fear. (it can't be blocked except by artifact creatures and/or black creatures.)"], lambda t,s:XGetsTag(s, "fear")),
     R("effect", [selector, " has flying. (it can't be blocked except by creatures with flying or reach.)"], lambda t,s:XGetsTag(s, "flying")),
