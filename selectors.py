@@ -98,6 +98,21 @@ class PermanentPlayerControlsSelector(Selector):
     def __str__ (self):
         return "permanent player controls"
 
+class SubTypeXControlsSelector(Selector):
+    def __init__ (self, type, player_selector):
+        self.type = type
+        self.player_selector = player_selector
+
+    def all(self, game, context):
+        player = self.player_selector.only(game, context)
+
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and self.type in item.state.subtypes and item.state.controller_id == player.get_id():
+                yield item
+
+    def __str__ (self):
+        return "%s %s controls" % (self.type, self.player_selector)
+
 class AllPlayersSelector(Selector):
     def all(self, game, context):
         for player in game.players:

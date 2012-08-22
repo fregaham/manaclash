@@ -415,6 +415,7 @@ def process_phase_post (game):
 
 def process_step_pre (game):
     evaluate(game)
+    game.raise_event("step")
 
 def process_step_post (game):
     evaluate(game)

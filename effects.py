@@ -151,12 +151,7 @@ class XDealNDamageToY(OneShotEffect):
 
         source = sources[0]
 
-        count = 0
-        if self.count == "X":
-            assert obj.x is not None
-            count = obj.x
-        else:
-            count = int(self.count)
+        count = self.count.evaluate(game, obj)
 
         damage = []
         for y in self.y_selector.all(game, obj):

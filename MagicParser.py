@@ -178,6 +178,7 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " becomes the target of a ", selector, ", ", N("effectText"), " (it won't be affected by the spell or ability.)"], lambda t,w,x,y,e:WhenXBecomesTargetOfYDoEffectAbility(x,y,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " control no other ", selector, ", ", N("effectText")], lambda t,w,x,y,e:WhenXControlsNoOtherYDoEffectAbility(x,y,e)),
+    R("triggeredAbility", ["at the beginning of each player's upkeep, ", N("effectText")], lambda t,e:AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
     R("activatedAbility", [N("tappingActivatedManaAbility")], id),
@@ -213,8 +214,9 @@ r = [
 
     R("effect", [selector, " ", N("deal"), " damage equal to ", N("Number"), " to target ", selector, "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
 
-    R("effect", [N("selector"), " ", N("deal"), " ", N("number"), " damage to ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToY(x, y, n)),
-    R("effect", [N("selector"), " ", N("deal"), " ", N("number"), " damage to each creature and each player."], lambda t,x,d,n:XDealNDamageToY(x, CreatureOrPlayerSelector(), n)),
+    R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToY(x, y, n)),
+    R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to each creature and each player."], lambda t,x,d,n:XDealNDamageToY(x, CreatureOrPlayerSelector(), n)),
+    R("effect", [N("selector"), " ", N("deal"), " damage to ", selector, " equal to the ",  N("Number"), "."], lambda t,x,d,y,n:XDealNDamageToY(x, y, n)),
 
     R("get", ["get"], lambda t:t),
     R("get", ["gets"], lambda t:t),
@@ -478,6 +480,7 @@ r = [
     R("Number", [N("number")], lambda t,n:NNumber(n)),
     R("Number", [selector, "'s power"], lambda t,s:SelectorsPower(s)),
     R("Number", ["the number of cards in your hand"], lambda t:NumberOfCardsInYourHand()),
+    R("Number", ["number of ", N("basicLand"), " he or she controls"], lambda t,s:EachSelectorNumber(SubTypeXControlsSelector(s, ThatPlayerSelector()))),
 
     R("number", ["a"], lambda t: 1),
     R("number", ["one"], lambda t: 1),
