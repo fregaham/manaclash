@@ -460,6 +460,40 @@ class WhenXBlocksDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXBlocksDoEffectAbility(%s, %s)" % (self.selector, self.effect)
 
+class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
+    def __init__(self, selector, effect):
+        self.selector = selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
+
+    def register(self, game, obj):
+        game.add_volatile_event_handler("attacks", partial(self.onAttacks, game, obj))
+        game.add_volatile_event_handler("blocks", partial(self.onBlocks, game, obj))
+
+    def onAttacks(self, game, SELF, attacker):
+        from process import process_trigger_effect
+        if self.selector.contains(game, SELF, attacker):
+            slots = {}
+            for slot in self.selector.slots():
+                slots[slot] = attacker
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def onBlocks(self, game, SELF, blocker, attacker):
+        from process import process_trigger_effect
+        if self.selector.contains(game, SELF, blocker):
+            slots = {}
+            for slot in self.selector.slots():
+                slots[slot] = blocker
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXAttacksOrBlocksDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
+
+
 class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):
         self.x_selector = x_selector

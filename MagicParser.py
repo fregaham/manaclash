@@ -161,6 +161,7 @@ r = [
 
     R("triggeredAbility", [N("when"), " ", selector, " attacks, ", N("effectText")], lambda t,w,s,e: WhenXAttacksDoEffectAbility(s,e)),
     R("triggeredAbility", [N("when"), " ", selector, " blocks, ", N("effectText")], lambda t,w,s,e: WhenXBlocksDoEffectAbility(s,e)),
+    R("triggeredAbility", [N("when"), " ", selector, " attacks or blocks, ", N("effectText")], lambda t,w,s,e: WhenXAttacksOrBlocksDoEffectAbility(s,e)),
 
     R("whenXDiscardsACardDoEffectAbility", [N("when"), " ", N("selector"), " discards a card, ", N("effectText")], lambda t,w,x,e:WhenXDiscardsACardDoEffectAbility(x,e)),
 
@@ -269,6 +270,7 @@ r = [
     R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeAllXUnlessYouCost(s, c)),
     R("effect", ["sacrifice all ", selector, "."], lambda t,s: SacrificeAllX(s)),
     R("effect", ["sacrifice SELF."], lambda t: SacrificeAllX(SelfSelector())),
+    R("effect", ["sacrifice a ", selector, "."], lambda t,x: XSacrificeY(YouSelector(), x)),
     R("effect", [selector, " sacrifices ", selector, "."], lambda t,x,y:XSacrificeY(x,y)),
 
     R("effect", ["regenerate ", selector, ". (the next time this creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),

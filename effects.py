@@ -1026,7 +1026,7 @@ class XSacrificeY(OneShotEffect):
                     _as.append (a)
             if len(_as) > 0:
                 _aset = ActionSet (game, player, "Sacrifice %s" % self.y_selector, _as)
-                a = game.input(_aset)
+                a = game.input.send(_aset)
 
                 game.doSacrifice(a.object)
 
