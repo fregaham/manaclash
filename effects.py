@@ -1665,3 +1665,25 @@ class AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(Conti
     def __str__ (self):
         return "AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(%s)" % (self.condition)
 
+class XIsANNCTCreature(ContinuousEffect):
+    def __init__ (self, selector, powerNumber, toughnessNumber, color, type):
+        self.selector = selector
+        self.powerNumber = powerNumber
+        self.toughnessNumber = toughnessNumber
+        self.color = color
+        self.type = type
+
+    def apply(self, game, obj):
+        power = self.powerNumber.evaluate(game, obj)
+        toughness = self.toughnessNumber.evaluate(game, obj)
+
+        for o in self.selector.all(game, obj):
+            o.get_state().power = power
+            o.get_state().toughness = toughness
+            o.get_state().tags.add(self.color)
+            o.get_state().types.add("creature")
+            o.get_state().subtypes.add(self.type)
+
+    def __str__ (self):
+        return "XIsANNCTCreature(%s, %s, %s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber, self.color, self.type)
+

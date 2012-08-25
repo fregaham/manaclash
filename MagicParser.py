@@ -35,6 +35,7 @@ def N(label):
 
 id = lambda t, x:x
 
+creatureType = N("creatureType")
 effect = N("effect")
 selector = N("selector")
 gain = N("gain")
@@ -358,6 +359,8 @@ r = [
 
     R("effect", ["untap all ", selector, "."], lambda t,s: UntapAllX(s)),
 
+    R("effect", [selector, " is a ", Number, "/", Number, " ", color, " ", creatureType, " creature that's still a land."], lambda t,x,n,m,c,p:XIsANNCTCreature(x,n,m,c,p)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -567,6 +570,7 @@ r = [
 
     R("creatureType", ["goblin"], lambda t:t),
     R("creatureType", ["elf"], lambda t:t),
+    R("creatureType", ["treefolk"], lambda t:t),
     R("creatureType", ["wall"], lambda t:t),
 
     R("counter", ["+1/+1"], lambda t:t)
