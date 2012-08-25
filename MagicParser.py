@@ -310,6 +310,7 @@ r = [
 
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
+    R("effect", ["return target ", selector, " to your hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
     R("effect", ["you may return target ", selector, " to your hand."], lambda t,x: ReturnTargetXToOwnerHands(x, True)),
     R("effect", ["return ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return all ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
@@ -469,6 +470,7 @@ r = [
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
     R("basicSelector", [N("creatureType")], lambda t,c:SubTypeSelector(c)),
+    R("basicSelector", [N("creatureType"), " card from your graveyard"], lambda t,c:SubTypeCardFromYourGraveyardSelector(c)),
 
     R("numberOfCards", ["a card"], lambda t:NNumber(1)),
     R("numberOfCards", [N("number"), " cards"], lambda t,n:NNumber(n)),
@@ -572,6 +574,7 @@ r = [
     R("creatureType", ["elf"], lambda t:t),
     R("creatureType", ["treefolk"], lambda t:t),
     R("creatureType", ["wall"], lambda t:t),
+    R("creatureType", ["zombie"], lambda t:t),
 
     R("counter", ["+1/+1"], lambda t:t)
 ]
