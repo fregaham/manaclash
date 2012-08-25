@@ -81,3 +81,26 @@ class NumberOfCardsInYourHand(NumberOf):
     def __str__ (self):
         return "number of cards in your hand"
 
+class NumberOfCreatureCardsInAllGraveyards(NumberOf):
+
+    def __init__ (self):
+        from selectors import CreatureCardFromAnyGraveyardSelector
+        self.n = EachSelectorNumber(CreatureCardFromAnyGraveyardSelector())
+
+    def evaluate(self, game, context):
+        return self.n.evaluate(game, context)
+
+    def __str__ (self):
+        return "number of creature cards in all graveyards"
+
+class NumberSum(NumberOf):
+    def __init__ (self, x, y):
+        self.x = x
+        self.y = y
+
+    def evaluate(self, game, context):
+        return self.x.evaluate(game, context) + self.y.evaluate(game, context)
+
+    def __str__ (self):
+        return "%s plus %s" % (self.x, self.y)
+

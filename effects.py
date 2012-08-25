@@ -1489,6 +1489,24 @@ class XPowerAndToughnessAreEachEqualToTheNumberOfY(ContinuousEffect):
     def __str__ (self):
         return "XPowerAndToughnessAreEachEqualToTheNumberOfY(%s, %s)" % (self.x_selector, self.y_selector)
 
+class XPowerIsNAndToughnessIsM(ContinuousEffect):
+    def __init__ (self, selector, powerNumber, toughnessNumber):
+        self.selector = selector
+        self.powerNumber = powerNumber
+        self.toughnessNumber = toughnessNumber
+
+    def apply(self, game, obj):
+
+        power = self.powerNumber.evaluate(game, obj)
+        toughness = self.toughnessNumber.evaluate(game, obj)
+
+        for o in self.selector.all(game, obj):
+            o.get_state().power = power
+            o.get_state().toughness = toughness
+
+    def __str__ (self):
+        return "XPowerIsNAndToughnessIsM(%s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber)
+
 class XAddNManaOfAnyColorToYourManapool(OneShotEffect):
     def __init__ (self, selector, n):
         self.selector = selector
