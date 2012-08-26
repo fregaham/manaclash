@@ -362,6 +362,8 @@ r = [
 
     R("effect", [selector, " is a ", Number, "/", Number, " ", color, " ", creatureType, " creature that's still a land."], lambda t,x,n,m,c,p:XIsANNCTCreature(x,n,m,c,p)),
 
+    R("effect", ["you and target ", selector, " each flip a coin. SELF deals ", Number, " damage to each player whose coin comes up tails. repeat this process until both players' coins come up heads on the same flip."], lambda t,x,n:YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(x, n)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),

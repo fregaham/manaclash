@@ -105,6 +105,9 @@ class Output:
     def gameEnds(self, winner):
         pass
 
+    def coinFlip(self, player, result):
+        pass
+
 class NullOutput(Output):
     def deleteObject(self, obj):
         pass

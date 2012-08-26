@@ -1687,3 +1687,33 @@ class XIsANNCTCreature(ContinuousEffect):
     def __str__ (self):
         return "XIsANNCTCreature(%s, %s, %s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber, self.color, self.type)
 
+
+class YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, n):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.n = n
+
+    def doResolve(self, game, obj, target):
+        you = YouSelector().only(game, obj)
+
+        n = self.n.evaluate(game, obj)
+
+        while True:
+            youflip = game.doCoinFlip(you)
+            targetflip = game.doCoinFlip(target)
+
+            damage = []
+            if youflip == "tails":
+                damage.append ( (obj.get_source_lki(), you, n) )
+            if targetflip == "tails":
+                damage.append ( (obj.get_source_lki(), target, n) )
+
+            game.doDealDamage(damage)
+
+            if youflip == "heads" and targetflip == "heads":
+                break
+
+    def __str__ (self):
+        return "YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(%s, %s)" % (self.targetSelector, self.n)
+ 
+

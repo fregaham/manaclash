@@ -459,6 +459,11 @@ class Game:
                 self.declared_attackers.remove (b)
                 return
 
+    def doCoinFlip(self, player):
+        result = random.choice(["heads", "tails"])
+        self.output.coinFlip(player.get_object(), result)
+        return result
+
     def delete(self, obj):
         print("deleting object %s" % obj)
         self.objects[obj.zone_id].objects.remove(obj)
