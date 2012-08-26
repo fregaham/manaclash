@@ -549,7 +549,7 @@ class TargetXDiscardsACard(SingleTargetOneShotEffect):
             process_discard_a_card(game, target.get_object(), obj)
 
     def __str__ (self):
-        return "TargetXDiscardsACard(%s, %d)" % (self.targetSelector, self.count)
+        return "TargetXDiscardsACard(%s, %s)" % (self.targetSelector, self.count)
 
 class TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, cardSelector):
