@@ -280,6 +280,7 @@ r = [
     R("effect", ["all creatures able to block ", selector, " do so."], lambda t,s: XGetsTag(s, "lure")),
 
     R("effect", ["you may tap target ", selector, "."], lambda t,s: YouMayTapTargetX(s)),
+    R("effect", ["tap target ", selector, "."], lambda t,s: TapTargetX(s)),
 
     R("effect", ["target ", selector, " ", N("gain"), " ", N("number"), " life."], lambda t,x,l,n: TargetXGainLife(x, n)),
 

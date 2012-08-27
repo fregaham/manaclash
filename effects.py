@@ -608,6 +608,16 @@ class YouMayTapTargetX(SingleTargetOneShotEffect):
     def __str__ (self):
         return "YouMayTapTargetX(%s)" % self.targetSelector
 
+class TapTargetX(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, False)
+
+    def doResolve(self, game, obj, target):
+        game.doTap(target.get_object())
+
+    def __str__ (self):
+        return "TapTargetX(%s)" % self.targetSelector
+
 class YouMayPayCostIfYouDoY(OneShotEffect):
     def __init__ (self, cost, effectText):
         self.cost = cost
