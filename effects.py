@@ -1475,19 +1475,21 @@ class IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(Singl
     def __str__ (self):
         return "IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(%s)" % (self.targetSelector)
 
-class XPowerAndToughnessAreEachEqualToTheNumberOfY(ContinuousEffect):
-    def __init__ (self, x_selector, y_selector):
+class XPowerAndToughnessAreEachEqualToN(ContinuousEffect):
+    def __init__ (self, x_selector, n):
         self.x_selector = x_selector
-        self.y_selector = y_selector
+        self.n = n
 
     def apply(self, game, obj):
+
+        n = self.n.evaluate(game, obj)
+
         for o in self.x_selector.all(game, obj):
-            n = len([p for p in self.y_selector.all(game, obj)])
             o.get_state().power = n
             o.get_state().toughness = n
 
     def __str__ (self):
-        return "XPowerAndToughnessAreEachEqualToTheNumberOfY(%s, %s)" % (self.x_selector, self.y_selector)
+        return "XPowerAndToughnessAreEachEqualToN(%s, %s)" % (self.x_selector, self.n)
 
 class XPowerIsNAndToughnessIsM(ContinuousEffect):
     def __init__ (self, selector, powerNumber, toughnessNumber):

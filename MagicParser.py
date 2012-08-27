@@ -337,7 +337,7 @@ r = [
 
     R("effect", ["if target ", selector, " has more cards in hand than you, draw cards equal to the difference."], lambda t,s:IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(s)),
 
-    R("effect", [selector, "'s power and toughness are each equal to the number of ", selector, "."], lambda t,x,y:XPowerAndToughnessAreEachEqualToTheNumberOfY(x,y)),
+    R("effect", [selector, "'s power and toughness are each equal to ", Number, "."], lambda t,x,n:XPowerAndToughnessAreEachEqualToN(x,n)),
     R("effect", [selector, "'s power is equal to the ", Number, " and its toughness is equal to that number plus ", Number, "."], lambda t,x,n,m:XPowerIsNAndToughnessIsM(x,n,NumberSum(n,m))),
 
     R("effect", [selector, " skips his or her next combat phase."], lambda t,s:PlayerSkipsNextCombatPhase(s)),
@@ -490,6 +490,8 @@ r = [
     R("Number", [N("number")], lambda t,n:NNumber(n)),
     R("Number", [selector, "'s power"], lambda t,s:SelectorsPower(s)),
     R("Number", ["the number of cards in your hand"], lambda t:NumberOfCardsInYourHand()),
+    R("Number", ["the number of ", selector], lambda t,x:EachSelectorNumber(x)),
+
     R("Number", ["number of ", N("basicLand"), " he or she controls"], lambda t,s:EachSelectorNumber(SubTypeXControlsSelector(s, ThatPlayerSelector()))),
     R("Number", ["number of creature cards in all graveyards"], lambda t:NumberOfCreatureCardsInAllGraveyards()),
 
