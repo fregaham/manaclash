@@ -1018,7 +1018,29 @@ def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, 
 
     game.revealed = oldrevealed
     evaluate(game)
-    
+
+def process_reveal_cards(game, player, cards):
+    oldrevealed = game.revealed
+    game.revealed = game.revealed[:]
+
+    for card in cards:
+        game.revealed.append(card.get_id())
+
+    evaluate(game)       
+
+    p = player
+    while True:
+        _ok = PassAction(p)
+        _ok.text = "OK"
+
+        _as = ActionSet(game, p, "Player %s reveals cards" % p.name, [_ok])
+        a = game.input.send(_as)
+
+        p = game.get_next_player(p)
+        if p.get_id() == player.get_id():
+            break
+
+    game.revealed = oldrevealed 
 
 def process_step_cleanup(game):
 

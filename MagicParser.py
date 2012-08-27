@@ -47,6 +47,7 @@ numberOfCards = N("numberOfCards")
 manaCost = N("manaCost")
 basicLand = N("basicLand")
 costs = N("costs")
+cardType = N("cardType")
 tag = N("tag")
 condition = N("condition")
 dialog = N("dialog")
@@ -266,7 +267,7 @@ r = [
     R("effect", ["search your library for ", selector, " and put that card onto the battlefield. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, False)),
     R("effect", ["search your library for ", selector, " and put that card onto the battlefield tapped. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutThatCardIntoPlay(YouSelector(), x, True)),
     R("effect", ["search your library for ", selector, " and put that card into your hand. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutItIntoHand(YouSelector(), x)),
-
+    R("effect", ["search your library for a ", selector, ", reveal that card, and put it into your hand. then shuffle your library."], lambda t,x:XSearchLibraryForXAndPutItIntoHand(YouSelector(), x, True)),
     
     R("effect", ["sacrifice ", selector, " unless you ", costs, "."], lambda t,s,c: SacrificeAllXUnlessYouCost(s, c)),
     R("effect", ["sacrifice all ", selector, "."], lambda t,s: SacrificeAllX(s)),
@@ -440,6 +441,7 @@ r = [
     R("basicSelector", ["opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["an opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["a card"], lambda t:CardSelector()),
+    R("basicSelector", [color, " ", cardType, " card"], lambda t,c,p:ColorTypeCardSelector(c,p)),
     R("basicSelector", ["a land"], lambda t:LandSelector()),
     R("basicSelector", ["land"], lambda t:LandSelector()),
 
@@ -580,6 +582,9 @@ r = [
     R("creatureType", ["treefolk"], lambda t:t),
     R("creatureType", ["wall"], lambda t:t),
     R("creatureType", ["zombie"], lambda t:t),
+
+    R("cardType", ["instant"], lambda t:t),
+    R("cardType", ["sorcery"], lambda t:t),
 
     R("counter", ["+1/+1"], lambda t:t)
 ]

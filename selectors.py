@@ -602,6 +602,19 @@ class SubTypeCardSelector(Selector):
     def __str__ (self):
         return "%s card" % (self.type)
 
+class ColorTypeCardSelector(Selector):
+    def __init__ (self, color, type):
+        self.color = color
+        self.type = type
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if self.type in item.state.types and self.color in item.state.tags:
+                yield item
+
+    def __str__ (self):
+        return "%s %s card" % (self.color, self.type)
+
 class SubTypeSelector(Selector):
     def __init__ (self, type):
         self.type = type

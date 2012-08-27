@@ -848,13 +848,14 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 
 class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
-    def __init__ (self, x_selector, y_selector):
+    def __init__ (self, x_selector, y_selector, reveal = False):
         self.x_selector = x_selector
         self.y_selector = y_selector
+        self.reveal = reveal
 
     def resolve(self, game, obj):
 
-        from process import evaluate
+        from process import evaluate, process_reveal_cards
         
         for player in self.x_selector.all(game, obj):
 
@@ -883,8 +884,10 @@ class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
 
                 _as = ActionSet (game, player, "Choose a card to put into hand", actions)
                 a = game.input.send (_as)
+
+                if self.reveal:
+                    process_reveal_cards(game, player, [a.object])
  
-                a.object.tapped = self.tapped
                 game.doZoneTransfer (a.object, game.get_hand(player))
 
                 game.doShuffle(game.get_library(player))
