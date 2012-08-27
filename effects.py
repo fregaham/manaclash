@@ -1731,4 +1731,22 @@ class YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTails
     def __str__ (self):
         return "YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(%s, %s)" % (self.targetSelector, self.n)
  
+class TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, number):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, False)
+        self.number = number
+
+    def doResolve(self, game, obj, target):
+        n = self.number.evaluate(game, obj)
+        library = game.get_library(target.get_object())
+        graveyard = game.get_graveyard(target.get_object())
+        for i in range(n):
+            if len(library.objects) == 0:
+                game.doLoseGame(target.get_object())
+            else:
+                card = library.objects[-1]
+                game.doZoneTransfer(card, graveyard) 
+
+    def __str__ (self):
+        return "TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(%s, %s)" % (self.targetSelector, self.number)
 

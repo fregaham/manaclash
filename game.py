@@ -260,12 +260,20 @@ class Game:
     def doDrawCard (self, player):
         library = self.get_library(player)
         if len(library.objects) == 0:
-            for p in self.players:
-                if p != player:
-                    raise GameEndException(p)
+            self.doLoseGame(player)
         else:
             card = library.objects[-1]
             self.doZoneTransfer(card, self.get_hand(player))
+
+    def doLoseGame(self, player):
+        # TODO: multiplayer
+        for p in self.players:
+            if p.id != player.id:
+                self.doWinGame(p)
+
+    def doWinGame(self, player):
+        from process import GameEndException
+        raise GameEndException(player.get_object())
 
     def get_active_player(self):
         return self.objects[self.active_player_id]
