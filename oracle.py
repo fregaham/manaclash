@@ -72,8 +72,11 @@ def parseOracle(f):
                     if len(typesSplit) == 1:
                         card.types = set([typesSplit[0]])
                     elif len(typesSplit) == 2:
-                        card.supertypes = set([typesSplit[0]])
-                        card.types = set([typesSplit[1]])
+                        if typesSplit[0] == "artifact" and typesSplit[1] == "creature":
+                            card.types = set(typesSplit)
+                        else:
+                            card.supertypes = set([typesSplit[0]])
+                            card.types = set([typesSplit[1]])
                     card.subtypes = set(subtypes.split())
                 else:
                     card.types = set(types.split())

@@ -237,8 +237,9 @@ r = [
     R("effect", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " for each ", selector, "."], lambda t,x,g,a,b,y:XGetsNNForEachY(x,a,b,y)),
     R("effect", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " for each other creature on the battlefield that shares at least one creature type with it. (for example, if two goblin warriors and a goblin shaman are on the battlefield, each gets +2/+2.)"], lambda t,x,g,a,b:XGetsNNForEachOtherCreatureInPlayThatSharesAtLeastOneCreatureTypeWithIt(x,a,b)),
     
-    R("destroyTargetX", ["destroy target ", N("selector"), "."], lambda t,x: DestroyTargetX(x)),
-    R("buryTargetX", ["destroy target ", N("selector"), ". it can't be regenerated."], lambda t,x: BuryTargetX(x)),
+    R("effect", ["destroy target ", N("selector"), "."], lambda t,x: DestroyTargetX(x)),
+    R("effect", ["destroy target ", N("selector"), ". it can't be regenerated."], lambda t,x: BuryTargetX(x)),
+    R("effect", ["destroy target ", N("selector"), ". that creature can't be regenerated."], lambda t,x: BuryTargetX(x)),
 
     R("destroyTargetXYGainLifeEqualsToItsPower", ["destroy target ", selector, ". ", selector, " ", gain, " life equal to its power."], lambda t,x,y,g: DestroyTargetXYGainLifeEqualsToItsPower(x, y)),
 
@@ -439,6 +440,7 @@ r = [
     R("basicSelector", ["attacking creature"], lambda t:AttackingCreatureSelector()),
     R("basicSelector", ["creature attacking you"], lambda t:CreatureAttackingYouSelector()),
     R("basicSelector", ["non", color, " creature"], lambda t,c:NonColorCreatureSelector(c)),
+    R("basicSelector", ["nonartifact, non", color, " creature"], lambda t,c:NonArtifactNonColorCreatureSelector(c)),
     R("basicSelector", [color, " permanent"], lambda t,c:ColorPermanentSelector(c)),
     R("basicSelector", [color, " permanents"], lambda t,c:ColorPermanentSelector(c)),
     R("basicSelector", [color, " creature"], lambda t,c:ColorCreatureSelector(c)),

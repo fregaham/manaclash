@@ -473,7 +473,9 @@ class Game:
 
     def delete(self, obj):
         print("deleting object %s" % obj)
-        self.objects[obj.zone_id].objects.remove(obj)
+
+        if obj.zone_id is not None:
+            self.objects[obj.zone_id].objects.remove(obj)
         obj.zone_id = None
         del self.objects[obj.id]
 
