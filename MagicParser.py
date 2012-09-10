@@ -199,6 +199,7 @@ r = [
 
     R("ability", [costs, ": ", N("graveyardEffectText"), " activate this ability only during your upkeep."], lambda t,c,e: CostDoEffectGraveyardUpkeepAbility(c, e)),
 
+    R("ability", [costs, ": ", N("effectText"), " activate this ability only any time you could cast a sorcery."], lambda t,c,e: CostDoEffectAsSorceryAbility(c, e)),
     R("ability", [costs, ": ", N("effectText")], lambda t, c, e: CostDoEffectAbility(c, e)),
 
     R("lose", ["lose"], lambda t:t),

@@ -230,6 +230,27 @@ class CostDoEffectAbility(ActivatedAbility):
     def __str__ (self):
         return "CostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
 
+class CostDoEffectAsSorceryAbility(ActivatedAbility):
+    def __init__ (self, costs, effect):
+        self.costs = costs
+        self.effect = effect
+
+    def canActivate(self, game, obj, player):
+        return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and (obj.state.controller_id == game.active_player_id and (game.current_phase == "precombat main" or game.current_phase == "postcombat main") and game.get_stack_length() == 0))
+
+    def activate(self, game, obj, player):
+        from process import process_activate_ability
+        process_activate_ability(game, self, player, obj, self.effect)
+
+    def get_text(self, game, obj):
+        return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
+
+    def determineCost(self, game, obj, player):
+        return self.costs
+
+    def __str__ (self):
+        return "CostDoEffectAsSorceryAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
+
 class CostDoEffectGraveyardUpkeepAbility(ActivatedAbility):
     def __init__ (self, costs, effect):
         self.costs = costs
