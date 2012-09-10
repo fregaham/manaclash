@@ -394,6 +394,7 @@ r = [
     R("cost", ["tap an untapped ", selector], lambda t, s: TapSelectorCost(s)),
     R("cost", ["sacrifice ", selector], lambda t, s: SacrificeSelectorCost(s)),
     R("cost", ["pay ", number, " life"], lambda t,n:PayLifeCost(n)),
+    R("cost", ["pay half your life rounded up"], lambda t:PayHalfLifeRoundedUpCost()),
 
     R("selectorText", [selector], lambda t,x:t),
 

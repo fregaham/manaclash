@@ -240,3 +240,22 @@ class PayLifeCost(Cost):
     def __str__ (self):
         return "pay %d life" % self.n
 
+class PayHalfLifeRoundedUpCost(Cost):
+    def __init__ (self):
+        Cost.__init__ (self)
+
+    def get_text(self, game, obj, player):
+        return "Pay half your life rounded up"
+
+    def pay(self, game, obj, effect, player):
+        if (player.life % 2) == 0:
+            n = player.life / 2
+        else:
+            n = (player.life + 1) / 2
+
+        game.doPayLife(player, n)
+        return True
+
+    def __str__ (self):
+        return "pay half your life rounded up"
+
