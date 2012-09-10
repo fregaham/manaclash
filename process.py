@@ -49,13 +49,58 @@ def resolve (game, resolvable):
     evaluate(game)
     resolvable.rules.resolve(game, resolvable)
 
+def sort_effects(effects):
+    effect_groups = {}
+    effect_groups["copy_chardef"] = []
+    effect_groups["copy"] = []
+
+    effect_groups["control_chardef"] = []
+    effect_groups["control"] = []
+
+    effect_groups["text_chardef"] = []
+    effect_groups["text"] = []
+
+    effect_groups["type_chardef"] = []
+    effect_groups["type"] = []
+
+    effect_groups["other_chardef"] = []
+    effect_groups["other"] = []
+
+    effect_groups["power_chardef"] = []
+    effect_groups["power_set"] = []
+    effect_groups["power_other"] = []
+    effect_groups["power_modify"] = []
+    effect_groups["power_switch"] = []
+   
+    nonpowerLayers = set(["copy", "control", "text", "type", "other"])
+    powerLayers = set(["power_set", "power_switch", "power_modify", "power_other"])
+
+    for source, effect in effects:
+        layer = effect.getLayer()
+        isEffect = isinstance(source, EffectObject)
+        isSelf = effect.isSelf()
+        isCharDef = (not isEffect) and isSelf
+
+        if layer in nonpowerLayers:
+            if isCharDef:
+                effect_groups[layer + "_chardef"].append ( (source, effect) )
+            else:
+                effect_groups[layer].append( (source, effect) )
+        elif layer in powerLayers:
+            if layer == "power_set" and isCharDef:
+                effect_groups["power_chardef"].append ( (source, effect) )
+            else:
+                effect_groups[layer].append( (source, effect) )
+        else:
+            raise Exception("Unknown layer '%s'" % layer)
+
+    return effect_groups
 
 def evaluate (game):
     """ evaluate all continuous effects """
 
     game.damage_preventions = []
     game.volatile_events = {}
-    game.volatile_effects = []
     game.play_cost_replacement_effects = []
 
     for player in game.players:
@@ -65,6 +110,8 @@ def evaluate (game):
 
     old_controller_map = {}
 
+    original_texts_map = {}
+
     # clear states of all objects and evalute card texts
     _as = AllSelector ()
     for object in _as.all(game, None):
@@ -73,6 +120,9 @@ def evaluate (game):
         old_controller_map[object.id] = object.state.controller_id
 
         object.state = object.initial_state.copy ()
+
+        # store the original text that is used to parse rules, so we can spot when the text changed
+        original_texts_map[object.id] = object.state.text
 
         # show_to rules
         # cards in play, stack and graveyards are visible to all
@@ -107,16 +157,17 @@ def evaluate (game):
 
         object.rules = parse(object)
 
-        object.rules.evaluate(game, object)
+        for ability in object.rules.getAbilities():
+            object.state.abilities.append (ability)
 
         # counters
-        for counter in object.counters:
-            if "+1/+1" == counter:
-                object.state.power += 1
-                object.state.toughness += 1
-            elif "-1/-1" == counter:
-                object.state.power -= 1
-                object.state.toughness -= 1
+#        for counter in object.counters:
+#            if "+1/+1" == counter:
+#                object.state.power += 1
+#                object.state.toughness += 1
+#            elif "-1/-1" == counter:
+#                object.state.power -= 1
+#                object.state.toughness -= 1
 
 
     # 306.2
@@ -162,25 +213,100 @@ def evaluate (game):
             if "W" in object.state.manacost:
                 object.state.tags.add("white")
 
-    
+    all_effects = []
+    _as = AllSelector ()
+    for object in _as.all(game, None):
+        for ability in object.state.abilities:
+            if isinstance(ability, StaticAbility):
+                if ability.isActive(game, object):
+                    for effect in ability.getEffects():
+                        all_effects.append ( (object, effect) )
+
+    # until end of turn effects
+    for source, effect in game.until_end_of_turn_effects:
+        all_effects.append ( (source, effect) )
+
+    # indefinite effects
+    indefinite_effects = []
+    for source, lki, effect in game.indefinite_effects:
+        if lki.is_valid():
+            all_effects.append ( (source, effect) )
+            indefinite_effects.append ( (source, lki, effect) )
+
+    game.indefinite_effects = indefinite_effects
+
+    effect_groups = sort_effects(all_effects)
+
+    #layer_order = ["copy_chardef", "copy", "control_chardef", "control", "text_chardef", "text", "type_chardef", "type", "other_chardef", "other", "power_chardef", "power_other"]
+    layer_order = ["copy_chardef", "copy", "control_chardef", "control", "text_chardef", "text"]
+    for layer in layer_order:
+        for source, effect in effect_groups[layer]:
+            effect.apply(game, source)
+
+    # reparse changed effects
+    for object in _as.all(game, None):
+        if original_texts_map[object.id] != object.state.text:
+
+            print "XXX: reparsing changed text '%s'" % object.state.text
+
+            object.rules = parse(object)
+            # we can safely replace, as no abilities can be added/removed in copy, control or text layers
+            object.state.abilities = object.rules.getAbilities()
+
+    # Do the second pass of effects
+    all_effects = []
+    _as = AllSelector ()
+    for object in _as.all(game, None):
+        for ability in object.state.abilities:
+            if isinstance(ability, StaticAbility):
+                if ability.isActive(game, object):
+                    for effect in ability.getEffects():
+                        all_effects.append ( (object, effect) )
+
+    # until end of turn effects
+    for source, effect in game.until_end_of_turn_effects:
+        all_effects.append ( (source, effect) )
+
+    # indefinite effects
+    for source, lki, effect in game.indefinite_effects:
+        all_effects.append ( (source, effect) )
+
+    effect_groups = sort_effects(all_effects)
+
+    layer_order = ["type_chardef", "type", "other_chardef", "other", "power_chardef", "power_other"]
+    for layer in layer_order:
+        for source, effect in effect_groups[layer]:
+            effect.apply(game, source)
+
+    # counters
+    _as = AllSelector()
+    for object in _as.all(game, None):
+        for counter in object.counters:
+            if "+1/+1" == counter:
+                object.state.power += 1
+                object.state.toughness += 1
+            elif "-1/-1" == counter:
+                object.state.power -= 1
+                object.state.toughness -= 1
+
+
+    layer_order = ["power_modify", "power_switch"]
+    for layer in layer_order:
+        for source, effect in effect_groups[layer]:
+            effect.apply(game, source)
+
     # register triggered abilities' triggers
     _as = AllSelector ()
     for object in _as.all(game, None):
         for ability in object.state.abilities:
             if isinstance(ability, TriggeredAbility):
                 if ability.isActive(game, object):
-                    ability.register(game, object)
-            elif isinstance(ability, StaticAbility):
+                    for event, callback in ability.getEventHandlers(game, object):
+                        game.add_volatile_event_handler(event, callback)
+
+            elif isinstance(ability, StateBasedAbility):
                 if ability.isActive(game, object):
-                    ability.evaluate(game, object)
-
-    # static abilities
-    for source, effect in game.volatile_effects:
-        effect.apply(game, source)
-
-    # until end of turn effects
-    for source, effect in game.until_end_of_turn_effects:
-        effect.apply(game, source)
+                    ability.register(game, object)
 
     # state based effects
     _ap = AllPermanentSelector()

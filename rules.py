@@ -24,8 +24,8 @@ from effects import *
 from selectors import *
 
 class ObjectRules:
-    def evaluate(self, game, obj):
-        pass
+    def getAbilities(self):
+        return []
 
     def resolve(self, game, obj):
         pass
@@ -38,10 +38,6 @@ class BasicLandRules(ObjectRules):
     def __init__ (self, color):
         self.color = color
 
-    def evaluate(self, game, obj):
-        pass
-#        obj.state.abilities.append (BasicManaAbility(self.color))
-
     def __str__(self):
         return "BasicLandRules()"
 
@@ -49,8 +45,8 @@ class NonBasicLandRules(ObjectRules):
     def __init__(self, abilities):
         self.abilities = abilities
 
-    def evaluate(self, game, obj):
-        obj.state.abilities.extend (self.abilities)
+    def getAbilities(self):
+        return self.abilities
 
     def resolve(self, game, obj):
         game.onResolve(obj)
@@ -64,9 +60,8 @@ class BasicPermanentRules(ObjectRules):
     def __init__(self, abilities):
         self.abilities = abilities
 
-    def evaluate(self, game, obj):
-        obj.state.abilities.append (PlaySpell())
-        obj.state.abilities.extend (self.abilities)
+    def getAbilities(self):
+        return [PlaySpell()] + self.abilities
 
     def resolve(self, game, obj):
         print("resolving permanenet %s" % obj.state.title)
@@ -107,9 +102,8 @@ class BasicNonPermanentRules(ObjectRules):
         self.effect = effect
         self.abilities = abilities
 
-    def evaluate(self, game, obj):
-        obj.state.abilities.append (PlaySpell())
-        obj.state.abilities.extend (self.abilities)
+    def getAbilities(self):
+        return [PlaySpell()] + self.abilities
 
     def resolve(self, game, obj):
         ret = self.effect.resolve(game, obj)
@@ -132,11 +126,10 @@ class EnchantPermanentRules(ObjectRules):
         self.selector = selector
         self.ability = ability
 
-    def evaluate(self, game, obj):
-        obj.state.abilities.append (PlaySpell())
-
-        if game.isInPlay(obj):
-            obj.state.abilities.append(self.ability)
+    def getAbilities(self):
+        return [PlaySpell()] + self.abilities
+#        if game.isInPlay(obj):
+#            obj.state.abilities.append(self.ability)
 
     def resolve(self, game, obj):
         from process import process_validate_target

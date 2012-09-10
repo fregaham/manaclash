@@ -31,6 +31,14 @@ class TriggeredAbility(Ability):
     def isActive(self, game, obj):
         return True
 
+    def getEventHandlers(self, game, obj):
+        return []
+
+class StateBasedAbility(Ability):
+
+    def isActive(self, game, obj):
+        return True
+
     def register(self, game, obj):
         pass
 
@@ -39,8 +47,8 @@ class StaticAbility(Ability):
     def isActive(self, game, obj):
         return True
 
-    def evaluate(self, game, obj):
-        pass
+    def getEffects(self):
+        return []
 
 class ActivatedAbility(Ability):
     def canActivate(self, game, obj, player):
@@ -115,13 +123,15 @@ class PlaySpell(ActivatedAbility):
 
 class TagAbility(StaticAbility):
     def __init__ (self, tag):
+        from effects import XGetsTag
+        self.effect = XGetsTag(SelfSelector(), tag)
         self.tag = tag
 
     def isActive(self, game, obj):
         return True
 
-    def evaluate(self, game, obj):
-        obj.state.tags.add(self.tag)
+    def getEffects(self):
+        return [self.effect]
 
     def __str__ (self):
         return "TagAbility(%s)" % self.tag
@@ -134,28 +144,25 @@ class ContinuousEffectStaticAbility(StaticAbility):
     def isActive(self, game, obj):
         return self.effect.isSelf() or game.isInPlay(obj)
 
-    def evaluate(self, game, obj):
-        # TODO: add the effect to the proper bucket
-        game.volatile_effects.append ( (obj, self.effect) )
+    def getEffects(self):
+        return [self.effect]
 
     def __str__ (self):
         return "ContinuousEffectStaticAbility(%s)" % str(self.effect)
 
 class ConditionalContinuousEffectStaticAbility(StaticAbility):
     def __init__ (self, condition, effect):
-        self.condition = condition
-        self.effect = effect
+        from effects import ConditionalEffect
+        self.effect = ConditionalEffect(condition, effect)
 
     def isActive(self, game, obj):
         return self.effect.isSelf() or game.isInPlay(obj)
 
-    def evaluate(self, game, obj):
-        # TODO: add the effect to the proper bucket
-        if self.condition.evaluate(game, obj):
-            game.volatile_effects.append ( (obj, self.effect) )
+    def getEffects(self):
+        return [self.effect]
 
     def __str__ (self):
-        return "ConditionalContinuousEffectStaticAbility(%s, %s)" % (str(self.condition), str(self.effect))
+        return "ConditionalContinuousEffectStaticAbility(%s)" % (str(self.effect))
 
 class TapCostDoEffectAbility(ActivatedAbility):
     def __init__ (self, costs, effect):
@@ -274,8 +281,8 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "in play":
@@ -297,8 +304,8 @@ class AsSelfComesIntoPlayAnswerDialog(TriggeredAbility):
     def isActive(self, game, obj):
         return True
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
         if SelfSelector().contains(game, SELF, obj) and zone_to.type == "in play":
@@ -316,8 +323,8 @@ class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play":
@@ -341,8 +348,8 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("post_deal_damage", partial(self.onPostDealDamage, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_deal_damage", partial(self.onPostDealDamage, game, obj))]
 
     def onPostDealDamage(self, game, SELF, source, dest, n):
         if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
@@ -368,8 +375,8 @@ class WhenXDealsDamageDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.x_selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("post_deal_damage", partial(self.onPostDealDamage, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_deal_damage", partial(self.onPostDealDamage, game, obj))]
 
     def onPostDealDamage(self, game, SELF, source, dest, n):
         if self.x_selector.contains(game, SELF, source):
@@ -395,8 +402,8 @@ class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))]
 
     def onPostDealDamage(self, game, SELF, source, dest, n):
         if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
@@ -422,8 +429,8 @@ class WhenXAttacksDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("attacks", partial(self.onAttacks, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("attacks", partial(self.onAttacks, game, obj))]
 
     def onAttacks(self, game, SELF, attacker):
         from process import process_trigger_effect
@@ -445,8 +452,8 @@ class WhenXBlocksDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("blocks", partial(self.onBlocks, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("blocks", partial(self.onBlocks, game, obj))]
 
     def onBlocks(self, game, SELF, blocker, attacker):
         from process import process_trigger_effect
@@ -468,9 +475,8 @@ class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("attacks", partial(self.onAttacks, game, obj))
-        game.add_volatile_event_handler("blocks", partial(self.onBlocks, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("attacks", partial(self.onAttacks, game, obj)), ("blocks", partial(self.onBlocks, game, obj))]
 
     def onAttacks(self, game, SELF, attacker):
         from process import process_trigger_effect
@@ -503,8 +509,8 @@ class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("blocks", partial(self.onBlocks, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("blocks", partial(self.onBlocks, game, obj))]
 
     def onBlocks(self, game, SELF, blocker, attacker):
         from process import process_trigger_effect
@@ -531,8 +537,8 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("post_discard", partial(self.onDiscard, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_discard", partial(self.onDiscard, game, obj))]
 
     def onDiscard(self, game, SELF, player, card, cause):
         from process import process_trigger_effect
@@ -555,8 +561,8 @@ class WhenXCausesYToDiscardZ(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.z_selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-         game.add_volatile_event_handler("post_discard", partial(self.onDiscard, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_discard", partial(self.onDiscard, game, obj))]
 
     def onDiscard(self, game, SELF, player, card, cause):
         from process import process_trigger_effect
@@ -584,8 +590,8 @@ class WhenXCastsYDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("play", partial(self.onPlay, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("play", partial(self.onPlay, game, obj))]
 
     def onPlay(self, game, SELF, spell):
         from process import process_trigger_effect
@@ -609,8 +615,8 @@ class WhenXBecomesTappedDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("post_tap", partial(self.onTap, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("post_tap", partial(self.onTap, game, obj))]
 
     def onTap(self, game, SELF, obj):
         from process import process_trigger_effect
@@ -632,8 +638,8 @@ class WhenXBecomesTappedForManaDoManaEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("tapped_for_mana", partial(self.onTap, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("tapped_for_mana", partial(self.onTap, game, obj))]
 
     def onTap(self, game, SELF, obj, player, mana):
         from process import process_trigger_effect
@@ -660,8 +666,8 @@ class WhenXBecomesTargetOfYDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return game.isInPlay(obj) or isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("target", partial(self.onTarget, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("target", partial(self.onTarget, game, obj))]
 
     def onTarget(self, game, SELF, source, target):
         from process import process_trigger_effect
@@ -678,7 +684,7 @@ class WhenXBecomesTargetOfYDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXBecomesTargetOfYDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
 
-class WhenXControlsNoOtherYDoEffectAbility(TriggeredAbility):
+class WhenXControlsNoOtherYDoEffectAbility(StateBasedAbility):
     def __init__ (self, x_selector, y_selector, effect):
         self.x_selector = x_selector
         self.y_selector = y_selector
@@ -720,8 +726,8 @@ class AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(TriggeredAbility):
     def isActive(self, game, obj):
         return game.isInPlay(obj)
 
-    def register(self, game, obj):
-        game.add_volatile_event_handler("step", partial(self.onStep, game, obj))
+    def getEventHandlers(self, game, obj):
+        return [("step", partial(self.onStep, game, obj))]
 
     def onStep(self, game, SELF):
         from process import process_trigger_effect

@@ -42,6 +42,10 @@ class ContinuousEffect(Effect):
     def isSelf(self):
         return False
 
+    def getLayer(self):
+        # "copy", "control", "text", "type", "other", "power_set", "power_switch", "power_modify", "power_other"
+        return "other"
+
 class OneShotEffect(Effect):
     def resolve(self, game, obj):
         pass
@@ -247,6 +251,9 @@ class XGetsNN(ContinuousEffect):
                 o.get_state().power += power
                 o.get_state().toughness += toughness
 
+    def getLayer(self):
+        return "power_modify"
+
     def __str__ (self):
         return "XGetsNN(%s, %s, %s)" % (self.selector, self.power, self.toughness)
 
@@ -275,6 +282,9 @@ class XGetsNNForEachY(ContinuousEffect):
             if not o.is_moved():
                 o.get_state().power += power * mult
                 o.get_state().toughness += toughness * mult
+
+    def getLayer(self):
+        return "power_modify"
 
     def __str__ (self):
         return "XGetsNNForEachY(%s, %s, %s, %s)" % (self.x_selector, self.power, self.toughness, self.y_selector)
@@ -313,6 +323,9 @@ class XGetsNNForEachOtherCreatureInPlayThatSharesAtLeastOneCreatureTypeWithIt(Co
                 o.get_state().power += power * mult
                 o.get_state().toughness += toughness * mult
 
+    def getLayer(self):
+        return "power_modify"
+
     def __str__ (self):
         return "XGetsNNForEachOtherCreatureInPlayThatSharesAtLeastOneCreatureTypeWithIt(%s, %s, %s)" % (self.x_selector, self.power, self.toughness)
 
@@ -327,8 +340,14 @@ class XGetsTag(ContinuousEffect):
             if not o.is_moved():
                 o.get_state().tags.add (self.tag)
 
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
+
     def __str__ (self):
         return "XGetsTag(%s, %s)" % (self.selector, self.tag)
+
+    def getLayer(self):
+        return "other"
 
 
 class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention):
@@ -1449,6 +1468,9 @@ class XCostsNMoreToCastExceptDuringItsControllersTurn(ContinuousEffect):
     def apply(self, game, obj):
         game.play_cost_replacement_effects.append (partial(self.replace, obj))
 
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
+
     def replace(self, context, game, ability, obj, player, costs):
         if self.selector.contains(game, context, obj) and player.id != game.active_player_id:
             ret = []
@@ -1504,6 +1526,12 @@ class XPowerAndToughnessAreEachEqualToN(ContinuousEffect):
     def __str__ (self):
         return "XPowerAndToughnessAreEachEqualToN(%s, %s)" % (self.x_selector, self.n)
 
+    def isSelf(self):
+        return isinstance(self.x_selector, SelfSelector)
+
+    def getLayer(self):
+        return "power_set"
+
 class XPowerIsNAndToughnessIsM(ContinuousEffect):
     def __init__ (self, selector, powerNumber, toughnessNumber):
         self.selector = selector
@@ -1521,6 +1549,12 @@ class XPowerIsNAndToughnessIsM(ContinuousEffect):
 
     def __str__ (self):
         return "XPowerIsNAndToughnessIsM(%s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber)
+
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
+
+    def getLayer(self):
+        return "power_set"
 
 class XAddNManaOfAnyColorToYourManapool(OneShotEffect):
     def __init__ (self, selector, n):
@@ -1602,6 +1636,12 @@ class XIsBasicLandType(ContinuousEffect):
     def __str__ (self):
         return "XIsBasicLandType(%s, %s)" % (self.selector, self.subtype)
 
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
+
+    def getLayer(self):
+        return "type"
+
 class XControlsY(ContinuousEffect):
     def __init__ (self, x_selector, y_selector):
         self.x_selector = x_selector
@@ -1617,6 +1657,9 @@ class XControlsY(ContinuousEffect):
 
     def __str__ (self):
         return "XControlsY(%s, %s)" % (self.x_selector, self.y_selector)
+
+    def getLayer(self):
+        return "control"
 
 class ChangeTargetOfTargetX(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector):
@@ -1702,6 +1745,9 @@ class XIsANNCTCreature(ContinuousEffect):
     def __str__ (self):
         return "XIsANNCTCreature(%s, %s, %s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber, self.color, self.type)
 
+    def getLayer(self):
+        # TODO: should be multiple
+        return "type"
 
 class YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, n):
@@ -1749,4 +1795,89 @@ class TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(SingleTargetOneShotEffect):
 
     def __str__ (self):
         return "TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(%s, %s)" % (self.targetSelector, self.number)
+
+class ChangeTheTextOfXByReplacingAllInstancesOfAWithB(ContinuousEffect):
+    def __init__ (self, selector, a, b):
+        self.selector = selector
+        self.a = a
+        self.b = b
+
+    def apply(self, game, obj):
+        for o in self.selector.all(game, obj):
+            o.get_state().text = o.get_state().text.replace(self.a, self.b)
+
+    def __str__ (self):
+        return "ChangeTheTextOfXByReplacingAllInstancesOfAWithB(%s, %s, %s)" % (self.selector, self.a, self.b)
+
+    def getLayer(self):
+        return "text"
+
+class ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnother(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+
+    def doModal(self, game, player, obj):
+        colors = ["black", "blue", "green", "red", "white"]
+        lands = ["forest", "island", "mountain", "plains", "swamp"]
+
+        options = colors + lands
+
+        actions = []
+        for name in options:
+            a = Action()
+            a.text = name
+            actions.append(a)
+
+        _as = ActionSet (game, player, ("Choose a color or a basic land type"), actions)
+        a = game.input.send(_as)
+
+        what = a.text.lower()
+
+        actions = []
+
+        if what in colors:
+            subset = colors
+        else:
+            subset = lands
+
+        for name in subset:
+            if name != what:
+                a = Action()
+                a.text = name
+                actions.append(a)
+
+        _as = ActionSet (game, player, ("Change '%s' to..." % what), actions)
+        a = game.input.send(_as)
+        
+        to = a.text.lower()
+
+        obj.modal = (what, to)
+
+        return True
+
+    def doResolve(self, game, obj, target):
+        game.indefinite_effects.append ( (obj, target, ChangeTheTextOfXByReplacingAllInstancesOfAWithB(LKISelector(target), obj.modal[0], obj.modal[1])))
+
+    def __str__ (self):
+        return "ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnother(%s)" % (self.targetSelector)
+
+
+class ConditionalEffect(ContinuousEffect):
+    def __init__ (self, condition, effect):
+        self.condition = condition
+        self.effect = effect
+
+    def apply(self, game, obj):
+        if self.condition.evaluate(game, obj):
+            self.effect.apply(game, obj)
+
+    def isSelf(self):
+        return self.effect.isSelf()
+
+    def __str__ (self):
+        return "ConditionalEffect(%s, %s)" % (self.condition, self.effect)
+
+    def getLayer(self):
+        return self.effect.getLayer()
+
 

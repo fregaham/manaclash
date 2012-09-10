@@ -368,6 +368,8 @@ r = [
 
     R("effect", ["target ", selector, " puts the top ", Number, " cards of his or her library into his or her graveyard."], lambda t,x,n:TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(x, n)),
 
+    R("effect", ["change the text of target ", selector, " by replacing all instances of one color word with another or one basic land type with another. (for example, you may change \"nonblack creature\" to \"nongreen creature\" or \"forestwalk\" to \"islandwalk.\" this effect lasts indefinitely.)"], lambda t,x:ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnother(x)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -436,6 +438,7 @@ r = [
     R("basicSelector", [color, " permanent"], lambda t,c:ColorPermanentSelector(c)),
     R("basicSelector", [color, " permanents"], lambda t,c:ColorPermanentSelector(c)),
     R("basicSelector", [color, " creature"], lambda t,c:ColorCreatureSelector(c)),
+    R("basicSelector", [color, " creatures"], lambda t,c:ColorCreatureSelector(c)),
     R("basicSelector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
     R("basicSelector", ["enchanted permanent"], lambda t:EnchantedPermanentSelector()),
     R("basicSelector", ["enchanted land"], lambda t:EnchantedLandSelector()),

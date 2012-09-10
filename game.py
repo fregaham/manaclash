@@ -56,9 +56,8 @@ class Game:
         self.events = {}
         self.volatile_events = {}
 
-        self.volatile_effects = []
-
         self.until_end_of_turn_effects = []
+        self.indefinite_effects = []
 
         self.end_of_combat_triggers = []
 
