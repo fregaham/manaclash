@@ -156,6 +156,7 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " is dealt damage, ", N("effectText")], lambda t,w,x,e:WhenXDealsDamageToYDoEffectAbility(AllSelector(),x,e)),
 
     R("ability", [N("when"), " ", selector, " ", N("deal"), " damage, ", N("effectText")], lambda t,w,x,d,e:WhenXDealsDamageDoEffectAbility(x,e)),
+    R("ability", [N("when"), " ", selector, " ", N("deal"), " combat damage, ", N("effectText")], lambda t,w,x,d,e:WhenXDealsCombatDamageDoEffectAbility(x,e)),
 
     R("a", ["a"], lambda t:t),
     R("a", ["an"], lambda t:t),
@@ -210,9 +211,9 @@ r = [
     R("gain", ["gain"], lambda t:t),
     R("gain", ["gains"], lambda t:t),
 
-    R("playerGainLifeEffect", [N("selector"), " ", N("gain"), " ", N("number"), " life."], lambda t,x,l,n: PlayerGainLifeEffect(x, n)),
+    R("playerGainLifeEffect", [N("selector"), " ", N("gain"), " ", N("Number"), " life."], lambda t,x,l,n: PlayerGainLifeEffect(x, n)),
 
-    R("playerGainLifeForEachXEffect", [N("selector"), " ", N("gain"), " ", N("number"), " life for each ", N("selector"), "."], lambda t,x,g,n,y: PlayerGainLifeForEachXEffect(x, n, y)),
+    R("playerGainLifeForEachXEffect", [N("selector"), " ", N("gain"), " ", N("Number"), " life for each ", N("selector"), "."], lambda t,x,g,n,y: PlayerGainLifeForEachXEffect(x, n, y)),
 
     R("xDealNDamageToTargetYEffect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
 
@@ -286,7 +287,7 @@ r = [
     R("effect", ["you may tap target ", selector, "."], lambda t,s: YouMayTapTargetX(s)),
     R("effect", ["tap target ", selector, "."], lambda t,s: TapTargetX(s)),
 
-    R("effect", ["target ", selector, " ", N("gain"), " ", N("number"), " life."], lambda t,x,l,n: TargetXGainLife(x, n)),
+    R("effect", ["target ", selector, " ", N("gain"), " ", N("Number"), " life."], lambda t,x,l,n: TargetXGainLife(x, n)),
 
     R("effect", ["prevent the next ", number, " damage that would be dealt to target ", selector, " this turn."], lambda t,n,s: PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(s, n)),
     R("effect", ["prevent all combat damage that would be dealt this turn."], lambda t:PreventAllCombatDamageThatWouldBeDealtThisTurn()),
@@ -506,6 +507,7 @@ r = [
     R("Number", [selector, "'s power"], lambda t,s:SelectorsPower(s)),
     R("Number", ["the number of cards in your hand"], lambda t:NumberOfCardsInYourHand()),
     R("Number", ["the number of ", selector], lambda t,x:EachSelectorNumber(x)),
+    R("Number", ["that much"], lambda t:ThatMuchNumber()),
 
     R("Number", ["number of ", N("basicLand"), " he or she controls"], lambda t,s:EachSelectorNumber(SubTypeXControlsSelector(s, ThatPlayerSelector()))),
     R("Number", ["number of creature cards in all graveyards"], lambda t:NumberOfCreatureCardsInAllGraveyards()),
@@ -527,7 +529,6 @@ r = [
     R("number", ['-x'], lambda t: '-X'),
     R("number", ['+', NUMBER], lambda t,n: int(n)),
     R("number", ['+x'], lambda t: '+X'),
-    R("number", ["that much"], lambda t: "that much"),
 
     R("color", ["red"], lambda t:t),
     R("color", ["green"], lambda t:t),

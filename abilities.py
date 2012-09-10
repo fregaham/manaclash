@@ -383,6 +383,8 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
             for slot in self.y_selector.slots():
                 slots[slot] = dest
 
+            slots["that much"] = n
+
             process_trigger_effect(game, SELF, self.effect, slots)
 
     def __str__ (self):
@@ -437,10 +439,38 @@ class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
             for slot in self.y_selector.slots():
                 slots[slot] = dest
 
+            slots["that much"] = n
+
             process_trigger_effect(game, SELF, self.effect, slots)
 
     def __str__ (self):
         return "WhenXDealsCombatDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
+
+class WhenXDealsCombatDamageDoEffectAbility(TriggeredAbility):
+    def __init__(self, x_selector, effect):
+        self.x_selector = x_selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return isinstance(self.x_selector, SelfSelector) or game.isInPlay(obj)
+
+    def getEventHandlers(self, game, obj):
+        return [("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))]
+
+    def onPostDealDamage(self, game, SELF, source, dest, n):
+        if self.x_selector.contains(game, SELF, source):
+            from process import process_trigger_effect
+
+            slots = {}
+            for slot in self.x_selector.slots():
+                slots[slot] = source
+
+            slots["that much"] = n
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXDealsCombatDamageDoEffectAbility(%s, %s)" % (str(self.x_selector), str(self.effect))
 
 class WhenXAttacksDoEffectAbility(TriggeredAbility):
     def __init__(self, selector, effect):

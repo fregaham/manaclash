@@ -104,3 +104,11 @@ class NumberSum(NumberOf):
     def __str__ (self):
         return "%s plus %s" % (self.x, self.y)
 
+class ThatMuchNumber(NumberOf):
+    def evaluate(self, game, context):
+        return context.slots["that much"]
+
+    def __str__ (self):
+        return "that much"
+
+

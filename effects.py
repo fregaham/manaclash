@@ -87,15 +87,11 @@ class PlayerGainLifeEffect(OneShotEffect):
         self.selector = playerSelector
         self.count = count
     def resolve(self, game, obj):
-        if self.count == "X":
-            count = obj.x
-        elif self.count == "that much":
-            count = obj.slots["that much"]
-        else:
-            count = self.count
+
+        n = self.count.evaluate(game, obj)
 
         for player in self.selector.all(game, obj):
-            game.doGainLife(player, count)
+            game.doGainLife(player, n)
 
         return True
 
@@ -111,14 +107,12 @@ class PlayerGainLifeForEachXEffect(OneShotEffect):
         self.eachSelector = eachSelector
 
     def resolve(self, game, obj):
-        if self.count == "X":
-            count = obj.x
-        else:
-            count = self.count
+
+        n = self.count.evaluate(game, obj)
 
         for player in self.selector.all(game, obj):
             eachcount = len([x for x in self.eachSelector.all(game, obj)])
-            game.doGainLife(player, count * eachcount)
+            game.doGainLife(player, n * eachcount)
 
         return True
 
@@ -1122,12 +1116,9 @@ class TargetXGainLife(SingleTargetOneShotEffect):
         self.count = count
     
     def doResolve(self, game, obj, target):
-        if self.count == "X":
-            count = obj.x
-        else:
-            count = self.count
 
-        game.doGainLife(target.get_object(), count)
+        n = self.count.evaluate(game, obj)
+        game.doGainLife(target.get_object(), n)
 
     def __str__ (self):
         return "TargetXGainLife(%s, %s)" % (self.targetSelector, str(self.count))
