@@ -365,6 +365,7 @@ r = [
     R("effect", ["untap all ", selector, "."], lambda t,s: UntapAllX(s)),
 
     R("effect", [selector, " is a ", Number, "/", Number, " ", color, " ", creatureType, " creature that's still a land."], lambda t,x,n,m,c,p:XIsANNCTCreature(x,n,m,c,p)),
+    R("effect", ["all ", selector, " become ", Number, "/", Number, " creatures until end of turn. they're still lands."], lambda t,x,n,m:AllXBecomeNNCreaturesUntilEndOfTurn(x,n,m)),
 
     R("effect", ["you and target ", selector, " each flip a coin. SELF deals ", Number, " damage to each player whose coin comes up tails. repeat this process until both players' coins come up heads on the same flip."], lambda t,x,n:YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(x, n)),
 
@@ -452,6 +453,7 @@ r = [
     R("basicSelector", [color, " ", cardType, " card"], lambda t,c,p:ColorTypeCardSelector(c,p)),
     R("basicSelector", ["a land"], lambda t:LandSelector()),
     R("basicSelector", ["land"], lambda t:LandSelector()),
+    R("basicSelector", ["lands"], lambda t:LandSelector()),
 
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature card"], lambda t:CreatureCardSelector()),

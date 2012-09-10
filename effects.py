@@ -1749,6 +1749,49 @@ class XIsANNCTCreature(ContinuousEffect):
         # TODO: should be multiple
         return "type"
 
+class XIsANNCreature(ContinuousEffect):
+    def __init__ (self, selector, powerNumber, toughnessNumber):
+        self.selector = selector
+        self.powerNumber = powerNumber
+        self.toughnessNumber = toughnessNumber
+
+    def apply(self, game, obj):
+        power = self.powerNumber.evaluate(game, obj)
+        toughness = self.toughnessNumber.evaluate(game, obj)
+
+        for o in self.selector.all(game, obj):
+            o.get_state().power = power
+            o.get_state().toughness = toughness
+            o.get_state().types.add("creature")
+
+    def __str__ (self):
+        return "XIsANNCreature(%s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber)
+
+    def getLayer(self):
+        # TODO: should be multiple
+        return "type"
+
+class AllXBecomeNNCreaturesUntilEndOfTurn(OneShotEffect):
+    def __init__ (self, selector, powerNumber, toughnessNumber):
+        self.selector = selector
+        self.powerNumber = powerNumber
+        self.toughnessNumber = toughnessNumber
+
+    def resolve(self, game, obj):
+
+        power = self.powerNumber.evaluate(game, obj)
+        toughness = self.toughnessNumber.evaluate(game, obj)
+
+        from numberof import NNumber
+
+        for o in self.selector.all(game, obj):
+            game.until_end_of_turn_effects.append ( (o, XIsANNCreature(LKISelector(LastKnownInformation(game, o)), NNumber(power), NNumber(toughness))))
+
+        return True
+
+    def __str__ (self):
+        return "AllXBecomeNNCreaturesUntilEndOfTurn(%s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber)
+
 class YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, n):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
