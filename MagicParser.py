@@ -254,7 +254,8 @@ r = [
     R("discard", ["discards"], lambda t:t),
     R("discard", ["discard"], lambda t:t),
 
-    R("targetXDiscardsACard", ["target ", selector, " ", discard, " ", numberOfCards, "."], lambda t,x,d,n: TargetXDiscardsACard(x, n)),
+    R("effect", ["target ", selector, " ", discard, " ", numberOfCards, "."], lambda t,x,d,n: TargetXDiscardsACard(x, n)),
+    R("effect", ["target ", selector, " discards a card for each ", selector, "."], lambda t,x,y:TargetXDiscardsACard(x,EachSelectorNumber(y))),
 
     R("playerDiscardsACardEffect", [selector, " ", discard, " ", numberOfCards, "."], lambda t,x,d,n: PlayerDiscardsCardEffect(x, n)),
 
