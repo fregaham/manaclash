@@ -252,6 +252,7 @@ r = [
     R("destroyX", ["destroy all ", selector, "."], lambda t,x: DestroyX(x)),
 
     R("effect", ["destroy ", selector, ". it can't be regenerated."], lambda t,x:BuryX(x)),
+    R("effect", ["destroy all ", selector, ". they can't be regenerated."], lambda t,x:BuryX(x)),
 
     R("discard", ["discards"], lambda t:t),
     R("discard", ["discard"], lambda t:t),
@@ -401,8 +402,10 @@ r = [
 
     R("selectorText", [selector], lambda t,x:t),
 
-    R("selector", [N("basicSelector"), " or ", selector], lambda t,x,y:OrSelector(x,y)),
     R("selector", [N("basicSelector")], id),
+    R("selector", [N("basicSelector"), " or ", N("basicSelector")], lambda t,x,y:OrSelector(x,y)),
+    R("selector", [N("basicSelector"), " or ", N("basicSelector"), " or ", N("basicSelector")], lambda t,x,y,z:OrSelector(OrSelector(y,z))),
+    R("selector", [N("basicSelector"), ", ", N("basicSelector"), ", and ", N("basicSelector")], lambda t,x,y,z:OrSelector(x,OrSelector(y,z))),
 
     R("basicSelector", ["player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["a player"], lambda t:AllPlayersSelector()),
@@ -470,6 +473,7 @@ r = [
     R("basicSelector", ["nonbasic land"], lambda t:NonBasicLandSelector()),
     R("basicSelector", ["nonbasic lands"], lambda t:NonBasicLandSelector()),
     R("basicSelector", ["artifact"], lambda t:ArtifactSelector()),
+    R("basicSelector", ["artifacts"], lambda t:ArtifactSelector()),
     R("basicSelector", ["artifact or land"], lambda t:ArtifactOrLandSelector()),
     R("basicSelector", ["artifact, enchantment, or land"], lambda t:ArtifactEnchantmentOrLandSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
