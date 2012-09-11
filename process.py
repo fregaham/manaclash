@@ -693,6 +693,19 @@ def process_step_declare_attackers (game):
 
 
 def validate_attack(game, attackers):
+
+    for attacker in attackers:
+        if "can't attack unless a creature with greater power also attacks" in attacker.get_state().tags:
+            isSuch = False
+            for other_attacker in attackers:
+                if attacker != other_attacker:
+                    if other_attacker.get_state().power > attacker.get_state().power:
+                        isSuch = True
+                        break
+
+            if not isSuch:
+                return False
+
     return True
 
 # this is a not a formal validation, just a "shortcut" to disallow obvious evasion abilities
@@ -758,6 +771,17 @@ def validate_block(game, blockers, blockers_map):
 
         for attacker in attackers:
             if not is_valid_block(game, attacker, blocker):
+                return False
+
+        if "can't block unless a creature with greater power also blocks" in blocker.get_state().tags:
+            isSuch = False
+            for other_blocker in blockers:
+                if blocker != other_blocker:
+                    if other_blocker.get_state().power > blocker.get_state().power:
+                        isSuch = True
+                        break
+
+            if not isSuch:
                 return False
 
     # check for lures and that all creature able to block are blocking them are blocking something

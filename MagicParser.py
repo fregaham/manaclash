@@ -586,6 +586,9 @@ r = [
 
     R("tag", ["SELF enters the battlefield tapped."], lambda t:"comes into play tapped"),
 
+    R("tag", ["SELF can't attack unless a creature with greater power also attacks."], lambda t:"can't attack unless a creature with greater power also attacks"),
+    R("tag", ["SELF can't block unless a creature with greater power also blocks."], lambda t:"can't block unless a creature with greater power also blocks"),
+
     # hack for flying defender combo
     R("tag", ["flying (this creature can't attack, and it can block creatures with flying.)"], lambda t:"flying"),
     
