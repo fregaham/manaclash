@@ -39,6 +39,12 @@ class Rule:
 def parse(rules, label, string, debug=False):
     stack = []
 
+    lhss = {}
+    for rule in rules:
+        l = lhss.get(rule.lhs, [])
+        l.append(rule)
+        lhss[rule.lhs] = l
+
     stack.append ( (string, [(Rule("S", [nt(label)], lambda t,x:x), 0, [], "")]) )
 
     while len(stack) > 0:
@@ -76,9 +82,8 @@ def parse(rules, label, string, debug=False):
             currentRuleElement = currentRule.rhs[currentRulePos]
             
             if isinstance(currentRuleElement, NonTerminal):
-                for rule in rules:
-                    if rule.lhs == currentRuleElement.label:
-                        stack.append ( (c[0], c[1][:] + [(rule, 0, [], "")]) )
+                for rule in lhss[currentRuleElement.label]:
+                    stack.append ( (c[0], c[1][:] + [(rule, 0, [], "")]) )
 
             else:
                 if c[0].startswith(currentRuleElement):
