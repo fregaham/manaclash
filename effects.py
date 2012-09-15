@@ -1914,4 +1914,54 @@ class ConditionalEffect(ContinuousEffect):
     def getLayer(self):
         return self.effect.getLayer()
 
+class AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector, z_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.z_selector = z_selector
+
+    def apply(self, game, obj):
+        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, game, obj))
+
+    def isSelf(self):
+        return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or isinstance(self.z_selector, SelfSelector)
+
+    def onDamageReplacement(self, game, SELF, dr):
+        list = []
+
+        # TODO: make an selector api for that 
+        if isinstance(self.z_selector, LKISelector):
+            c = self.z_selector.lki
+        else:
+            c = self.z_selector.only(game, SELF)
+            c = LastKnownInformation(game, c)
+
+        for a,b,n in dr.list:
+            if self.x_selector.contains(game, SELF, b) and self.y_selector.contains(game, SELF, a):
+                list.append ( (a,c,n) )
+            else:
+                list.append ( (a,b,n) )
+
+        dr.list = list
+ 
+
+class AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstead(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, y_selector, z_selector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.y_selector = y_selector
+        self.z_selector = z_selector
+
+    def doModal(self, game, player, obj):
+        from process import process_select_source_of_damage
+        obj.modal = LastKnownInformation(game, process_select_source_of_damage(game, player, obj, self.y_selector, "Choose a source of damage", False))
+
+        return obj.modal is not None
+
+    def doResolve(self, game, obj, target):
+        z_lki = LastKnownInformation(game, self.z_selector.only(game, obj))
+        if obj.modal is not None:
+            game.until_end_of_turn_effects.append ( (obj, AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(LKISelector(target), LKISelector(obj.modal), LKISelector(z_lki)) ) )
+
+    def __str__ (self):
+        return "AllDamageThatWouldBeDealtToTargetXThisTurnByASourceOfYourChoiceIsDealtToYInstead(%s, %s, %s)" % (self.targetSelector, self.y_selector, self.z_selector)
 

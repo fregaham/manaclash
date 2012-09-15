@@ -1312,6 +1312,55 @@ def process_select_selector(game, player, source, selector, text, optional=False
 
     return a.object
 
+def process_select_source_of_damage(game, player, SELF, selector, text, optional=False):
+    actions = []
+    _pass = PassAction(player)
+    _pass.text = "Cancel"
+
+    sources = set([obj for obj in selector.all(game, SELF)])
+    valid_sources = set()
+
+    # permanents, spells on stack, card or permanent referred by an objecton stack,  creature assigning combat damage
+    for permanent in AllPermanentSelector().all(game, SELF):
+        if permanent in sources:
+            valid_sources.add(permanent)
+
+    for obj in game.get_stack_zone().objects:
+        if "spell" in obj.get_state().tags and obj in sources and not isinstance(obj, EffectObject):
+            valid_sources.add(obj)
+
+        if isinstance(obj, EffectObject):
+            source = obj.get_source_lki().get_object()
+            if (not isinstance(source, EffectObject)) and source in sources:
+                valid_sources.add(obj)
+
+        elif isinstance(obj, DamageAssignment):
+            for a, b, n in obj.damage_assignment_list:
+                if a.get_object() in sources:
+                    valid_sources.add(a.get_object())
+        
+        for target in obj.targets.values():
+            if target.get_object() in sources and not isinstance(target.get_object(), EffectObject):
+                valid_sources.add(target.get_object())
+
+    for obj in valid_sources:
+        _p = Action()
+        _p.object = obj
+        _p.text = str(obj)
+        actions.append(_p)
+
+    if len(actions) == 0 or optional:
+        actions = [_pass] + actions
+
+    _as = ActionSet(game, player, text, actions)
+    a = game.input.send(_as)
+
+    if a == _pass:
+        return None
+
+    return a.object
+   
+
 def _is_valid_target(game, source, target):
     # TODO: protections and stuff 
 

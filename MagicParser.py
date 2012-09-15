@@ -372,6 +372,8 @@ r = [
 
     R("effect", ["change the text of target ", selector, " by replacing all instances of one color word with another or one basic land type with another. (for example, you may change \"nonblack creature\" to \"nongreen creature\" or \"forestwalk\" to \"islandwalk.\" this effect lasts indefinitely.)"], lambda t,x:ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnother(x)),
 
+    R("effect", ["all damage that would be dealt to target ", selector, " this turn by a ", selector, " of your choice is dealt to ", selector, " instead."], lambda t,x,y,z:AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstead(x, y, z)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -406,6 +408,7 @@ r = [
     R("basicSelector", ["player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["a player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["a source"], lambda t:AllSelector()),
+    R("basicSelector", ["source"], lambda t:AllSelector()),
     R("basicSelector", ["each player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["each other player"], lambda t:EachOtherPlayerSelector()),
     R("basicSelector", ["that player"], lambda t:ThatPlayerSelector()),
