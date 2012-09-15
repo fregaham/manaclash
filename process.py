@@ -136,8 +136,9 @@ def evaluate (game):
             if zone.type == "hand":
                 object.state.show_to.append( zone.player_id )
 
-            if object.id in game.looked_at:
-                object.state.show_to.append( object.controller_id )
+            for player in game.players:
+                if object.id in game.looked_at[player.id]:
+                    object.state.show_to.append( object.controller_id )
 
         # some basic rules
 
@@ -1191,6 +1192,23 @@ def process_reveal_cards(game, player, cards):
             break
 
     game.revealed = oldrevealed 
+
+def process_look_at_cards(game, player, cards):
+    oldlooked_at = game.looked_at
+    game.looked_at = game.looked_at.copy()
+
+    for card in cards:
+        game.looked_at[player.id].append (card.get_id())
+
+    evaluate(game)
+
+    _ok = PassAction(player)
+    _ok.text = "OK"
+
+    _as = ActionSet(game, player, "Look at cards", [_ok])
+    a = game.input.send(_as)
+
+    game.looked_at = oldlooked_at
 
 def process_step_cleanup(game):
 

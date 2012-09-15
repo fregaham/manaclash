@@ -374,6 +374,8 @@ r = [
 
     R("effect", ["all damage that would be dealt to target ", selector, " this turn by a ", selector, " of your choice is dealt to ", selector, " instead."], lambda t,x,y,z:AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstead(x, y, z)),
 
+    R("effect", ["look at the top ", Number, " cards of target ", selector, "'s library."], lambda t,n,x:LookAtTheTopNCardsOfTargetPlayersLibrary(x,n)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),

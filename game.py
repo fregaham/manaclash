@@ -66,8 +66,8 @@ class Game:
         # ids of cards revealed to all players
         self.revealed = []
 
-        # ids of cards looked at by a controller (e.g. from a library)
-        self.looked_at = []
+        # ids of cards looked at by a controller (e.g. from a library)   player_id -> [id]
+        self.looked_at = {}
 
         self.play_cost_replacement_effects = []
 
@@ -131,6 +131,8 @@ class Game:
             card.owner_id = player.id
             card.controller_id = player.id
             library.objects.append (card)
+
+        self.looked_at[player.id] = []
 
         return player
 

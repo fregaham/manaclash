@@ -848,12 +848,12 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
         for player in self.x_selector.all(game, obj):
 
             old_looked_at = game.looked_at
-            game.looked_at = game.looked_at[:]
+            game.looked_at = game.looked_at.copy()
 
             actions = []
             for card in game.get_library(player).objects:
 
-                game.looked_at.append (card.get_id())
+                game.looked_at[player.id].append (card.get_id())
                 
                 if self.y_selector.contains(game, obj, card):
                     _p = Action ()
@@ -900,12 +900,12 @@ class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
         for player in self.x_selector.all(game, obj):
 
             old_looked_at = game.looked_at
-            game.looked_at = game.looked_at[:]
+            game.looked_at = game.looked_at.copy()
 
             actions = []
             for card in game.get_library(player).objects:
 
-                game.looked_at.append (card.get_id())
+                game.looked_at[player.id].append (card.get_id())
                 
                 if self.y_selector.contains(game, obj, card):
                     _p = Action ()
@@ -1175,7 +1175,7 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
         while len(cards) > 0:
 
             old_looked_at = game.looked_at
-            game.looked_at = game.looked_at[:]
+            game.looked_at = game.looked_at.copy()
 
             options = []
             for card in cards:
@@ -1184,7 +1184,7 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
                 _option.object = card
                 options.append (_option)
 
-                game.looked_at.append(card.get_id())
+                game.looked_at[player.id].append(card.get_id())
         
             evaluate(game)
 
@@ -1245,7 +1245,7 @@ class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYour
         while len(cards) > 0:
 
             old_looked_at = game.looked_at
-            game.looked_at = game.looked_at[:]
+            game.looked_at = game.looked_at.copy()
 
             options = []
             for card in cards:
@@ -1254,7 +1254,7 @@ class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYour
                 _option.object = card
                 options.append (_option)
 
-                game.looked_at.append(card.get_id())
+                game.looked_at[player.id].append(card.get_id())
         
             evaluate(game)
 
@@ -1991,4 +1991,27 @@ class AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstea
 
     def __str__ (self):
         return "AllDamageThatWouldBeDealtToTargetXThisTurnByASourceOfYourChoiceIsDealtToYInstead(%s, %s, %s)" % (self.targetSelector, self.y_selector, self.z_selector)
+
+
+class LookAtTheTopNCardsOfTargetPlayersLibrary(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, number):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, False)
+        self.number = number
+
+    def doResolve(self, game, obj, target):
+        n = self.number.evaluate(game, obj)
+        you = YouSelector().only(game, obj)
+        library = game.get_library(target.get_object())
+
+        cards = []
+
+        for i in range(n):
+            if len(library.objects) > i:
+                cards.append (library.objects[-i - 1])
+
+        from process import process_look_at_cards
+        process_look_at_cards(game, you, cards)
+
+    def __str__ (self):
+        return "LookAtTheTopNCardsOfTargetPlayersLibrary(%s, %s)" % (self.targetSelector, self.number)
 
