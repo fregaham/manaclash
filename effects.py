@@ -222,6 +222,33 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
     def __str__ (self):
         return "XDealNDamageToTargetYEffect(%s, %s, %s)" % (self.targetSelector, self.number, self.sourceSelector)
 
+class XDealNDamageToTargetYAndMDamageToZEffect(SingleTargetOneShotEffect):
+    def __init__ (self, sourceSelector, number, targetSelector, number2, otherSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.sourceSelector = sourceSelector
+        self.number = number
+        self.number2 = number2
+        self.otherSelector = otherSelector
+           
+    def doResolve(self, game, obj, target): 
+        sources = [x for x in self.sourceSelector.all(game, obj)]
+        assert len(sources) == 1
+
+        source = sources[0]
+
+        count = self.number.evaluate(game, obj)
+        count2 = self.number2.evaluate(game, obj)
+
+        dlist = []
+        dlist.append ( (source, target, count) )
+
+        for obj in self.otherSelector.all(game, obj):
+            dlist.append ( (source, obj, count2) )        
+        game.doDealDamage(dlist)
+
+    def __str__ (self):
+        return "XDealNDamageToTargetYAndMDamageToZEffect(%s, %s, %s, %s, %s)" % (self.targetSelector, self.number, self.sourceSelector, self.number2, self.otherSelector)
+
 class XGetsNN(ContinuousEffect):
     def __init__ (self, selector, power, toughness):
         self.selector = selector

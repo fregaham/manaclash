@@ -84,7 +84,6 @@ r = [
     R("effect", [N("playerGainLifeEffect")], id),
     R("effect", [N("playerGainLifeForEachXEffect")], id),
     R("effect", [N("playerDiscardsACardEffect")], id),
-    R("effect", [N("xDealNDamageToTargetYEffect")], id),
     R("effect", [N("xGetsNN")], id),
     R("effect", [N("targetXGetsNNUntilEndOfTurn")], id),
     R("effect", [N("destroyX")], id),
@@ -211,7 +210,8 @@ r = [
 
     R("playerGainLifeForEachXEffect", [N("selector"), " ", N("gain"), " ", N("Number"), " life for each ", N("selector"), "."], lambda t,x,g,n,y: PlayerGainLifeForEachXEffect(x, n, y)),
 
-    R("xDealNDamageToTargetYEffect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
+    R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
+    R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), " and ", N("Number"), " damage to ", selector, "."], lambda t,x,d,n,y,m,z:XDealNDamageToTargetYAndMDamageToZEffect(x, n, y, m, z)),
 
     R("effect", [selector, " ", N("deal"), " damage equal to ", N("Number"), " to target ", selector, "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
 
