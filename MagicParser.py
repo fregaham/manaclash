@@ -301,6 +301,8 @@ r = [
     R("effect", [selector, " has flying. (it can't be blocked except by creatures with flying or reach.)"], lambda t,s:XGetsTag(s, "flying")),
 
     R("effect", ["target ", selector, " gains ", tag, " until end of turn."], lambda t,x,g:TargetXGetsTagUntilEndOfTurn(x,g)),
+    R("effect", ["up to ", Number, " target ", selector, " can't block this turn."], lambda t,n,x:UpToNTargetXGetTagUntilEndOfTurn(n, x, "can't block")),
+
 
     R("effect", ["you may ", costs, ". if you do, ", N("effectText")], lambda t,c,e: YouMayPayCostIfYouDoY(c, e)),
 

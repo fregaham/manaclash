@@ -203,6 +203,59 @@ class SingleTargetOneShotEffect(OneShotEffect):
     def __str__ (self):
         return "SingleTargetOneShotEffect(%s)" % self.targetSelector
 
+class MultipleTargetOneShotEffect(OneShotEffect):
+
+    def __init__ (self, targetSelector, number, optional = False):
+        self.targetSelector = targetSelector    
+        self.optional = optional
+        self.number = number
+
+    def resolve(self, game, obj):
+        if self.validateTargets(game, obj):
+            targets = obj.targets
+            self.doResolve(game, obj, targets)
+
+            return True
+
+        return False
+
+    def validateTargets(self, game, obj):
+        from process import process_validate_target
+
+        for target in obj.targets.values():
+            if not process_validate_target(game, obj, self.targetSelector, target):
+                return False
+
+        return True
+
+    def selectTargets(self, game, player, obj):
+        from process import process_select_targets
+
+        n = self.number.evaluate(game, obj)
+
+        targets = process_select_targets(game, player, obj, self.targetSelector, n, self.optional)
+
+        if targets is None or len(targets) == 0:
+            return False
+
+        if not self.optional and len(targets) != n:
+            return False
+
+        for i in range(len(targets)):
+            obj.targets[i] = LastKnownInformation(game, targets[i])
+            game.raise_event ("target", obj, targets[i])
+
+        return self.doModal(game, player, obj)
+    
+    def doModal(self, game, player, obj):
+        return True
+
+    def doResolve(self, game, obj, target):
+        pass
+
+    def __str__ (self):
+        return "MultipleTargetOneShotEffect(%s, %s)" % (self.targetSelector, self.number)
+
 class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
     def __init__ (self, sourceSelector, number, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -485,6 +538,18 @@ class TargetXGetsTagUntilEndOfTurn(SingleTargetOneShotEffect):
 
     def __str__ (self):
         return "TargetXGetsTagUntilEndOfTurn(%s, %s)" % (self.targetSelector, self.tag)
+
+class UpToNTargetXGetTagUntilEndOfTurn(MultipleTargetOneShotEffect):
+    def __init__ (self, number, selector, tag):
+        MultipleTargetOneShotEffect.__init__(self, selector, number, True)
+        self.tag = tag
+
+    def doResolve(self, game, obj, targets):
+        for target in targets.values():
+            game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target), self.tag)) )
+
+    def __str__ (self):
+        return "UpToNTargetXGetTagUntilEndOfTurn(%s, %s, %s)" % (self.number, self.targetSelector, self.tag)
 
 class DestroyTargetX(SingleTargetOneShotEffect):
     def __init__(self, targetSelector):

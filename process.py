@@ -1412,6 +1412,53 @@ def process_select_target(game, player, source, selector, optional=False):
 
     return a.object
 
+def process_select_targets(game, player, source, selector, n, optional=False):
+
+    _pass = PassAction (player)
+    _pass.text = "Cancel"
+
+    _enough = PassAction(player)
+    _enough.text = "Enough targets"
+    # actions.append (_pass)
+
+    targets = []
+
+    for i in range(n):
+        actions = []
+
+        for obj in selector.all(game, source):
+            if obj not in targets and _is_valid_target(game, source, obj):
+                _p = Action ()
+                _p.object = obj
+                _p.text = "Target " + str(obj)
+                actions.append (_p)
+
+        if len(actions) == 0 and not optional:
+            actions = [_pass] + actions
+
+        if optional:
+            actions = [_enough] + actions
+
+        numberals = ["first", "second", "third", "fourth", "fifth", "sixth", "sevetnh", "eighth", "ninth"]
+        if i <= 8:
+            query = ("Choose the %s target for " % (numberals[i]))  + str(source)
+        else:
+            query = ("Choose the %dth target for " % i) + str(source)
+
+        _as = ActionSet (game, player, query, actions)
+        a = game.input.send (_as)
+
+        if a == _pass:
+            return None
+
+        if a == _enough:
+            break
+
+        targets.append (a.object)
+
+    return targets
+
+
 def process_validate_target(game, source, selector, target):
     assert isinstance(target, LastKnownInformation)
     if target.is_moved():
