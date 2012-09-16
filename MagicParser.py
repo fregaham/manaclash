@@ -255,6 +255,7 @@ r = [
 
     R("effect", ["target ", selector, " ", discard, " ", numberOfCards, "."], lambda t,x,d,n: TargetXDiscardsACard(x, n)),
     R("effect", ["target ", selector, " discards a card for each ", selector, "."], lambda t,x,y:TargetXDiscardsACard(x,EachSelectorNumber(y))),
+    R("effect", ["choose a color. target ", selector, " reveals his or her hand and discards all cards of that color."], lambda t,x:ChooseColorTargetXDiscardsCardsOfThatColor(x)),
 
     R("playerDiscardsACardEffect", [selector, " ", discard, " ", numberOfCards, "."], lambda t,x,d,n: PlayerDiscardsCardEffect(x, n)),
 
