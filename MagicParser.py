@@ -178,6 +178,7 @@ r = [
 
     R("triggeredAbility", [N("when"), " ", selector, " control no other ", selector, ", ", N("effectText")], lambda t,w,x,y,e:WhenXControlsNoOtherYDoEffectAbility(x,y,e)),
     R("triggeredAbility", ["at the beginning of each player's upkeep, ", N("effectText")], lambda t,e:AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(e)),
+    R("triggeredAbility", ["at the beginning of your upkeep, ", N("effectText")], lambda t,e:AtTheBeginningOfYourUpkeepDoEffectAbility(e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
     R("activatedAbility", [N("tappingActivatedManaAbility")], id),

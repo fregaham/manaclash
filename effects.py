@@ -1514,11 +1514,10 @@ class DrawCards(OneShotEffect):
         self.number = number
 
     def resolve(self, game, obj):
-
         n = self.number.evaluate(game, obj)
         for o in self.selector.all(game, obj):
             for i in range(n):
-                game.doDrawCard(controller)
+                game.doDrawCard(o)
 
         return True
 
@@ -1544,7 +1543,9 @@ class XAndY(OneShotEffect):
         self.y = y
 
     def resolve(self, game, obj):
-        return self.x.resolve(game, obj) or self.y.resolve(game, obj)
+        if self.x.resolve(game, obj):
+            return self.y.resolve(game, obj)
+        return False
 
     def __str__(self):
         return "XAndY(%s, %s)" % (self.x, self.y)
