@@ -437,6 +437,7 @@ r = [
     R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["all creatures you control"], lambda t:CreatureYouControlSelector()),
+    R("basicSelector", ["creatures you don't control"], lambda t:CreatureYouDontControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
     R("basicSelector", ["that creature's controller"], lambda t:ThatCreaturesControllerSelector()),
 
