@@ -754,7 +754,7 @@ def is_valid_block(game, attacker, blocker):
     # warning, this can turn into a recursive hell, if not taken care
     if "lure" not in attacker.get_state().tags:
         for a2 in game.declared_attackers:
-            if "lure" in a2.get_state().tags:
+            if "lure" in a2.get_state().tags and "can't be blocked except by three or more creatures" not in attacker.get_state().tags and "can't be blocked except by two or more creatures" not in attacker.get_state().tags:
                 if is_valid_block(game, a2, blocker):
                     print("%s cannot block %s because there is a valid lure %s" % (blocker, attacker, a2))
                     return False
@@ -762,6 +762,9 @@ def is_valid_block(game, attacker, blocker):
     return True
 
 def validate_block(game, blockers, blockers_map):
+
+    blockers_inv_map = {}
+
     # evasion abilities
     for blocker_id, attackers in blockers_map.items():
         blocker = game.objects[blocker_id]
@@ -785,9 +788,23 @@ def validate_block(game, blockers, blockers_map):
             if not isSuch:
                 return False
 
+        for attacker in attackers:
+            lst = blockers_inv_map.get(attacker, [])
+            lst.append (blocker)
+            blockers_inv_map[attacker] = lst
+
+    for attacker, a_blockers in blockers_inv_map.items():
+        if "can't be blocked except by three or more creatures" in attacker.get_state().tags:
+            if len(a_blockers) > 0 and len(a_blockers) < 3:
+                return False
+
+        if "can't be blocked except by two or more creatures" in attacker.get_state().tags:
+            if len(a_blockers) > 0 and len(a_blockers) < 2:
+                return False
+
     # check for lures and that all creature able to block are blocking them are blocking something
     for attacker in game.declared_attackers:
-        if "lure" in attacker.get_state().tags:
+        if "lure" in attacker.get_state().tags and "can't be blocked except by three or more creatures" not in attacker.get_state().tags and "can't be blocked except by two or more creatures" not in attacker.get_state().tags:
             selector = PermanentPlayerControlsSelector(game.get_defending_player())
             for permanent in selector.all(game, None):
                 if "creature" in permanent.state.types and not permanent.tapped and (permanent not in blockers or "can block any number of creatures" in permanent.state.tags):

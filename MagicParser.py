@@ -366,6 +366,7 @@ r = [
     R("effect", ["at the beginning of each player's draw step, if ", condition, ", that player draws an additional card."], lambda t,c:AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(c)),
 
     R("effect", ["untap all ", selector, "."], lambda t,s: UntapAllX(s)),
+    R("effect", ["untap SELF."], lambda t: UntapAllX(SelfSelector())),
 
     R("effect", [selector, " is a ", Number, "/", Number, " ", color, " ", creatureType, " creature that's still a land."], lambda t,x,n,m,c,p:XIsANNCTCreature(x,n,m,c,p)),
     R("effect", ["all ", selector, " become ", Number, "/", Number, " creatures until end of turn. they're still lands."], lambda t,x,n,m:AllXBecomeNNCreaturesUntilEndOfTurn(x,n,m)),
@@ -597,6 +598,9 @@ r = [
 
     R("tag", ["SELF can't attack unless a creature with greater power also attacks."], lambda t:"can't attack unless a creature with greater power also attacks"),
     R("tag", ["SELF can't block unless a creature with greater power also blocks."], lambda t:"can't block unless a creature with greater power also blocks"),
+    R("tag", ["SELF can't be blocked except by three or more creatures."], lambda t:"can't be blocked except by three or more creatures"),
+    R("tag", ["SELF can't be blocked except by two or more creatures."], lambda t:"can't be blocked except by two or more creatures"),
+    R("tag", ["SELF doesn't untap during your untap step."], lambda t:"does not untap"),
 
     # hack for flying defender combo
     R("tag", ["flying (this creature can't attack, and it can block creatures with flying.)"], lambda t:"flying"),

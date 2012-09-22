@@ -243,16 +243,16 @@ class Game:
 
     def doTap (self, object):
 
-        if object.tapped == False:
+        if (not object.is_moved()) and object.get_object().tapped == False:
             self.raise_event ("pre_tap", object)
-            object.tapped = True
+            object.get_object().tapped = True
             self.raise_event ("post_tap", object)
 
     def doUntap (self, object):
 
-        if object.tapped == True:
+        if (not object.is_moved()) and object.get_object().tapped == True:
             self.raise_event ("pre_untap", object)
-            object.tapped = False
+            object.get_object().tapped = False
             self.raise_event ("post_untap", object)
 
     def doAddMana (self, player, source, mana):
