@@ -1404,6 +1404,9 @@ def _is_valid_target(game, source, target):
 
     return True
 
+def is_valid_target(game, source, target):
+    return _is_valid_target(game, source, target)
+
 def process_select_target(game, player, source, selector, optional=False):
     actions = []
 

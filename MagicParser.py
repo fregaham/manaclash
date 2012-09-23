@@ -383,6 +383,8 @@ r = [
 
     R("effect", ["put ", Number, " target ", selector, " on top of their owners' libraries."], lambda t,n,x:PutNTargetXOnTopOfOwnersLibraries(n,x)),
 
+    R("effect", ["SELF deals ", Number, " damage divided as you choose among any number of target creatures and/or players."], lambda t,n:DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(CreatureOrPlayerSelector(), n)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
