@@ -386,6 +386,8 @@ r = [
 
     R("effect", ["SELF deals ", Number, " damage divided as you choose among any number of target creatures and/or players."], lambda t,n:DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(CreatureOrPlayerSelector(), n)),
 
+    R("effect", ["prevent all damage that would be dealt this turn to up to ", Number, " target ", selector, "."], lambda t,n,x:PreventAllDamageThatWouldBeDealtThisTurnToUpToNTargetX(n,x)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),

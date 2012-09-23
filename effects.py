@@ -2219,4 +2219,48 @@ class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(OneShotEffect):
     def __str__ (self):
         return "DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(%s, %s)" % (self.targetSelector, self.number)
 
+class PreventAllDamageThatWouldBeDealtToXDamagePrevention(DamagePrevention):
+
+    def __init__ (self, obj, effect):
+        self.obj = obj
+        self.effect = effect
+
+    def canApply(self, game, damage, combat):
+        source, dest, n = damage
+        return self.effect.selector.contains(game, self.obj, dest)
+
+    def apply(self, game, damage, combat):
+        source, dest, n = damage
+        return (source, dest, 0)
+
+    def getText(self):
+        return "Prevent all damage that would be dealt to " + str(self.effect.selector)
+
+class PreventAllDamageThatWouldBeDealtToX(ContinuousEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def apply(self, game, obj):
+        game.damage_preventions.append(PreventAllDamageThatWouldBeDealtToXDamagePrevention(obj, self))
+
+class PreventAllDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector, True)
+
+    def doResolve(self, game, obj, target):
+        game.until_end_of_turn_effects.append ( (obj, PreventAllDamageThatWouldBeDealtToX(LKISelector(target))))
+
+    def __str__ (self):
+        return "PreventAllDamageThatWouldBeDealtToTargetXThisTurn(%s, %s)" % (self.targetSelector)
+
+class PreventAllDamageThatWouldBeDealtThisTurnToUpToNTargetX(MultipleTargetOneShotEffect):
+    def __init__ (self, number, selector):
+        MultipleTargetOneShotEffect.__init__(self, selector, number, True)
+
+    def doResolve(self, game, obj, targets):
+        for target in targets.values():
+            game.until_end_of_turn_effects.append ( (obj, PreventAllDamageThatWouldBeDealtToX(LKISelector(target))))
+
+    def __str__ (self):
+        return "PreventAllDamageThatWouldBeDealtThisTurnToUpToNTargetX(%s, %s)" % (self.number, self.targetSelector)
 
