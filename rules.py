@@ -127,7 +127,7 @@ class EnchantPermanentRules(ObjectRules):
         self.ability = ability
 
     def getAbilities(self):
-        return [PlaySpell()] + self.abilities
+        return [PlaySpell()] + [self.ability]
 #        if game.isInPlay(obj):
 #            obj.state.abilities.append(self.ability)
 
