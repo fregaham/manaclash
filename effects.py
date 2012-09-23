@@ -2116,3 +2116,16 @@ class LookAtTheTopNCardsOfTargetPlayersLibrary(SingleTargetOneShotEffect):
     def __str__ (self):
         return "LookAtTheTopNCardsOfTargetPlayersLibrary(%s, %s)" % (self.targetSelector, self.number)
 
+class PutNTargetXOnTopOfOwnersLibraries(MultipleTargetOneShotEffect):
+    def __init__ (self, number, selector):
+        MultipleTargetOneShotEffect.__init__(self, selector, number, False)
+
+    def doResolve(self, game, obj, targets):
+        for target in targets.values():
+            library = game.get_library(game.objects[target.get_state().owner_id])
+            if not target.is_moved():
+                game.doZoneTransfer(target.get_object(), library)
+
+    def __str__ (self):
+        return "PutNTargetXOnTopOfOwnersLibraries(%s, %s)" % (self.number, self.targetSelector)
+

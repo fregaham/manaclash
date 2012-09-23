@@ -312,6 +312,8 @@ class Game:
             object.damage = 0
             object.regenerated = False
             object.tapped = False
+            if "summoning sickness" in object.initial_state.tags:
+                object.initial_state.tags.remove("summoning sickness")
             object.counters = []
 
         if zone_from.id == self.get_in_play_zone().id:
