@@ -485,8 +485,8 @@ class ColorPermanentSelector(Selector):
 
 class EnchantedCreatureSelector(Selector):
     def all(self, game, context):
-        if context.enchanted_id != None:
-            ret = game.objects[context.enchanted_id]
+        if context.get_enchanted_id() != None:
+            ret = game.objects[context.get_enchanted_id()]
             if "permanent" in ret.state.tags:
                 yield ret
 
@@ -498,8 +498,8 @@ class EnchantedCreatureSelector(Selector):
 
 class EnchantedLandSelector(Selector):
     def all(self, game, context):
-        if context.enchanted_id != None:
-            ret = game.objects[context.enchanted_id]
+        if context.get_enchanted_id() != None:
+            ret = game.objects[context.get_enchanted_id()]
             if "permanent" in ret.state.tags:
                 yield ret
 
@@ -511,8 +511,8 @@ class EnchantedLandSelector(Selector):
 
 class EnchantedPermanentSelector(Selector):
     def all(self, game, context):
-        if context.enchanted_id != None:
-            ret = game.objects[context.enchanted_id]
+        if context.get_enchanted_id() != None:
+            ret = game.objects[context.get_enchanted_id()]
             if "permanent" in ret.state.tags:
                 yield ret
 

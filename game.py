@@ -463,12 +463,18 @@ class Game:
         for a in self.declared_attackers:
             if a.get_id() == id:
                 self.declared_attackers.remove (a)
-                return
+                break
 
         for b in self.declared_blockers:
             if b.get_id() == id:
-                self.declared_attackers.remove (b)
-                return
+                self.declared_blockers.remove (b)
+                game.declared_blockers_map.remove(b.get_id())
+                break
+
+        for b in self.declared_blockers:
+            blocked_ids = self.declared_blockers_map[b.get_id()]
+            if obj.get_id() in blocked_ids:
+                blocked_ids.remove(obj.get_id())
 
     def doCoinFlip(self, player):
         result = random.choice(["heads", "tails"])
@@ -476,8 +482,6 @@ class Game:
         return result
 
     def delete(self, obj):
-        print("deleting object %s" % obj)
-
         if obj.zone_id is not None:
             self.objects[obj.zone_id].objects.remove(obj)
         obj.zone_id = None

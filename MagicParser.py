@@ -280,6 +280,7 @@ r = [
     R("effect", [selector, " sacrifices ", selector, "."], lambda t,x,y:XSacrificeY(x,y)),
 
     R("effect", ["regenerate ", selector, ". (the next time this creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),
+    R("effect", ["regenerate ", selector, ". (the next time that creature would be destroyed this turn, it isn't. instead tap it, remove all damage from it, and remove it from combat.)"], lambda t,s: RegenerateX(s)),
     R("effect", ["regenerate ", selector, "."], lambda t,s: RegenerateX(s)),
    
     R("effect", ["all creatures able to block ", selector, " do so."], lambda t,s: XGetsTag(s, "lure")),

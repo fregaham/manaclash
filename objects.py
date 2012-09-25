@@ -97,6 +97,9 @@ class Object:
     def get_controller_id(self):
         return self.state.controller_id
 
+    def get_enchanted_id(self):
+        return self.enchanted_id
+
     def _copy(self, src):
         self.id = src.id
         self.initial_state = src.initial_state.copy()
@@ -236,6 +239,9 @@ class EffectObject(Object):
     def get_slot(self, key):
         return self.slots.get(key)
 
+    def get_enchanted_id(self):
+        return self.source_lki.get_enchanted_id()
+
     def copy(self):
         return EffectObject(self.source_lki, self.controller_id, self.text, self.slots)._copy(self)
 
@@ -262,6 +268,9 @@ class LastKnownInformation(Object):
 
     def get_self_id(self):
         return self.object.id
+
+    def get_enchanted_id(self):
+        return self.object.get_enchanted_id()
 
     def get_object (self):
         return self.object
