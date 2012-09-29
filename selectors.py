@@ -674,6 +674,18 @@ class LandSubTypeSelector(Selector):
     def __str__ (self):
         return "%s" % (self.type)
 
+class CreatureSubTypeSelector(Selector):
+    def __init__ (self, type):
+        self.type = type
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and self.type in item.state.subtypes and "creature" in item.state.types:
+                yield item
+
+    def __str__ (self):
+        return "%s creature" % (self.type)
+
 class SpellSelector(Selector):
     def __init__ (self):
         pass

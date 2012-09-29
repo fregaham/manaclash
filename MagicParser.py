@@ -304,6 +304,7 @@ r = [
     R("effect", [selector, " has fear. (it can't be blocked except by artifact creatures and/or black creatures.)"], lambda t,s:XGetsTag(s, "fear")),
     R("effect", [selector, " has flying. (it can't be blocked except by creatures with flying or reach.)"], lambda t,s:XGetsTag(s, "flying")),
     R("effect", [selector, " has first strike. (it deals combat damage before creatures without first strike.)"], lambda t,s:XGetsTag(s, "first strike")),
+    R("effect", [selector, " can attack as though they didn't have defender."], lambda t,s:XGetsTag(s, "can attack as though it didn't have defender")),
 
     R("effect", ["target ", selector, " gains ", tag, " until end of turn."], lambda t,x,g:TargetXGetsTagUntilEndOfTurn(x,g)),
     R("effect", ["up to ", Number, " target ", selector, " can't block this turn."], lambda t,n,x:UpToNTargetXGetTagUntilEndOfTurn(n, x, "can't block")),
@@ -515,6 +516,7 @@ r = [
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
     R("basicSelector", [N("creatureType")], lambda t,c:SubTypeSelector(c)),
+    R("basicSelector", [N("creatureType"), " creatures"], lambda t,c:CreatureSubTypeSelector(c)),
     R("basicSelector", [N("creatureType"), " card from your graveyard"], lambda t,c:SubTypeCardFromYourGraveyardSelector(c)),
     R("basicSelector", [color, " card from your graveyard"], lambda t,c:ColorCardFromYourGraveyardSelector(c)),
 
