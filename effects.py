@@ -1483,7 +1483,41 @@ class UntapAllX(OneShotEffect):
 
     def __str__ (self):
         return "UntapAllX(%s)" % (self.selector)
-   
+
+class UntapUpToNX(OneShotEffect):
+    def __init__ (self, number, selector):
+        self.number = number
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        n = self.number.evaluate(game, obj)
+
+        player = game.objects[obj.get_controller_id()]
+
+        for i in range(n):
+            actions = []
+            _pass = PassAction(player)
+            actions.append (_pass)
+            for o in self.selector.all(game, obj):
+                if o.tapped:
+                    a = Action()
+                    a.text = "Untap %s" % (str(o))
+                    a.object = o
+                    actions.append (a)
+
+            _as = ActionSet(game, player, "Untap up to %d %s" % (n - i, str(self.selector)), actions)
+            a = game.input.send(_as)
+
+            if a == _pass:
+                break
+
+            game.doUntap(a.object)
+
+        return True
+
+    def __str__ (self):
+        return "UntapUpToNX(%s, %s)" % (self.number, self.selector)
+  
 
 class XMayDrawACard(OneShotEffect):
     def __init__ (self, selector):
@@ -1545,6 +1579,16 @@ class XAndY(OneShotEffect):
     def resolve(self, game, obj):
         if self.x.resolve(game, obj):
             return self.y.resolve(game, obj)
+        return False
+
+    def selectTargets(self, game, player, obj):
+        if self.x.selectTargets(game, player, obj):
+            return self.y.selectTargets(game, player, obj)
+        return False
+
+    def validateTargets(self, game, obj):
+        if self.x.validateTargets(game, obj):
+            return y.validateTargets(game, obj)
         return False
 
     def __str__(self):

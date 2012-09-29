@@ -315,6 +315,7 @@ r = [
 
     R("effect", ["counter target ", selector, " unless its controller ", costs, "."], lambda t,x,c: CounterTargetXUnlessItsControllerPaysCost(x,c)),
     R("effect", ["counter target ", selector, "."], lambda t,x: CounterTargetX(x)),
+    R("effect", ["counter target ", selector, ". untap up to ", Number, " ", selector, "."], lambda t,x,n,y:XAndY(CounterTargetX(x), UntapUpToNX(n,y))),
 
     R("effect", ["change the target of target ", selector, "."], lambda t,x: ChangeTargetOfTargetX(x)),
 
@@ -370,6 +371,7 @@ r = [
 
     R("effect", ["untap all ", selector, "."], lambda t,s: UntapAllX(s)),
     R("effect", ["untap SELF."], lambda t: UntapAllX(SelfSelector())),
+    R("effect", ["untap up to ", Number, " ", selector, "."], lambda t,n,x:UntapUpToNX(n,x)),
 
     R("effect", [selector, " is a ", Number, "/", Number, " ", color, " ", creatureType, " creature that's still a land."], lambda t,x,n,m,c,p:XIsANNCTCreature(x,n,m,c,p)),
     R("effect", ["all ", selector, " become ", Number, "/", Number, " creatures until end of turn. they're still lands."], lambda t,x,n,m:AllXBecomeNNCreaturesUntilEndOfTurn(x,n,m)),
