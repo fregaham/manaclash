@@ -665,7 +665,9 @@ def process_step_declare_attackers (game):
 
         valid = validate_attack(game, attackers)
     for a in attackers:
-        game.declared_attackers.add (LastKnownInformation(game, a))
+        a_lki = LastKnownInformation(game, a)
+        game.declared_attackers.add (a_lki)
+        game.creature_that_attacked_this_turn_lkis.add (a_lki)
 
     # tap attacking creatures
     for a in game.declared_attackers:
@@ -1282,16 +1284,29 @@ def process_phase_end (game):
 def process_turn (game, player):
     game.active_player_id = player.id
 
+    game.creature_that_attacked_this_turn_lkis = set()
+
     process_phase_beginning (game)
     process_phase_main (game, "precombat main")
 
-    active_player = game.objects[game.active_player_id]
-    if active_player.skip_next_combat_phase:
-        active_player.skip_next_combat_phase = False
-    else:
-        process_phase_combat (game)
+    while True:
 
-    process_phase_main (game, "postcombat main")
+        additional_combat_phase_followed_by_an_additional_main_phase = game.additional_combat_phase_followed_by_an_additional_main_phase
+        game.additional_combat_phase_followed_by_an_additional_main_phase = False
+
+        active_player = game.objects[game.active_player_id]
+        if active_player.skip_next_combat_phase:
+            active_player.skip_next_combat_phase = False
+        else:
+            process_phase_combat (game)
+
+        process_phase_main (game, "postcombat main")
+
+        if not (additional_combat_phase_followed_by_an_additional_main_phase or game.additional_combat_phase_followed_by_an_additional_main_phase):
+            break
+
+        game.additional_combat_phase_followed_by_an_additional_main_phase = False
+
     process_phase_end (game)
 
 

@@ -2264,3 +2264,14 @@ class PreventAllDamageThatWouldBeDealtThisTurnToUpToNTargetX(MultipleTargetOneSh
     def __str__ (self):
         return "PreventAllDamageThatWouldBeDealtThisTurnToUpToNTargetX(%s, %s)" % (self.number, self.targetSelector)
 
+class AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase(OneShotEffect):
+    def __init__ (self):
+        pass
+
+    def resolve(self, game, obj):
+        game.additional_combat_phase_followed_by_an_additional_main_phase = True
+        return True
+
+    def __str__ (self):
+        return "AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase()"
+

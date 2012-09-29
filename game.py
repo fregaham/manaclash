@@ -73,6 +73,9 @@ class Game:
 
         self.damage_preventions = []
 
+        self.creature_that_attacked_this_turn_lkis = set()
+        self.additional_combat_phase_followed_by_an_additional_main_phase = False
+
     def add_object (self, object):
         self.obj_max_id += 1
         object.id = self.obj_max_id

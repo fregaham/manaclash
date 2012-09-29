@@ -758,3 +758,15 @@ class SpellOrAbilitySelector(Selector):
     def __str__ (self):
         return "spell or ability"
 
+class CreatureThatAttackedThisTurnSelector(Selector):
+    def all(self, game, context):
+        for item in game.creature_that_attacked_this_turn_lkis:
+            yield item
+
+    def slots(self):
+        return ["that creature", "it"]
+
+    def __str__ (self):
+        return "creature that attacked this turn"
+
+

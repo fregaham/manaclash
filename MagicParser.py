@@ -389,6 +389,10 @@ r = [
     R("effect", ["SELF deals ", Number, " damage divided as you choose among any number of target creatures and/or players."], lambda t,n:DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(CreatureOrPlayerSelector(), n)),
 
     R("effect", ["prevent all damage that would be dealt this turn to up to ", Number, " target ", selector, "."], lambda t,n,x:PreventAllDamageThatWouldBeDealtThisTurnToUpToNTargetX(n,x)),
+    
+    R("effect", ["after this main phase, there is an additional combat phase followed by an additional main phase."], lambda t:AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase()),
+    R("effect", ["untap all ", selector, ". after this main phase, there is an additional combat phase followed by an additional main phase."], lambda t,x:XAndY(UntapAllX(x), AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase())),
+
 
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
@@ -449,6 +453,7 @@ r = [
     R("basicSelector", ["creatures you don't control"], lambda t:CreatureYouDontControlSelector()),
     R("basicSelector", ["that creature"], lambda t:ThatCreatureSelector()),
     R("basicSelector", ["that creature's controller"], lambda t:ThatCreaturesControllerSelector()),
+    R("basicSelector", ["creatures that attacked this turn"], lambda t:CreatureThatAttackedThisTurnSelector()),
 
     R("basicSelector", ["that land"], lambda t:ThatLandSelector()),
     R("basicSelector", ["that land's controller"], lambda t:ThatLandsControllerSelector()),
