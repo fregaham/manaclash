@@ -514,6 +514,7 @@ r = [
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
     R("basicSelector", [N("creatureType")], lambda t,c:SubTypeSelector(c)),
     R("basicSelector", [N("creatureType"), " card from your graveyard"], lambda t,c:SubTypeCardFromYourGraveyardSelector(c)),
+    R("basicSelector", [color, " card from your graveyard"], lambda t,c:ColorCardFromYourGraveyardSelector(c)),
 
     R("numberOfCards", ["a card"], lambda t:NNumber(1)),
     R("numberOfCards", [N("number"), " cards"], lambda t,n:NNumber(n)),
