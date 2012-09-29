@@ -441,6 +441,7 @@ r = [
 
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
     R("basicSelector", ["creature"], lambda t:CreatureSelector()),
+    R("basicSelector", ["tapped creature"], lambda t:TappedCreatureSelector()),
     R("basicSelector", ["creatures with power greater than ", Number], lambda t,n:CreatureWithPowerGreaterThanNSelector(n)),
     R("basicSelector", ["creature with power ", Number, " or greater"], lambda t,n:CreatureWithPowerNOrGreaterSelector(n)),
     R("basicSelector", ["all creatures"], lambda t:CreatureSelector()),

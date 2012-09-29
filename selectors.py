@@ -235,6 +235,19 @@ class CreatureSelector(Selector):
     def __str__ (self):
         return "creature"
 
+class TappedCreatureSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types and item.tapped:
+                yield item
+
+    def slots(self):
+        return ["that creature", "it"]
+
+    def __str__ (self):
+        return "tapped creature"
+
+
 class CreatureWithPowerGreaterThanNSelector(Selector):
     def __init__ (self, n):
         self.n = n
