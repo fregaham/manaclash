@@ -2319,3 +2319,42 @@ class AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMain
     def __str__ (self):
         return "AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase()"
 
+
+class PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStepEventHandler():
+    def __init__ (self, controller_id, power, toughness, color, typ, tag):
+        self.controller_id = controller_id
+        self.power = power
+        self.toughness = toughness
+        self.color = color
+        self.typ = typ
+        self.tag = tag
+        self.active = True
+
+    def handle(self, game, SELF):
+        if self.active and game.current_step == "end of turn":
+            game.create_token(self.controller_id, set(), set(["creature"]), set([self.typ]), set([self.color, self.tag]), "", self.power, self.toughness)
+            self.active = False
+
+
+class PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(OneShotEffect):
+    def __init__(self, power, toughness, color, typ, tag):
+        self.power = power
+        self.toughness = toughness
+        self.color = color
+        self.typ = typ
+        self.tag = tag
+
+    def resolve(self, game, obj):
+
+        power = self.power.evaluate(game, obj)
+        toughness = self.toughness.evaluate(game, obj)
+
+        handler = PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStepEventHandler(obj.get_controller_id(), power, toughness, self.color, self.typ, self.tag)
+
+        game.add_event_handler("step", partial(handler.handle, game, obj))
+
+        return True
+
+    def __str__(self):
+        return "PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(%s, %s, %s, %s, %s)" % (self.power, self.toughness, self.color, self.typ, self.tag)
+

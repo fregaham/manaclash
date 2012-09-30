@@ -93,6 +93,9 @@ class Output:
     def destroy(self, obj):
         pass
 
+    def removeFromGame(self, obj):
+        pass
+
     def counter(self, obj):
         pass
 

@@ -99,6 +99,33 @@ class Game:
 
         return o
 
+    def create_token(self, owner_id, supertypes, types, subtypes, tags, text, power, toughness):
+        o = Object()
+        self.add_object(o)
+        o.initial_state.title = "Token"
+        o.initial_state.supertypes.update(supertypes)
+        o.initial_state.types.update(types)
+        o.initial_state.subtypes.update(subtypes)
+        o.initial_state.tags.update(tags)
+        o.initial_state.text = text
+        o.initial_state.power = power
+        o.initial_state.toughness = toughness
+
+        o.initial_state.tags.add("token")
+
+        o.owner_id = owner_id
+        o.controller_id = owner_id
+        o.initial_state.controller_id = owner_id
+
+        o.state.tags.add("summoning sickness")
+
+        self.get_in_play_zone().objects.append (o)
+        o.zone_id = self.get_in_play_zone().id
+
+        self.output.createCard(o.id)
+
+        return o
+
     def create_player (self, name, cards):
         player = Player (name)
         self.add_object (player)
@@ -234,6 +261,9 @@ class Game:
 
     def get_stack_zone (self):
         return self._get_zone ("stack")
+
+    def get_removed_zone(self):
+        return self._get_zone("removed")
 
     def get_hand(self, player):
         return self.objects[player.hand_id]
@@ -460,6 +490,11 @@ class Game:
         obj = obj.get_object()
         self.output.bury(obj)
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+
+    def doRemoveFromGame(self, obj):
+        obj = obj.get_object()
+        self.output.removeFromGame(obj)
+        self.doZoneTransfer(obj, self.get_removed_zone())
 
     def doRemoveFromCombat(self, obj):
         id = obj.get_id()

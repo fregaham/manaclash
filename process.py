@@ -321,6 +321,9 @@ def evaluate (game):
                 object.initial_state.tags.add("summoning sickness")
                 object.state.tags.add("summoning sickness")
 
+        if "token" in object.state.tags and object.zone_id != game.get_in_play_zone().id:
+            game.doRemoveFromGame(object)
+
     # Playing lands
     _al = AllTypeSelector("land")
     for land in _al.all(game, None):

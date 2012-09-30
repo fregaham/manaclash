@@ -396,6 +396,7 @@ r = [
     R("effect", ["after this main phase, there is an additional combat phase followed by an additional main phase."], lambda t:AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase()),
     R("effect", ["untap all ", selector, ". after this main phase, there is an additional combat phase followed by an additional main phase."], lambda t,x:XAndY(UntapAllX(x), AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase())),
 
+    R("effect", ["put a ", Number, "/", Number," ", color, " ", creatureType, " creature token with ", tag, " onto the battlefield at the beginning of the next end step."], lambda t,m,n,c,p,g:PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(m,n,c,p,g)),
 
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
@@ -626,7 +627,7 @@ r = [
     # hack for flying defender combo
     R("tag", ["flying (this creature can't attack, and it can block creatures with flying.)"], lambda t:"flying"),
     
-
+    R("creatureType", ["bird"], lambda t:t),
     R("creatureType", ["goblin"], lambda t:t),
     R("creatureType", ["elf"], lambda t:t),
     R("creatureType", ["treefolk"], lambda t:t),
