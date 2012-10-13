@@ -152,6 +152,15 @@ class ItSelector(Selector):
     def __str__ (self):
         return "it"
 
+class ThatCardSelector(Selector):
+    def all(self, game, context):
+        that_lki = context.get_slot("that card")
+        assert that_lki is not None
+        yield that_lki
+
+    def __str__ (self):
+        return "that card"
+
 class ItsControllerSelector(Selector):
     def all(self, game, context):
         it_lki = context.get_slot("it")

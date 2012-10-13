@@ -305,7 +305,7 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "in play":
             from process import process_trigger_effect
 
@@ -328,7 +328,7 @@ class AsSelfComesIntoPlayAnswerDialog(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
         if SelfSelector().contains(game, SELF, obj) and zone_to.type == "in play":
             self.dialog.doModal(game, SELF)
 
@@ -347,7 +347,7 @@ class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to):
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play":
             from process import process_trigger_effect
 
@@ -359,6 +359,32 @@ class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
 
     def __str__ (self):
         return "WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
+
+class WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(TriggeredAbility):
+    def __init__(self, x_selector, y_selector, effect):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
+
+    def getEventHandlers(self, game, obj):
+        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
+
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
+        if cause is not None and  self.x_selector.contains(game, SELF, cause) and self.y_selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play" and zone_to.player_id == SELF.get_controller_id():
+            from process import process_trigger_effect
+
+            slots = {}
+            slots["that card"] = obj
+            for slot in self.y_selector.slots():
+                slots[slot] = obj
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
 
 class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
     def __init__(self, x_selector, y_selector, effect):

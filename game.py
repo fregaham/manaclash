@@ -321,20 +321,20 @@ class Game:
     def doShuffle(self, zone):
         random.shuffle(zone.objects)
 
-    def doZoneTransfer (self, object, zone):
+    def doZoneTransfer (self, object, zone, cause = None):
         object.damage = 0
         zone_from = self.objects[object.zone_id]
 
         #print("pre zone transfer %s from %s" % (object, object.zone_id))
 
-        self.raise_event ("pre_zone_transfer", object, zone_from, zone)
+        self.raise_event ("pre_zone_transfer", object, zone_from, zone, cause)
 
         # also move enchantments to graveyard
         enchantments = []
         if zone_from.id == self.get_in_play_zone().id:
             for obj in self.objects.values():
                 if obj.enchanted_id == object.id:
-                    self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+                    self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]), cause)
 
         object.zone_id = zone.id
         zone_from.objects.remove(object)
@@ -367,7 +367,7 @@ class Game:
         if zone == self.get_in_play_zone():
             object.initial_state.tags.add("summoning sickness")
 
-        self.raise_event ("post_zone_transfer", object, zone_from, zone)
+        self.raise_event ("post_zone_transfer", object, zone_from, zone, cause)
 
 
     def doDiscard(self, player, card, cause = None):
@@ -457,7 +457,7 @@ class Game:
         self.output.regenerate(obj)
         obj.regenerated = True 
 
-    def doDestroy(self, obj):
+    def doDestroy(self, obj, cause=None):
         obj = obj.get_object()
         self.output.destroy(obj)
 
@@ -469,7 +469,7 @@ class Game:
             # remove from combat
             self.doRemoveFromCombat(obj)
         else:
-            self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+            self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]), cause)
 
     def doCounter(self, obj):
         obj = obj.get_object()
@@ -481,20 +481,20 @@ class Game:
 
         return False
 
-    def doSacrifice(self, obj):
+    def doSacrifice(self, obj, cause = None):
         obj = obj.get_object()
         self.output.sacrifice(obj)
         self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
 
-    def doBury(self, obj):
+    def doBury(self, obj, cause = None):
         obj = obj.get_object()
         self.output.bury(obj)
-        self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]))
+        self.doZoneTransfer(obj, self.get_graveyard(self.objects[obj.owner_id]), cause)
 
-    def doRemoveFromGame(self, obj):
+    def doRemoveFromGame(self, obj, cause = None):
         obj = obj.get_object()
         self.output.removeFromGame(obj)
-        self.doZoneTransfer(obj, self.get_removed_zone())
+        self.doZoneTransfer(obj, self.get_removed_zone(), cause)
 
     def doRemoveFromCombat(self, obj):
         id = obj.get_id()

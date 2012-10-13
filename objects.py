@@ -281,7 +281,7 @@ class LastKnownInformation(Object):
         else:
             return self._state
 
-    def onPreMoveObject (self, object, zone_from, zone_to):
+    def onPreMoveObject (self, object, zone_from, zone_to, cause):
 
         if not self.moved:
             # only movements from the inplay zone require LKI

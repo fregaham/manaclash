@@ -556,7 +556,7 @@ class DestroyTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
-        game.doDestroy(target)
+        game.doDestroy(target, obj)
 
     def __str__ (self):
         return "DestroyTargetX(%s)" % self.targetSelector
@@ -566,7 +566,7 @@ class BuryTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
-        game.doBury(target)
+        game.doBury(target, obj)
 
     def __str__ (self):
         return "BuryTargetX(%s)" % self.targetSelector
@@ -577,7 +577,7 @@ class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
         self.playerSelector = playerSelector
 
     def doResolve(self, game, obj, target):
-        game.doDestroy(target)
+        game.doDestroy(target, obj)
 
         count = target.get_state().power
         for player in self.playerSelector.all(game, obj):
@@ -592,7 +592,7 @@ class BuryTargetXYGainLifeEqualsToItsToughness(SingleTargetOneShotEffect):
         self.playerSelector = playerSelector
 
     def doResolve(self, game, obj, target):
-        game.doBury(target)
+        game.doBury(target, obj)
 
         count = target.get_state().toughness
         for player in self.playerSelector.all(game, obj):
@@ -621,7 +621,7 @@ class DestroyX(OneShotEffect):
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
             if not o.is_moved():
-                game.doDestroy(o)
+                game.doDestroy(o, obj)
 
         return True
 
@@ -635,7 +635,7 @@ class BuryX(OneShotEffect):
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
             if not o.is_moved():
-                game.doBury(o)
+                game.doBury(o, obj)
 
         return True
 
@@ -731,7 +731,7 @@ class XMayPutYFromHandIntoPlay(OneShotEffect):
                 a = game.input.send (_as)
  
                 a.object.tapped = self.tapped
-                game.doZoneTransfer (a.object, game.get_in_play_zone())
+                game.doZoneTransfer (a.object, game.get_in_play_zone(), obj)
 
         return True
 
@@ -974,7 +974,7 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
                 a = game.input.send (_as)
  
                 a.object.tapped = self.tapped
-                game.doZoneTransfer (a.object, game.get_in_play_zone())
+                game.doZoneTransfer (a.object, game.get_in_play_zone(), obj)
 
                 game.doShuffle(game.get_library(player))
 
@@ -1028,7 +1028,7 @@ class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
                 if self.reveal:
                     process_reveal_cards(game, player, [a.object])
  
-                game.doZoneTransfer (a.object, game.get_hand(player))
+                game.doZoneTransfer (a.object, game.get_hand(player), obj)
 
                 game.doShuffle(game.get_library(player))
 
@@ -1058,9 +1058,9 @@ class XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(On
                 card = library.objects[-1]
 
                 if self.y_selector.contains(game, obj, card):
-                    game.doZoneTransfer(card, in_play)
+                    game.doZoneTransfer(card, in_play, obj)
                 else:
-                    game.doZoneTransfer(card, graveyard)
+                    game.doZoneTransfer(card, graveyard, obj)
 
         return True
 
@@ -1105,7 +1105,7 @@ class SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(SingleTarget
             a = game.input.send (_as)
 
             a.object.controller_id = obj.get_controller_id()
-            game.doZoneTransfer (a.object, game.get_in_play_zone())
+            game.doZoneTransfer (a.object, game.get_in_play_zone(), obj)
 
             game.doShuffle(game.get_library(player))
 
@@ -1142,7 +1142,7 @@ class SacrificeAllXUnlessYouCost(OneShotEffect):
             # else, sacrifice...
              
         for o in self.selector.all(game, obj):
-            game.doSacrifice(o)
+            game.doSacrifice(o, obj)
 
         return True
         
@@ -1155,7 +1155,7 @@ class SacrificeAllX(OneShotEffect):
 
     def resolve(self, game, obj):
         for o in self.selector.all(game, obj):
-            game.doSacrifice(o)
+            game.doSacrifice(o, obj)
 
         return True
         
@@ -1181,7 +1181,7 @@ class XSacrificeY(OneShotEffect):
                 _aset = ActionSet (game, player, "Sacrifice %s" % self.y_selector, _as)
                 a = game.input.send(_aset)
 
-                game.doSacrifice(a.object)
+                game.doSacrifice(a.object, obj)
 
         return True
         
@@ -1339,7 +1339,7 @@ class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYour
 
         for card in cards[:]:
             if self.selector.contains(game, obj, card):
-                game.doZoneTransfer(card, hand)
+                game.doZoneTransfer(card, hand, obj)
                 cards.remove(card)
 
         while len(cards) > 0:
@@ -1418,7 +1418,7 @@ class ReturnXToOwnerHands(OneShotEffect):
             if not o.is_moved():
                 owner = game.objects[o.get_object().owner_id]
                 hand = game.get_hand(owner)
-                game.doZoneTransfer(o.get_object(), hand)
+                game.doZoneTransfer(o.get_object(), hand, obj)
 
         return True
 
@@ -1432,10 +1432,25 @@ class ReturnTargetXToOwnerHands(SingleTargetOneShotEffect):
     def doResolve(self, game, obj, target):
         owner = game.objects[target.get_object().owner_id]
         hand = game.get_hand(owner)
-        game.doZoneTransfer(target.get_object(), hand)
+        game.doZoneTransfer(target.get_object(), hand, obj)
 
     def __str__ (self):
         return "ReturnTargetXToOwnerHands(%s)" % self.targetSelector
+
+class ReturnXToPlay(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            if not o.is_moved():
+                in_play = game.get_in_play_zone()
+                game.doZoneTransfer(o.get_object(), in_play, obj)
+
+        return True
+
+    def __str__ (self):
+        return "ReturnXToPlay(%s)" % self.selector
 
 class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector):
@@ -1997,7 +2012,7 @@ class TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(SingleTargetOneShotEffect):
                 game.doLoseGame(target.get_object())
             else:
                 card = library.objects[-1]
-                game.doZoneTransfer(card, graveyard) 
+                game.doZoneTransfer(card, graveyard, obj)
 
     def __str__ (self):
         return "TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(%s, %s)" % (self.targetSelector, self.number)
@@ -2168,7 +2183,7 @@ class PutNTargetXOnTopOfOwnersLibraries(MultipleTargetOneShotEffect):
         for target in targets.values():
             library = game.get_library(game.objects[target.get_state().owner_id])
             if not target.is_moved():
-                game.doZoneTransfer(target.get_object(), library)
+                game.doZoneTransfer(target.get_object(), library, obj)
 
     def __str__ (self):
         return "PutNTargetXOnTopOfOwnersLibraries(%s, %s)" % (self.number, self.targetSelector)

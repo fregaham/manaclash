@@ -167,7 +167,7 @@ r = [
 
     R("triggeredAbility", [N("when"), " ", selector, " ", N("cast"), " ", selector, ", ", N("effectText")], lambda t,w,x,c,y,e:WhenXCastsYDoEffectAbility(x,y,e)),
 
-    R("triggeredAbility", [N("when"), " ", selector, " causes ", selector, " to discard ", selector, ", ", N("effectText")], lambda t,w,x,y,z,e:WhenXCausesYToDiscardZ(x,y,z,e)),
+    R("triggeredAbility", [N("when"), " a ", selector, " causes ", selector, " to discard ", selector, ", ", N("effectText")], lambda t,w,x,y,z,e:WhenXCausesYToDiscardZ(x,y,z,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " becomes tapped, ", N("effectText")], lambda t,w,x,e: WhenXBecomesTappedDoEffectAbility(x, e)),
     R("triggeredAbility", [N("when"), " ", selector, " is tapped for mana, ", N("manaEffectText")], lambda t,w,x,e: WhenXBecomesTappedForManaDoManaEffectAbility(x, e)),
@@ -179,6 +179,8 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " control no other ", selector, ", ", N("effectText")], lambda t,w,x,y,e:WhenXControlsNoOtherYDoEffectAbility(x,y,e)),
     R("triggeredAbility", ["at the beginning of each player's upkeep, ", N("effectText")], lambda t,e:AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(e)),
     R("triggeredAbility", ["at the beginning of your upkeep, ", N("effectText")], lambda t,e:AtTheBeginningOfYourUpkeepDoEffectAbility(e)),
+
+    R("triggeredAbility", ["whenever a ", selector, " causes a ", selector, " to be put into your graveyard from the battlefield, ", N("effectText")], lambda t,x,y,e:WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(x,y,e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
     R("activatedAbility", [N("tappingActivatedManaAbility")], id),
@@ -327,6 +329,8 @@ r = [
     R("effect", ["return ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return all ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
 
+    R("effect", ["return ", selector, " to the battlefield."], lambda t,x:ReturnXToPlay(x)),
+
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
 
     R("draw", ["draw"], lambda t:t),
@@ -438,6 +442,7 @@ r = [
     R("basicSelector", ["that player"], lambda t:ThatPlayerSelector()),
     R("basicSelector", ["you"], lambda t:YouSelector()),
     R("basicSelector", ["it"], lambda t:ItSelector()),
+    R("basicSelector", ["that card"], lambda t:ThatCardSelector()),
     R("basicSelector", ["its controller"], lambda t:ItsControllerSelector()),
 
     R("basicSelector", ["SELF"], lambda t:SelfSelector()),
@@ -513,7 +518,7 @@ r = [
     R("basicSelector", ["creature spells"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
-    R("basicSelector", ["a spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
+    R("basicSelector", ["spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
     R("basicSelector", ["spell or ability"], lambda t:SpellOrAbilitySelector()),
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
