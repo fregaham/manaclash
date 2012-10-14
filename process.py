@@ -1522,3 +1522,15 @@ def process_ask_x(game, obj, player):
 
     return ret
 
+def process_ask_option(game, obj, player, question, options):
+    opts = []
+
+    for o in options:
+       p = Action ()
+       p.text = o
+       opts.append (p)
+
+    _as = ActionSet (game, player, question, opts)
+    a = game.input.send (_as)
+    return a.text
+

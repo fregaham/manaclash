@@ -80,12 +80,8 @@ r = [
     R("manaEffectText", [N("manaEffect")], lambda t,e: t),
     R("graveyardEffectText", [N("graveyardEffect")], lambda t,e: t),
 
-    R("effect", [N("playerLooseLifeEffect")], id),
-    R("effect", [N("playerGainLifeEffect")], id),
-    R("effect", [N("playerGainLifeForEachXEffect")], id),
     R("effect", [N("playerDiscardsACardEffect")], id),
     R("effect", [N("xGetsNN")], id),
-    R("effect", [N("targetXGetsNNUntilEndOfTurn")], id),
     R("effect", [N("destroyX")], id),
     R("effect", [N("destroyTargetXYGainLifeEqualsToItsPower")], id),
     R("effect", [N("buryTargetXYGainLifeEqualsToItsToughness")], id),
@@ -172,6 +168,8 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " becomes tapped, ", N("effectText")], lambda t,w,x,e: WhenXBecomesTappedDoEffectAbility(x, e)),
     R("triggeredAbility", [N("when"), " ", selector, " is tapped for mana, ", N("manaEffectText")], lambda t,w,x,e: WhenXBecomesTappedForManaDoManaEffectAbility(x, e)),
 
+    R("triggeredAbility", [N("when"), " an ", selector, " taps a ", selector, " for mana, ", N("effectText")], lambda t,w,x,y,e:WhenXTapsYForManaDoEffectAbility(x,y,e)),
+
     R("triggeredAbility", ["as SELF enters the battlefield, ", dialog], lambda t,d: AsSelfComesIntoPlayAnswerDialog(d)),
 
     R("triggeredAbility", [N("when"), " ", selector, " becomes the target of a ", selector, ", ", N("effectText"), " (it won't be affected by the spell or ability.)"], lambda t,w,x,y,e:WhenXBecomesTargetOfYDoEffectAbility(x,y,e)),
@@ -204,14 +202,15 @@ r = [
     R("lose", ["lose"], lambda t:t),
     R("lose", ["loses"], lambda t:t),
 
-    R("playerLooseLifeEffect", [N("selector"), " ", N("lose"), " ", N("number"), " life."], lambda t,x,l,n: PlayerLooseLifeEffect(x, n)),
+    R("effect", [N("selector"), " ", N("lose"), " ", N("number"), " life."], lambda t,x,l,n: PlayerLooseLifeEffect(x, n)),
 
     R("gain", ["gain"], lambda t:t),
     R("gain", ["gains"], lambda t:t),
 
-    R("playerGainLifeEffect", [N("selector"), " ", N("gain"), " ", N("Number"), " life."], lambda t,x,l,n: PlayerGainLifeEffect(x, n)),
+    R("effect", [N("selector"), " ", N("gain"), " ", N("Number"), " life."], lambda t,x,l,n: PlayerGainLifeEffect(x, n)),
+    R("effect", [N("selector"), " may ", N("gain"), " ", N("Number"), " life."], lambda t,x,l,n: PlayerMayGainLifeEffect(x, n)),
 
-    R("playerGainLifeForEachXEffect", [N("selector"), " ", N("gain"), " ", N("Number"), " life for each ", N("selector"), "."], lambda t,x,g,n,y: PlayerGainLifeForEachXEffect(x, n, y)),
+    R("effect", [N("selector"), " ", N("gain"), " ", N("Number"), " life for each ", N("selector"), "."], lambda t,x,g,n,y: PlayerGainLifeForEachXEffect(x, n, y)),
 
     R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
     R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), " and ", N("Number"), " damage to ", selector, "."], lambda t,x,d,n,y,m,z:XDealNDamageToTargetYAndMDamageToZEffect(x, n, y, m, z)),
@@ -225,7 +224,7 @@ r = [
 
     R("get", ["get"], lambda t:t),
     R("get", ["gets"], lambda t:t),
-    R("targetXGetsNNUntilEndOfTurn", ["target ", N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:TargetXGetsNNUntilEndOfTurn(x, a, b)),
+    R("effect", ["target ", N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:TargetXGetsNNUntilEndOfTurn(x, a, b)),
     R("effect", [N("selector"), " ", N("get"), " ", N("number"), "/", N("number"), " until end of turn."], lambda t,x,g,a,b:XGetsNNUntilEndOfTurn(x, a, b)),
     R("effect", [N("selector"), " gains flying until end of turn."], lambda t,x:XGetsTagUntilEndOfTurn(x, "flying")),
 

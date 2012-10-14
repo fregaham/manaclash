@@ -98,6 +98,22 @@ class PlayerGainLifeEffect(OneShotEffect):
     def __str__ (self):
         return "PlayerGainLifeEffect(%s, %s)" % (self.selector, str(self.count))
 
+class PlayerMayGainLifeEffect(OneShotEffect):
+    def __init__ (self, playerSelector, count):
+        self.selector = playerSelector
+        self.count = count
+    def resolve(self, game, obj):
+        from process import process_ask_option
+        n = self.count.evaluate(game, obj)
+
+        for player in self.selector.all(game, obj):
+            if process_ask_option(game, obj, player, "Gain %d life?" % n, ["Yes", "No"]) == "Yes":
+                game.doGainLife(player, n)
+
+        return True
+
+    def __str__ (self):
+        return "PlayerMayGainLifeEffect(%s, %s)" % (self.selector, str(self.count))
 
 
 class PlayerGainLifeForEachXEffect(OneShotEffect):
