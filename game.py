@@ -27,6 +27,11 @@ class DamageReplacement:
         self.list = list
         self.combat = combat
 
+class AttackerValidator:
+    def __init__ (self, attacker, can):
+        self.attacker = attacker
+        self.can = can
+
 class Game:
     def __init__ (self, input, output):
         self.zones = []

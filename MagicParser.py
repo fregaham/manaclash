@@ -401,6 +401,9 @@ r = [
 
     R("effect", ["put a ", Number, "/", Number," ", color, " ", creatureType, " creature token with ", tag, " onto the battlefield at the beginning of the next end step."], lambda t,m,n,c,p,g:PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(m,n,c,p,g)),
 
+    R("effect", [selector, " can't attack unless defending player controls an ", selector, "."], lambda t,x,y:XCantAttackUnlessDefendingPlayerControlsAY(x, y)),
+    R("effect", [selector, " can't attack unless defending player controls a ", selector, "."], lambda t,x,y:XCantAttackUnlessDefendingPlayerControlsAY(x, y)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),

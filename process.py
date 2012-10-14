@@ -22,6 +22,7 @@ from rules import *
 from actions import *
 from cost import *
 from objects import *
+from game import AttackerValidator
 
 class GameEndException(Exception):
     def __init__ (self, player):
@@ -652,11 +653,15 @@ def process_step_declare_attackers (game):
             selector = PermanentPlayerControlsSelector(game.get_attacking_player())
             for permanent in selector.all(game, None):
                 if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent not in attackers and "can't attack" not in permanent.state.tags and "can't attack or block" not in permanent.state.tags and ("defender" not in permanent.state.tags or "can attack as though it didn't have defender" in permanent.state.tags):
-                    _p = Action ()
-                    _p.object = permanent
-                    _p.player = game.get_attacking_player()
-                    _p.text = "Attack with %s" % permanent
-                    actions.append (_p)
+
+                    v = AttackerValidator(permanent, True)
+                    game.raise_event("validate_attacker", v)
+                    if v.can:
+                        _p = Action ()
+                        _p.object = permanent
+                        _p.player = game.get_attacking_player()
+                        _p.text = "Attack with %s" % permanent
+                        actions.append (_p)
 
             _as = ActionSet (game, game.get_attacking_player(), "Select attackers", actions)
             a = game.input.send (_as)

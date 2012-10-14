@@ -2389,3 +2389,24 @@ class PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(
     def __str__(self):
         return "PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(%s, %s, %s, %s, %s)" % (self.power, self.toughness, self.color, self.typ, self.tag)
 
+class XCantAttackUnlessDefendingPlayerControlsAY(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def apply(self, game, obj):
+        game.add_volatile_event_handler("validate_attacker", partial(self.onCanAttack, game, obj))
+
+    def isSelf(self):
+        return isinstance(self.x_selector, SelfSelector)
+
+    def onCanAttack(self, game, SELF, av):
+        if av.can and self.x_selector.contains(game, SELF, av.attacker):
+            for o in self.y_selector.all(game, SELF):
+                if o.get_controller_id() == game.defending_player_id:
+                    return
+            av.can = False
+
+    def __str__ (self):
+        return "XCantAttackUnlessDefendingPlayerControlsAY(%s, %s)" % (self.x_selector, self.y_selector)
+
