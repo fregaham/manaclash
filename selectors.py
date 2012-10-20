@@ -577,6 +577,15 @@ class CardSelector(Selector):
     def __str__ (self):
         return "card"
 
+class LandCardSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "land" in item.state.types:
+                yield item
+
+    def __str__ (self):
+        return "land card"
+
 class CreatureCardSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():

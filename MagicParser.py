@@ -429,6 +429,7 @@ r = [
     R("cost", ["sacrifice an ", selector], lambda t, s: SacrificeSelectorCost(s)),
     R("cost", ["pay ", number, " life"], lambda t,n:PayLifeCost(n)),
     R("cost", ["pay half your life rounded up"], lambda t:PayHalfLifeRoundedUpCost()),
+    R("cost", ["discard a ", selector], lambda t, s: DiscardX(s)),
 
     R("selectorText", [selector], lambda t,x:t),
 
@@ -501,6 +502,7 @@ r = [
     R("basicSelector", ["creature card from your graveyard"], lambda t:CreatureCardFromYourGraveyardSelector()),
     R("basicSelector", ["creature cards of the chosen type"], lambda t:CreatureCardOfTheChosenType()),
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
+    R("basicSelector", ["land card"], lambda t:LandCardSelector()),
     R("basicSelector", ["a ", basicLand, " card"], lambda t,x:SubTypeCardSelector(x)),
     R("basicSelector", [basicLand], lambda t,x:LandSubTypeSelector(x)),
     R("basicSelector", ["a ", basicLand], lambda t,x:LandSubTypeSelector(x)),

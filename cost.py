@@ -224,6 +224,43 @@ class SacrificeSelectorCost(Cost):
     def __str__ (self):
         return "sacrifice %s" % self.selector
 
+class DiscardX(Cost):
+    def __init__ (self, selector):
+        Cost.__init__(self)
+        self.selector = selector
+
+    def get_text(self, game, obj, player):
+        return "Discard " + str(self.selector)
+
+    def pay(self, game, obj, effect, player):
+
+        actions = []
+
+        _pass = PassAction (player)
+        _pass.text = "Cancel"
+
+        actions.append (_pass)
+
+        hand = game.get_hand(player)
+        for o in hand.objects:
+            if self.selector.contains(game, obj, o):
+                a = Action()
+                a.object = o
+                a.text = "Discard " + str(o)
+                actions.append (a)
+
+        _as = ActionSet (game, player, "Discard " + str(self.selector), actions)
+        a = game.input.send (_as)
+
+        if a == _pass:
+            return False 
+
+        game.doDiscard(player, a.object, obj)
+
+        return True
+
+    def __str__ (self):
+        return "discard " + str(self.selector)
 
 class PayLifeCost(Cost):
     def __init__ (self, n):
