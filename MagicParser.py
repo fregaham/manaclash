@@ -404,6 +404,8 @@ r = [
     R("effect", [selector, " can't attack unless defending player controls an ", selector, "."], lambda t,x,y:XCantAttackUnlessDefendingPlayerControlsAY(x, y)),
     R("effect", [selector, " can't attack unless defending player controls a ", selector, "."], lambda t,x,y:XCantAttackUnlessDefendingPlayerControlsAY(x, y)),
 
+    R("effect", ["all ", selector, " are the chosen color."], lambda t,x:XAreChosenColor(x)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -415,6 +417,7 @@ r = [
     R("condition", ["SELF is untapped"], lambda t:ExistsUntappedX(SelfSelector())),
 
     R("dialog", ["choose a creature type."], lambda t:ChooseCreatureType()),
+    R("dialog", ["choose a color."], lambda t:ChooseColor()),
 
     R("costs", [N("cost")], lambda t, c: [c]),
     R("costs", [N("cost"), ", ", N("costs")], lambda t, c, cs:[c] + cs),
@@ -527,6 +530,7 @@ r = [
     R("basicSelector", ["spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
     R("basicSelector", ["spell or ability"], lambda t:SpellOrAbilitySelector()),
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
+    R("basicSelector", ["nonland permanents"], lambda t:NonLandPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
     R("basicSelector", [N("creatureType")], lambda t,c:SubTypeSelector(c)),
     R("basicSelector", [N("creatureType"), " creatures"], lambda t,c:CreatureSubTypeSelector(c)),

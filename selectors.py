@@ -85,6 +85,15 @@ class AllPermanentSelector(Selector):
     def __str__(self):
         return "all permanents"
 
+class NonLandPermanentSelector(Selector):
+    def all(self, game, context):
+         for item in game.objects.values():
+            if "permanent" in item.state.tags and "land" not in item.state.types:
+                yield item
+
+    def __str__(self):
+        return "nonland permanents"
+
 class PermanentPlayerControlsSelector(Selector):
     def __init__ (self, player):
         self.player_id = player.id

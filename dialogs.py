@@ -38,3 +38,20 @@ class ChooseCreatureType(Dialog):
     def __str__ (self):
         return "ChooseCreatureType()"
 
+class ChooseColor(Dialog):
+    def doModal(self, game, context):
+        player = game.objects[context.get_controller_id()]
+
+        colors = ["black", "blue", "green", "red", "white"]
+
+        actions = []
+        for name in colors:
+            a = Action()
+            a.text = name
+            actions.append(a)
+
+        _as = ActionSet (game, player, ("Choose a color"), actions)
+        a = game.input.send(_as)
+
+        context.get_object().modal = a.text.lower()
+

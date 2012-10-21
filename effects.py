@@ -2410,3 +2410,22 @@ class XCantAttackUnlessDefendingPlayerControlsAY(ContinuousEffect):
     def __str__ (self):
         return "XCantAttackUnlessDefendingPlayerControlsAY(%s, %s)" % (self.x_selector, self.y_selector)
 
+class XAreChosenColor(ContinuousEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def apply(self, game, obj):
+        if obj.modal is not None:
+            for o in self.selector.all(game, obj):
+                if not o.is_moved():
+                    o.get_state().tags.add (obj.modal)
+
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
+
+    def __str__ (self):
+        return "XAreChosenColor(%s)" % (self.selector)
+
+    def getLayer(self):
+        return "other"
+
