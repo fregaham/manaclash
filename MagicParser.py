@@ -621,6 +621,7 @@ r = [
     R("tag", ["swampwalk (this creature is unblockable as long as defending player controls a swamp.)"], lambda t:"swampwalk"),
 
     R("tag", ["vigilance"], lambda t:t),
+    R("tag", ["vigilance (attacking doesn't cause this creature to tap.)"], lambda t:"vigilance"),
     R("tag", ["first strike"], lambda t:t),
     R("tag", ["reach (this creature can block creatures with flying.)"], lambda t:"reach"),
     R("tag", ["defender (this creature can't attack.)"], lambda t:"defender"),
