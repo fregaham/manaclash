@@ -32,6 +32,12 @@ class AttackerValidator:
         self.attacker = attacker
         self.can = can
 
+class BlockerValidator:
+    def __init__ (self, attacker, blocker, can):
+        self.attacker = attacker
+        self.blocker = blocker
+        self.can = can
+
 class Game:
     def __init__ (self, input, output):
         self.zones = []

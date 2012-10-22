@@ -22,7 +22,7 @@ from rules import *
 from actions import *
 from cost import *
 from objects import *
-from game import AttackerValidator
+from game import AttackerValidator, BlockerValidator
 
 class GameEndException(Exception):
     def __init__ (self, player):
@@ -759,6 +759,11 @@ def is_valid_block(game, attacker, blocker):
     if "swampwalk" in attacker.get_state().tags:
         if not SubtypeYouControlSelector("swamp").empty(game, blocker):
             return False
+
+    v = BlockerValidator(attacker, blocker, True)
+    game.raise_event("validate_blocker", v)
+    if not v.can:
+        return False
 
     # lure
     # warning, this can turn into a recursive hell, if not taken care
