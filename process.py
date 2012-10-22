@@ -1248,7 +1248,7 @@ def process_step_cleanup(game):
     while repeat:
         process_step_pre (game)
         # 314.1
-        if game.get_active_player().maximum_hand_size != None:
+        if game.get_active_player().maximum_hand_size != None and "no maximum hand size" not in game.get_active_player().get_state().tags:
             while len(game.get_hand(game.get_active_player()).objects) > game.get_active_player().maximum_hand_size:
                 #actions = []
                 #for card in game.get_hand(game.get_active_player()).objects:

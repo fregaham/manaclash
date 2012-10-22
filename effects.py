@@ -1266,6 +1266,19 @@ class TargetXGainLife(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXGainLife(%s, %s)" % (self.targetSelector, str(self.count))
 
+class TargetXLoseLife(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, count):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.count = count
+    
+    def doResolve(self, game, obj, target):
+
+        n = self.count.evaluate(game, obj)
+        game.doLoseLife(target.get_object(), n)
+
+    def __str__ (self):
+        return "TargetXLoseLife(%s, %s)" % (self.targetSelector, str(self.count))
+
 class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
     def __init__ (self, n):
         self.n = n

@@ -290,6 +290,8 @@ r = [
     R("effect", ["tap target ", selector, "."], lambda t,s: TapTargetX(s)),
 
     R("effect", ["target ", selector, " ", N("gain"), " ", N("Number"), " life."], lambda t,x,l,n: TargetXGainLife(x, n)),
+    R("effect", ["target ", selector, " loses ", N("Number"), " life."], lambda t,x,l,n: TargetXLoseLife(x, n)),
+    R("effect", ["target ", selector, " loses ", N("Number"), " life and ", selector, " gain ", N("Number"), " life."], lambda t,x,m,y,n:XAndY(TargetXLoseLife(x, m), PlayerGainLifeEffect(y, n))),
 
     R("effect", ["prevent the next ", number, " damage that would be dealt to target ", selector, " this turn."], lambda t,n,s: PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(s, n)),
     R("effect", ["prevent all combat damage that would be dealt this turn."], lambda t:PreventAllCombatDamageThatWouldBeDealtThisTurn()),
@@ -301,6 +303,7 @@ r = [
     R("effect", [selector, " can't be countered."], lambda t,s:XGetsTag(s, "can't be countered")),
     R("effect", [selector, " can't be blocked except by walls."], lambda t,s:XGetsTag(s, "can't be blocked except by walls")),
     R("effect", [selector, " have shroud. (you can't be the target of spells or abilities.)"], lambda t,s:XGetsTag(s, "shroud")),
+    R("effect", [selector, " have no maximum hand size."], lambda t,s:XGetsTag(s, "no maximum hand size")),
 
     R("effect", [selector, " has fear. (it can't be blocked except by artifact creatures and/or black creatures.)"], lambda t,s:XGetsTag(s, "fear")),
     R("effect", [selector, " has flying. (it can't be blocked except by creatures with flying or reach.)"], lambda t,s:XGetsTag(s, "flying")),
