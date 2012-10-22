@@ -613,6 +613,16 @@ class CreatureCardFromYourGraveyardSelector(Selector):
     def __str__ (self):
         return "creature card from your graveyard"
 
+class EnchantmentCardFromYourGraveyardSelector(Selector):
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "enchantment" in item.state.types and item.zone_id == game.get_graveyard(game.objects[context.get_controller_id()]).id:
+                yield item
+
+    def __str__ (self):
+        return "enchantment card from your graveyard"
+
 class ColorCardFromYourGraveyardSelector(Selector):
 
     def __init__(self, color):

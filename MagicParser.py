@@ -503,6 +503,7 @@ r = [
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature card from your graveyard"], lambda t:CreatureCardFromYourGraveyardSelector()),
+    R("basicSelector", ["enchantment card from your graveyard"], lambda t:EnchantmentCardFromYourGraveyardSelector()),
     R("basicSelector", ["creature cards of the chosen type"], lambda t:CreatureCardOfTheChosenType()),
     R("basicSelector", ["a basic land card"], lambda t:BasicLandCardSelector()),
     R("basicSelector", ["land card"], lambda t:LandCardSelector()),
