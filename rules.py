@@ -122,12 +122,12 @@ class BasicNonPermanentRules(ObjectRules):
         return "BasicNonPermanentRules(%s, %s)" % (str(self.effect), ",".join(map(str, self.abilities)))
 
 class EnchantPermanentRules(ObjectRules):
-    def __init__(self, selector, ability):
+    def __init__(self, selector, abilities = []):
         self.selector = selector
-        self.ability = ability
+        self.abilities = abilities
 
     def getAbilities(self):
-        return [PlaySpell()] + [self.ability]
+        return [PlaySpell()] + self.abilities
 #        if game.isInPlay(obj):
 #            obj.state.abilities.append(self.ability)
 
@@ -153,7 +153,7 @@ class EnchantPermanentRules(ObjectRules):
         return True
         
     def __str__ (self):
-        return "EnchantPermanentRules(%s, %s)" % (str(self.selector), str(self.ability))
+        return "EnchantPermanentRules(%s, %s)" % (str(self.selector), ",".join(map(str, self.abilities)))
 
 
 g_rules = {}

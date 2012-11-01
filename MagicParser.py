@@ -89,11 +89,11 @@ r = [
     R("effect", [N("dontUntapDuringItsControllersUntapStep")], id),
     R("effect", [N("targetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard")], id),
 
-    R("enchantmentRules", ["enchant ", selector, ";", effect], lambda t,s,e:EnchantPermanentRules(s, ContinuousEffectStaticAbility(e))),
-    R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", effect], lambda t,s,s2,s3,e:EnchantPermanentRules(s, ContinuousEffectStaticAbility(e))),
+    R("enchantmentRules", ["enchant ", selector, ";", effect], lambda t,s,e:EnchantPermanentRules(s, [ContinuousEffectStaticAbility(e)])),
+    R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", effect], lambda t,s,s2,s3,e:EnchantPermanentRules(s, [ContinuousEffectStaticAbility(e)])),
 
-    R("enchantmentRules", ["enchant ", selector, ";", N("ability")], lambda t,s,a:EnchantPermanentRules(s, a)),
-    R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", N("ability")], lambda t,s,s2,s3,a:EnchantPermanentRules(s, a)),
+    R("enchantmentRules", ["enchant ", selector, ";", N("abilities")], lambda t,s,a:EnchantPermanentRules(s, a)),
+    R("enchantmentRules", ["enchant ", selector, " (target a ", selector, " as you cast this. this card enters the battlefield attached to that ", selector, ".);", N("ability")], lambda t,s,s2,s3,a:EnchantPermanentRules(s, [a])),
 
     R("enchantmentRules", [N("abilities")], lambda t,a:BasicPermanentRules(a)),
     R("enchantmentRules", [N("effect")], lambda t,e:BasicPermanentRules([ContinuousEffectStaticAbility(e)])),
