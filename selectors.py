@@ -403,6 +403,14 @@ class CreatureYouControlSelector(Selector):
     def __str__ (self):
         return "creature you control"
 
+class BasicLandYouControlSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "land" in item.state.types and item.state.controller_id == context.get_state().controller_id and ("mountain" in item.state.subtypes or "island" in item.state.subtypes or "plains" in item.state.subtypes or "forest" in item.state.subtypes or "swamp" in item.state.subtypes):
+                yield item
+    def __str__ (self):
+        return "basic land you control"
+
 class CreatureYouDontControlSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():

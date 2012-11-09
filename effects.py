@@ -1816,6 +1816,48 @@ class XAddOneOfTheseManaToYourManaPool(OneShotEffect):
     def __str__ (self):
         return "XAddOneOfTheseManaToYourManaPool(%s, %s)" % (self.selector, str(self.options))
 
+class AddNManaOfAnyColorBasicLandControlsCouldProduceToYourManapool(OneShotEffect):
+    def __init__ (self, n):
+        self.n = n
+
+    def resolve(self, game, obj):
+        for player in YouSelector().all(game, obj):
+            producable = set()            
+            for land in BasicLandYouControlSelector().all(game, obj):
+                if "mountain" in land.get_state().subtypes:
+                    producable.add ("R")
+                if "island" in land.get_state().subtypes:
+                    producable.add ("U")
+                if "plains" in land.get_state().subtypes:
+                    producable.add ("W")
+                if "forest" in land.get_state().subtypes:
+                    producable.add ("G")
+                if "swamp" in land.get_state().subtypes:
+                    producable.add ("B")
+
+            if len(producable) > 0:
+                for i in range(self.n):
+                    colors = ["W","R","B","U","G"]
+                    names = ["White", "Red", "Black", "Blue", "Green"] 
+
+                    actions = []
+                    for i in range(len(colors)):
+                        a = Action()
+                        a.text = names[i]
+                        if colors[i] in producable:
+                            actions.append(a)
+
+                    _as = ActionSet (game, player, ("Choose a color"), actions)
+                    a = game.input.send(_as)
+
+                    color = colors[names.index(a.text)]
+                    player.manapool += color
+
+        return True
+
+    def __str__ (self):
+        return "AddNManaOfAnyColorBasicLandControlsCouldProduceToYourManapool(%s)" % (str(self.n))
+
 class PlayerSkipsNextCombatPhase(OneShotEffect):
     def __init__ (self, selector):
         self.selector = selector

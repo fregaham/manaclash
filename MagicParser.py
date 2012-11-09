@@ -415,6 +415,7 @@ r = [
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
     R("manaEffect", ["add ", manaCost, " or ", manaCost, " to your mana pool."], lambda t,m1,m2: XAddOneOfTheseManaToYourManaPool(YouSelector(), [m1,m2])),
+    R("manaEffect", ["add to your mana pool ", number, " mana of any color a basic land you control could produce."], lambda t,n:AddNManaOfAnyColorBasicLandControlsCouldProduceToYourManapool(n)),
 
     R("graveyardEffect", ["return SELF from your graveyard to your hand."], lambda t: ReturnXToOwnerHands(SelfSelector())),
 
