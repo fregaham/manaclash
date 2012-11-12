@@ -535,6 +535,19 @@ class EnchantedCreatureSelector(Selector):
     def __str__ (self):
         return "enchanted creature"
 
+class EnchantedArtifactSelector(Selector):
+    def all(self, game, context):
+        if context.get_enchanted_id() != None:
+            ret = game.objects[context.get_enchanted_id()]
+            if "permanent" in ret.state.tags:
+                yield ret
+
+    def slots(self):
+        return ["it"]
+
+    def __str__ (self):
+        return "enchanted artifact"
+
 class EnchantedLandSelector(Selector):
     def all(self, game, context):
         if context.get_enchanted_id() != None:

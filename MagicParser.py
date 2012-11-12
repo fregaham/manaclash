@@ -496,6 +496,7 @@ r = [
     R("basicSelector", [color, " creature"], lambda t,c:ColorCreatureSelector(c)),
     R("basicSelector", [color, " creatures"], lambda t,c:ColorCreatureSelector(c)),
     R("basicSelector", ["enchanted creature"], lambda t:EnchantedCreatureSelector()),
+    R("basicSelector", ["enchanted artifact"], lambda t:EnchantedArtifactSelector()),
     R("basicSelector", ["enchanted permanent"], lambda t:EnchantedPermanentSelector()),
     R("basicSelector", ["enchanted land"], lambda t:EnchantedLandSelector()),
 
