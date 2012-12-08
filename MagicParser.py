@@ -368,7 +368,8 @@ r = [
 
     R("effect", ["reveal the top card of your library. if it's a ", selector, ", put it onto the battlefield. otherwise, put it into your graveyard."], lambda t,y: XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(YouSelector(), y)),
 
-    R("effect", ["the next time a ", selector, " of your choice would deal damage to ", selector, " this turn, prevent that damage."], lambda t,x,y: TheNextTimeXOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(x,y)),
+    R("effect", ["the next time a ", selector, " of your choice would deal damage to ", selector, " this turn, prevent that damage."], lambda t,x,y: TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(x,y)),
+    R("effect", ["the next time a source of your choice of the chosen color would deal damage to ", selector, " this turn, prevent that damage."], lambda t,y: TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(SourceOfTheChosenColorSelector(),y)),
 
     R("effect", [selector, " control ", selector, "."], lambda t,x,y:XControlsY(x,y)),
 

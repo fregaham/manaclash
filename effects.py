@@ -886,15 +886,15 @@ class TheNextTimeXWouldDealDamageToYPreventThatDamage(ContinuousEffect):
     def apply(self, game, obj):
         game.damage_preventions.append(TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(obj, self))
 
-class TheNextTimeXOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(OneShotEffect):
+class TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(OneShotEffect):
     def __init__ (self, x_selector, y_selector):
         self.x_selector = x_selector
         self.y_selector = y_selector
 
     def resolve(self, game, obj):
-        from process import process_select_selector
+        from process import process_select_source_of_damage
 
-        source = process_select_selector(game, game.objects[obj.get_controller_id()], obj, self.x_selector, "Choose a damage source", True)
+        source = process_select_source_of_damage(game, game.objects[obj.get_controller_id()], obj, self.x_selector, "Choose a damage source", True)
         if source != None:
             game.until_end_of_turn_effects.append ( (obj, TheNextTimeXWouldDealDamageToYPreventThatDamage(LKISelector(LastKnownInformation(game, source)), self.y_selector)))
 

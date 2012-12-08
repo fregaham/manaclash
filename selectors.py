@@ -823,11 +823,23 @@ class ColorSourceSelector(Selector):
 
     def all(self, game, context):
         for item in game.objects.values():
-            if self.color in item.get_state().tags and ("permanent" in item.get_state().tags or "spell" in item.get_state().tags or "effect" in item.get_state().tags):
+            if self.color in item.get_state().tags:
                 yield item
 
     def __str__ (self):
         return "%s source" % (self.color)
+
+class SourceOfTheChosenColorSelector(Selector):
+    def __init__ (self):
+        pass
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if context.get_modal() in item.get_state().tags:
+                yield item
+
+    def __str__ (self):
+        return "source of the chosen color" % (self.color)
 
 class SpellOrAbilityAnOpponentControls(Selector):
     def __init__ (self):

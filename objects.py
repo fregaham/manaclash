@@ -135,6 +135,9 @@ class Object:
         if len(self.counters) > 0:
             ret += " [" + ", ".join(self.counters) + "]"
 
+        if self.modal != None:
+            ret += " modal=" + self.modal
+
         ret += "]"
 
         return ret
