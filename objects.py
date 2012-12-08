@@ -145,6 +145,9 @@ class Object:
     def get_modal(self):
         return self.modal
 
+    def get_targets(self):
+        return self.targets
+
 class Zone(Object):
     def __init__ (self, type=None, player_id=None):
         Object.__init__ (self)
@@ -256,6 +259,11 @@ class EffectObject(Object):
             return self.source_lki.get_modal()
         return self.modal
 
+    def get_targets(self):
+        if len(self.targets) == 0 and len(self.source_lki.get_targets()) > 0:
+            return self.source_lki.get_targets()
+        return self.targets
+
 class LastKnownInformation(Object):
     def __init__ (self, game, object):
         self.game = game
@@ -264,6 +272,7 @@ class LastKnownInformation(Object):
         self.moved = False
         self.valid = True
         self.modal = None
+        self.targets = None
         self.game.add_event_handler ("pre_zone_transfer", self.onPreMoveObject)
 
     def get_id(self):
@@ -295,6 +304,7 @@ class LastKnownInformation(Object):
                 self._state = self.object.get_state()
                 self.moved = True
                 self.modal = self.object.modal
+                self.targets = self.object.targets
 
         else:
             # after it's moved, the LKI is valid until it is put into play again
@@ -323,4 +333,10 @@ class LastKnownInformation(Object):
             return self.object.get_controller_id()
         else:
             return self.get_state().controller_id
+
+    def get_targets(self):
+        if self.targets == None:
+            return self.object.get_targets()
+        else:
+            return self.targets
 

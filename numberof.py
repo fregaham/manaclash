@@ -81,6 +81,14 @@ class NumberOfCardsInYourHand(NumberOf):
     def __str__ (self):
         return "number of cards in your hand"
 
+class NumberOfCardsInTargetPlayersHand(NumberOf):
+    def evaluate(self, game, context):
+        player = context.get_targets()["target"].get_object()
+        return len(game.get_hand(player).objects)
+
+    def __str__ (self):
+        return "number of cards in target player's hand"
+
 class NumberOfCreatureCardsInAllGraveyards(NumberOf):
 
     def __init__ (self):

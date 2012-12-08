@@ -215,6 +215,8 @@ r = [
     R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
     R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to target ", N("selector"), " and ", N("Number"), " damage to ", selector, "."], lambda t,x,d,n,y,m,z:XDealNDamageToTargetYAndMDamageToZEffect(x, n, y, m, z)),
 
+    R("effect", [N("selector"), " ", N("deal"), " damage equal to the number of cards in target player's hand to that player."], lambda t,x,d:XDealNDamageToTargetYEffect(x, NumberOfCardsInTargetPlayersHand(), AllPlayersSelector())),
+
     R("effect", [selector, " ", N("deal"), " damage equal to ", N("Number"), " to target ", selector, "."], lambda t,x,d,n,y:XDealNDamageToTargetYEffect(x, n, y)),
 
     R("effect", [N("selector"), " ", N("deal"), " ", N("Number"), " damage to ", N("selector"), "."], lambda t,x,d,n,y:XDealNDamageToY(x, y, n)),
