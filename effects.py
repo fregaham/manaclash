@@ -2483,6 +2483,24 @@ class XCantBlockOrBeBlockerByY(ContinuousEffect):
     def __str__ (self):
         return "XCantBlockOrBeBlockerByY(%s, %s)" % (self.x_selector, self.y_selector)
 
+class XCantBlockY(ContinuousEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def apply(self, game, obj):
+        game.add_volatile_event_handler("validate_blocker", partial(self.onCanBlock, game, obj))
+
+    def isSelf(self):
+        return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
+
+    def onCanBlock(self, game, SELF, bv):
+        if bv.can and (self.x_selector.contains(game, SELF, bv.blocker) and self.y_selector.contains(game, SELF, bv.attacker)):
+            bv.can = False
+
+    def __str__ (self):
+        return "XCantBlockY(%s, %s)" % (self.x_selector, self.y_selector)
+
 class XAreChosenColor(ContinuousEffect):
     def __init__ (self, selector):
         self.selector = selector

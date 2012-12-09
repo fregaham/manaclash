@@ -411,6 +411,7 @@ r = [
     R("effect", [selector, " can't attack unless defending player controls a ", selector, "."], lambda t,x,y:XCantAttackUnlessDefendingPlayerControlsAY(x, y)),
 
     R("effect", [selector, " can't block or be blocked by ", selector, "."], lambda t,x,y:XCantBlockOrBeBlockerByY(x,y)),
+    R("effect", [selector, " can't block ", selector, "."], lambda t,x,y:XCantBlockY(x,y)),
 
     R("effect", ["all ", selector, " are the chosen color."], lambda t,x:XAreChosenColor(x)),
 
@@ -468,6 +469,7 @@ r = [
     R("basicSelector", ["creatures with power greater than ", Number], lambda t,n:CreatureWithPowerGreaterThanNSelector(n)),
     R("basicSelector", ["creature with power ", Number, " or greater"], lambda t,n:CreatureWithPowerNOrGreaterSelector(n)),
     R("basicSelector", ["creatures with power ", Number, " or greater"], lambda t,n:CreatureWithPowerNOrGreaterSelector(n)),
+    R("basicSelector", ["creatures with power ", Number, " or less"], lambda t,n:CreatureWithPowerNOrLessSelector(n)),
     R("basicSelector", ["all creatures"], lambda t:CreatureSelector()),
     R("basicSelector", ["creatures"], lambda t:CreatureSelector()),
     R("basicSelector", ["a creature"], lambda t:CreatureSelector()),
