@@ -359,6 +359,7 @@ r = [
 
     R("effect", [selector, "'s power and toughness are each equal to ", Number, "."], lambda t,x,n:XPowerAndToughnessAreEachEqualToN(x,n)),
     R("effect", [selector, "'s power is equal to the ", Number, " and its toughness is equal to that number plus ", Number, "."], lambda t,x,n,m:XPowerIsNAndToughnessIsM(x,n,NumberSum(n,m))),
+    R("effect", [selector, "'s power is equal to ", Number, "."], lambda t,x,n:XPowerIsN(x,n)),
 
     R("effect", [selector, " skips his or her next combat phase."], lambda t,s:PlayerSkipsNextCombatPhase(s)),
 
@@ -547,6 +548,7 @@ r = [
     R("basicSelector", ["nonland permanents"], lambda t:NonLandPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
     R("basicSelector", [N("creatureType")], lambda t,c:SubTypeSelector(c)),
+    R("basicSelector", [N("creatureType"), " you control"], lambda t,c:SubtypeYouControlSelector(c)),
     R("basicSelector", [N("creatureType"), " creatures"], lambda t,c:CreatureSubTypeSelector(c)),
     R("basicSelector", [N("creatureType"), " card from your graveyard"], lambda t,c:SubTypeCardFromYourGraveyardSelector(c)),
     R("basicSelector", [color, " card from your graveyard"], lambda t,c:ColorCardFromYourGraveyardSelector(c)),
@@ -663,6 +665,8 @@ r = [
     R("creatureType", ["treefolk"], lambda t:t),
     R("creatureType", ["wall"], lambda t:t),
     R("creatureType", ["zombie"], lambda t:t),
+    R("creatureType", ["rat"], lambda t:t),
+    R("creatureType", ["rats"], lambda t:"rat"),
 
     R("cardType", ["instant"], lambda t:t),
     R("cardType", ["sorcery"], lambda t:t),

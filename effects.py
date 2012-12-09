@@ -1763,6 +1763,27 @@ class XPowerIsNAndToughnessIsM(ContinuousEffect):
     def getLayer(self):
         return "power_set"
 
+class XPowerIsN(ContinuousEffect):
+    def __init__ (self, selector, powerNumber):
+        self.selector = selector
+        self.powerNumber = powerNumber
+
+    def apply(self, game, obj):
+
+        power = self.powerNumber.evaluate(game, obj)
+
+        for o in self.selector.all(game, obj):
+            o.get_state().power = power
+
+    def __str__ (self):
+        return "XPowerIsN(%s, %s)" % (self.selector, self.powerNumber)
+
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
+
+    def getLayer(self):
+        return "power_set"
+
 class XAddNManaOfAnyColorToYourManapool(OneShotEffect):
     def __init__ (self, selector, n):
         self.selector = selector
