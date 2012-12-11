@@ -2583,3 +2583,21 @@ class XAreChosenColor(ContinuousEffect):
     def getLayer(self):
         return "other"
 
+class XPlayWithHandRevealed(ContinuousEffect):
+    def __init__ (self, x_selector):
+        self.x_selector = x_selector
+
+    def apply(self, game, obj):
+
+        for player in self.x_selector.all(game, obj):
+            hand = game.get_hand(player)
+            for card in hand.objects:
+                # reveal to all players
+                for p in game.players:
+                    if p.get_id() not in card.get_state().show_to:
+                        card.get_state().show_to.append(p.get_id())
+
+    def __str__ (self):
+        return "XPlayWithHandRevealed(%s)" % (self.x_selector)
+
+

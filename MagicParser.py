@@ -420,6 +420,8 @@ r = [
 
     R("effect", [selector, " puts the cards in his or her hand on the bottom of his or her library in any order, then draws that many cards."], lambda t, x: XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(x)),
 
+    R("effect", [selector, " play with their hands revealed."], lambda t, x: XPlayWithHandRevealed(x)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -512,6 +514,7 @@ r = [
 
     R("basicSelector", ["opponent"], lambda t:OpponentSelector()),
     R("basicSelector", ["an opponent"], lambda t:OpponentSelector()),
+    R("basicSelector", ["your opponents"], lambda t:OpponentSelector()),
     R("basicSelector", ["a card"], lambda t:CardSelector()),
     R("basicSelector", [color, " ", cardType, " card"], lambda t,c,p:ColorTypeCardSelector(c,p)),
     R("basicSelector", ["a land"], lambda t:LandSelector()),
