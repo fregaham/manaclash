@@ -178,6 +178,8 @@ r = [
     R("triggeredAbility", ["at the beginning of each player's upkeep, ", N("effectText")], lambda t,e:AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(e)),
     R("triggeredAbility", ["at the beginning of your upkeep, ", N("effectText")], lambda t,e:AtTheBeginningOfYourUpkeepDoEffectAbility(e)),
 
+    R("triggeredAbility", ["at the beginning of each player's draw step, ", N("effectText")], lambda t,e:AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(e)),
+
     R("triggeredAbility", ["whenever a ", selector, " causes a ", selector, " to be put into your graveyard from the battlefield, ", N("effectText")], lambda t,x,y,e:WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(x,y,e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
@@ -415,6 +417,8 @@ r = [
     R("effect", [selector, " can't block ", selector, "."], lambda t,x,y:XCantBlockY(x,y)),
 
     R("effect", ["all ", selector, " are the chosen color."], lambda t,x:XAreChosenColor(x)),
+
+    R("effect", [selector, " puts the cards in his or her hand on the bottom of his or her library in any order, then draws that many cards."], lambda t, x: XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(x)),
 
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),

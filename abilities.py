@@ -864,3 +864,24 @@ class AtTheBeginningOfYourUpkeepDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "AtTheBeginningOfYourUpkeepDoEffectAbility(%s)" % (self.effect)
 
+class AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(TriggeredAbility):
+    def __init__(self, effect):
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return game.isInPlay(obj)
+
+    def getEventHandlers(self, game, obj):
+        return [("step", partial(self.onStep, game, obj))]
+
+    def onStep(self, game, SELF):
+        from process import process_trigger_effect
+        if game.current_step == "draw":
+            slots = {}
+            slots["that player"] = game.get_active_player()
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+
+    def __str__ (self):
+        return "AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(%s)" % (self.effect)
+

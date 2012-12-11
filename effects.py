@@ -1401,6 +1401,48 @@ class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYour
     def __str__ (self):
         return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n
 
+class XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        from process import evaluate
+
+        player = self.selector.only(game, obj)
+        hand = game.get_hand(player)
+        library = game.get_library(player)
+
+        n = 0
+
+        while len(hand.objects) > 0:
+            options = []
+            for card in hand.objects:
+                _option = Action()
+                _option.text = str(card)
+                _option.object = card
+                options.append (_option)
+
+            evaluate(game)
+     
+            _as = ActionSet (game, player, "Put card to the bottom of your library", options)
+            a = game.input.send(_as)
+            
+            card = a.object
+
+            game.doZoneTransfer(card, library, obj)
+
+            # move to the bottom:
+            library.objects.remove(card)
+            library.objects.insert(0, card)
+
+            n += 1
+
+        for i in range(n):
+            game.doDrawCard(player)
+
+    def __str__ (self):
+        return "XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(%s)" % self.selector
+
 class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, costs):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
