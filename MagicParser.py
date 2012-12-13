@@ -422,6 +422,8 @@ r = [
 
     R("effect", [selector, " play with their hands revealed."], lambda t, x: XPlayWithHandRevealed(x)),
 
+    R("effect", ["exile all ", selector, ". starting with you, each ", selector, " chooses one of the exiled cards and puts it onto the battlefield tapped under his or her control. repeat this process until all cards exiled this way have been chosen."], lambda t, x, y: ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(x, y)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
@@ -553,6 +555,7 @@ r = [
     R("basicSelector", ["spell or ability"], lambda t:SpellOrAbilitySelector()),
     R("basicSelector", ["permanent"], lambda t:AllPermanentSelector()),
     R("basicSelector", ["nonland permanents"], lambda t:NonLandPermanentSelector()),
+    R("basicSelector", ["nontoken permanents"], lambda t:NonTokenPermanentSelector()),
     R("basicSelector", [color, " source"], lambda t,c:ColorSourceSelector(c)),
     R("basicSelector", [N("creatureType")], lambda t,c:SubTypeSelector(c)),
     R("basicSelector", [N("creatureType"), " you control"], lambda t,c:SubtypeYouControlSelector(c)),

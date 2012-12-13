@@ -2600,4 +2600,50 @@ class XPlayWithHandRevealed(ContinuousEffect):
     def __str__ (self):
         return "XPlayWithHandRevealed(%s)" % (self.x_selector)
 
+class ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(OneShotEffect):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def resolve(self, game, obj):
+
+        from process import process_put_card_into_play
+
+        removed_zone = game.get_removed_zone()
+
+        cards = []
+        for card in self.x_selector.all(game, obj):
+            cards.append (card)
+            game.doZoneTransfer(card, removed_zone, obj)
+
+        player = game.objects[obj.get_controller_id()]
+
+        while(len(cards) > 0):
+            options = []
+            for card in cards:
+                _p = Action ()
+                _p.object = card
+                _p.text = "Choose " + str(card)
+                options.append (_p)
+
+            _as = ActionSet (game, player, "Choose a card to return to the battlefield.", options)
+            a = game.input.send (_as)
+
+            card = a.object
+
+            if process_put_card_into_play(game, card, player, obj, True):
+                pass
+            else:
+                # card cannot be placed into play, we remove it
+                # TODO: other players should get the chance to do something with this card... 
+                pass
+
+            cards.remove(card)
+              
+            player = game.get_next_player(player)
+
+        return True
+
+    def __str__ (self):
+        return "ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(%s, %s)" % (self.x_selector, self.y_selector)
 

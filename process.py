@@ -1506,6 +1506,30 @@ def process_select_targets(game, player, source, selector, n, optional=False):
 
     return targets
 
+# Special effect which causes something to be put into play under a player's control
+def process_put_card_into_play(game, card, controller, cause, tapped=False):
+
+    in_play_zone = game.get_in_play_zone()
+
+    if "aura" in card.get_state().subtypes:
+        if card.rules.selectTargets(game, controller, card):
+            assert card.targets["target"] is not None
+
+            card.enchanted_id = card.targets["target"].get_id()
+            card.controller_id = controller.get_id()
+            card.tapped = tapped
+            game.doZoneTransfer(card, in_play_zone, cause)
+
+        else:
+            return False
+
+    else:
+        # else, just add it into play
+        card.controller_id = controller.get_id()
+        card.tapped = tapped
+        game.doZoneTransfer(card, in_play_zone, cause)
+
+    return True
 
 def process_validate_target(game, source, selector, target):
     assert isinstance(target, LastKnownInformation)
