@@ -399,6 +399,14 @@ class CreatureWithFlyingSelector(Selector):
     def __str__ (self):
         return "creature with flying"
 
+class CreatureWithoutFlyingSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "creature" in item.state.types and "flying" not in item.state.tags:
+                yield item
+    def __str__ (self):
+        return "creature without flying"
+
 class ArtifactSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():

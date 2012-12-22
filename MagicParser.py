@@ -485,6 +485,7 @@ r = [
     R("basicSelector", ["each creature"], lambda t:CreatureSelector()),
     R("basicSelector", ["creatures on the battlefield"], lambda t:CreatureSelector()),
     R("basicSelector", ["creature with flying"], lambda t:CreatureWithFlyingSelector()),
+    R("basicSelector", ["creature without flying"], lambda t:CreatureWithoutFlyingSelector()),
     R("basicSelector", ["a creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creature you control"], lambda t:CreatureYouControlSelector()),
     R("basicSelector", ["creatures you control"], lambda t:CreatureYouControlSelector()),
