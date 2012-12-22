@@ -382,6 +382,15 @@ class ArtifactEnchantmentOrLandSelector(Selector):
     def __str__ (self):
         return "artifact, enchantment or land"
 
+class ArtifactCreatureOrLandSelector(Selector):
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and ("land" in item.state.types or "artifact" in item.state.types or "creature" in item.state.types):
+                yield item
+
+    def __str__ (self):
+        return "artifact, creature or land"
+
 class ArtifactOrLandSelector(Selector):
     def all(self, game, context):
         for item in game.objects.values():

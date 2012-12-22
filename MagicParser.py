@@ -542,6 +542,7 @@ r = [
     R("basicSelector", ["artifacts"], lambda t:ArtifactSelector()),
     R("basicSelector", ["artifact or land"], lambda t:ArtifactOrLandSelector()),
     R("basicSelector", ["artifact, enchantment, or land"], lambda t:ArtifactEnchantmentOrLandSelector()),
+    R("basicSelector", ["artifact, creature, or land"], lambda t:ArtifactCreatureOrLandSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
