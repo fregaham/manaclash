@@ -785,8 +785,12 @@ def validate_block(game, blockers, blockers_map):
         blocker = game.objects[blocker_id]
 
         # we normally allow only one attacker per blocker
-        if len(attackers) > 1 and "can block any number of creatures" not in blocker.state.tags:
-            return False
+        if len(attackers) > 1:
+            if "can block any number of creatures" not in blocker.state.tags:
+                if len(attackers) == 2 and "can block an additional creature" in blocker.state.tags:
+                    pass
+                else:
+                    return False
 
         for attacker in attackers:
             if not is_valid_block(game, attacker, blocker):
@@ -822,10 +826,23 @@ def validate_block(game, blockers, blockers_map):
         if "lure" in attacker.get_state().tags and "can't be blocked except by three or more creatures" not in attacker.get_state().tags and "can't be blocked except by two or more creatures" not in attacker.get_state().tags:
             selector = PermanentPlayerControlsSelector(game.get_defending_player())
             for permanent in selector.all(game, None):
-                if "creature" in permanent.state.types and not permanent.tapped and (permanent not in blockers or "can block any number of creatures" in permanent.state.tags):
-                    if is_valid_block(game, attacker, permanent):
-                        print("Invalid block, %s not blocking a lure" % permanent)
-                        return False
+                if "creature" not in permanent.state.types:
+                    continue
+                if permanent.tapped:
+                    continue
+                if permanent in blockers:
+
+                    blocked = blockers_map.get(permanent.id, [])
+
+                    if "can block any number of creatures" not in permanent.state.tags:
+                        if len(blocked) == 1 and "can block an additional creature" in permanent.state.tags:
+                            pass
+                        else:
+                            continue
+
+                if is_valid_block(game, attacker, permanent):
+                    print("Invalid block, %s not blocking a lure" % permanent)
+                    return False
 
     return True
 
@@ -850,12 +867,24 @@ def process_step_declare_blockers (game):
 
             selector = PermanentPlayerControlsSelector(game.get_defending_player())
             for permanent in selector.all(game, None):
-                if "creature" in permanent.state.types and not permanent.tapped and (permanent not in blockers or "can block any number of creatures" in permanent.state.tags):
-                    _p = Action ()
-                    _p.object = permanent
-                    _p.player = game.get_defending_player()
-                    _p.text = "Block with %s" % permanent
-                    actions.append (_p)
+                if "creature" not in permanent.state.types:
+                    continue
+                if permanent.tapped:
+                    continue
+                if permanent in blockers:
+                    blocked = blockers_map.get(permanent.id, [])
+
+                    if "can block any number of creatures" not in permanent.state.tags:
+                        if len(blocked) == 1 and "can block an additional creature" in permanent.state.tags:
+                            pass
+                        else:
+                            continue
+
+                _p = Action ()
+                _p.object = permanent
+                _p.player = game.get_defending_player()
+                _p.text = "Block with %s" % permanent
+                actions.append (_p)
 
             _as = ActionSet (game, game.get_defending_player(), "Select blockers", actions)
             b = game.input.send (_as)
@@ -870,6 +899,10 @@ def process_step_declare_blockers (game):
                 selector = AllPermanentSelector()
                 for permanent in selector.all(game, None):
                     if "attacking" in permanent.state.tags:
+                        # cannot block the same object more than once
+                        if permanent in blockers_map.get(b.object.id, []):
+                            continue
+
                         if is_valid_block(game, permanent, b.object):
                             _p = Action ()
                             _p.object = permanent
@@ -1059,7 +1092,7 @@ def process_step_combat_damage (game, firstStrike):
                         _p.text = str(_p.object)
                         actions.append (_p)
 
-                    _as = ActionSet (game, game.get_blocking_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
+                    _as = ActionSet (game, game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
                     a = game.input.send (_as)
 
                     a_lki = id2lki[a.object.id]
