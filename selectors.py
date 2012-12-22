@@ -76,6 +76,17 @@ class SubtypeYouControlSelector(Selector):
     def __str__ (self):
         return "%s subtype you control" % (self.subtype)
 
+class LandYouControlSelector(Selector):
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "permanent" in item.state.tags and "land" in item.state.types and item.state.controller_id == context.get_state().controller_id:
+                yield item
+
+    def __str__ (self):
+        return "land you control"
+
+
 class AllPermanentSelector(Selector):
     def all(self, game, context):
          for item in game.objects.values():

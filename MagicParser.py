@@ -522,6 +522,7 @@ r = [
     R("basicSelector", ["a land"], lambda t:LandSelector()),
     R("basicSelector", ["land"], lambda t:LandSelector()),
     R("basicSelector", ["lands"], lambda t:LandSelector()),
+    R("basicSelector", ["land you control"], lambda t:LandYouControlSelector()),
 
     R("basicSelector", ["a creature card"], lambda t:CreatureCardSelector()),
     R("basicSelector", ["creature card"], lambda t:CreatureCardSelector()),
