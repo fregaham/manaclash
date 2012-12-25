@@ -628,6 +628,28 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "WhenXDiscardsACardDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
 
+class WhenXDrawsACardDoEffectAbility(TriggeredAbility):
+    def __init__ (self, x_selector, effect):
+        self.x_selector = x_selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return game.isInPlay(obj)
+
+    def getEventHandlers(self, game, obj):
+        return [("post_draw", partial(self.onDraw, game, obj))]
+
+    def onDraw(self, game, SELF, player, card):
+        from process import process_trigger_effect
+        if self.x_selector.contains(game, SELF, player):
+            slots = {}
+            for slot in self.x_selector.slots():
+                slots[slot] = player
+            process_trigger_effect(game, SELF, self.effect, slots)
+       
+    def __str__ (self):
+        return "WhenXDrawsACardDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
+
 class WhenXCausesYToDiscardZ(TriggeredAbility):
     def __init__ (self, x_selector, y_selector, z_selector, effect):
         self.x_selector = x_selector

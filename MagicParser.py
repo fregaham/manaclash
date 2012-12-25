@@ -127,7 +127,6 @@ r = [
     R("triggeredAbility", [N("whenXDealsDamageToYDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsCombatDamageToYDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXBlocksOrBecomesBlockedByYDoEffectAbility")], id),
-    R("triggeredAbility", [N("whenXDiscardsACardDoEffectAbility")], id),
 
     R("when", ["when"], lambda t:t),
     R("when", ["whenever"], lambda t:t),
@@ -158,7 +157,8 @@ r = [
     R("triggeredAbility", [N("when"), " ", selector, " blocks, ", N("effectText")], lambda t,w,s,e: WhenXBlocksDoEffectAbility(s,e)),
     R("triggeredAbility", [N("when"), " ", selector, " attacks or blocks, ", N("effectText")], lambda t,w,s,e: WhenXAttacksOrBlocksDoEffectAbility(s,e)),
 
-    R("whenXDiscardsACardDoEffectAbility", [N("when"), " ", N("selector"), " discards a card, ", N("effectText")], lambda t,w,x,e:WhenXDiscardsACardDoEffectAbility(x,e)),
+    R("triggeredAbility", [N("when"), " ", N("selector"), " discards a card, ", N("effectText")], lambda t,w,x,e:WhenXDiscardsACardDoEffectAbility(x,e)),
+    R("triggeredAbility", [N("when"), " ", N("selector"), " draws a card, ", N("effectText")], lambda t,w,x,e:WhenXDrawsACardDoEffectAbility(x,e)),
 
     R("triggeredAbility", [N("when"), " ", selector, " is put into a graveyard from the battlefield, ", N("effectText")], lambda t,w,x,e:WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(x,e)),
 
@@ -468,6 +468,7 @@ r = [
     R("basicSelector", ["each player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["each other player"], lambda t:EachOtherPlayerSelector()),
     R("basicSelector", ["that player"], lambda t:ThatPlayerSelector()),
+    R("basicSelector", ["him or her"], lambda t:ThatPlayerSelector()),
     R("basicSelector", ["you"], lambda t:YouSelector()),
     R("basicSelector", ["it"], lambda t:ItSelector()),
     R("basicSelector", ["that card"], lambda t:ThatCardSelector()),

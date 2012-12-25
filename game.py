@@ -309,6 +309,7 @@ class Game:
         else:
             card = library.objects[-1]
             self.doZoneTransfer(card, self.get_hand(player))
+            self.raise_event ("post_draw", player, card)
 
     def doLoseGame(self, player):
         # TODO: multiplayer
