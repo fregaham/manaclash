@@ -25,6 +25,7 @@ from game import *
 from process import *
 from rules import *
 from mcio import *
+from MagicParser import magic_parser
 
 import sys
 
@@ -65,7 +66,7 @@ def parseOracle(f):
                 raise Exception("Expecting 'Cost:' on line %d" % n)
         elif state == 2:
             if line.startswith("Type:"):
-                types = line[len("Type:"):].strip().lower()
+                types = line[len("Type:"):].strip().lower().replace("’", "'")
                 if "—" in types:
                     types, subtypes = types.split("—", 1)
                     typesSplit = types.split()
@@ -77,7 +78,14 @@ def parseOracle(f):
                         else:
                             card.supertypes = set([typesSplit[0]])
                             card.types = set([typesSplit[1]])
-                    card.subtypes = set(subtypes.split())
+
+                    # multi-word subtypes (e.g. Urza's Power-Plant)
+                    subtypes = subtypes.strip()
+                    parsedSubType = magic_parser("creatureType", subtypes)
+                    if parsedSubType != None:
+                        card.subtypes = set([parsedSubType])
+                    else:
+                        card.subtypes = set(subtypes.split())
                 else:
                     card.types = set(types.split())
                 

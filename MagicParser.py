@@ -426,6 +426,8 @@ r = [
     R("effect", ["exile all ", selector, ". starting with you, each ", selector, " chooses one of the exiled cards and puts it onto the battlefield tapped under his or her control. repeat this process until all cards exiled this way have been chosen."], lambda t, x, y: ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(x, y)),
 
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
+    R("manaEffect", ["add ", manaCost, " to your mana pool. if ", condition, ", add ", manaCost, " to your mana pool instead."], lambda t, m1, c, m2: XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(YouSelector(),m1, c, m2)),
+
     R("manaEffect", ["add ", number, " mana of any color to your mana pool."], lambda t,n: XAddNManaOfAnyColorToYourManapool(YouSelector(),n)),
     R("manaEffect", [selector, " adds ", number, " mana of any color to his or her mana pool (in addition to the mana the land produces)."], lambda t,x,n: XAddNManaOfAnyColorToYourManapool(x,n)),
     R("manaEffect", ["add ", manaCost, " or ", manaCost, " to your mana pool."], lambda t,m1,m2: XAddOneOfTheseManaToYourManaPool(YouSelector(), [m1,m2])),
@@ -435,6 +437,7 @@ r = [
 
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
     R("condition", ["SELF is untapped"], lambda t:ExistsUntappedX(SelfSelector())),
+    R("condition", [selector, " control an ", selector, " and an ", selector], lambda t,x,y,z:XControlsYAndZ(x, y, z)),
 
     R("dialog", ["choose a creature type."], lambda t:ChooseCreatureType()),
     R("dialog", ["choose a color."], lambda t:ChooseColor()),
@@ -682,6 +685,11 @@ r = [
     R("creatureType", ["zombie"], lambda t:t),
     R("creatureType", ["rat"], lambda t:t),
     R("creatureType", ["rats"], lambda t:"rat"),
+
+    # actually a subtype
+    R("creatureType", ["urza's power-plant"], lambda t:t),
+    R("creatureType", ["urza's tower"], lambda t:t),
+    R("creatureType", ["urza's mine"], lambda t:t),
 
     R("cardType", ["instant"], lambda t:t),
     R("cardType", ["sorcery"], lambda t:t),

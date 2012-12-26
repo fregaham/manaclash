@@ -937,6 +937,28 @@ class XAddXToYourManaPool(OneShotEffect):
     def __str__ (self):
         return "XAddXToYourManaPool(%s, %s)" % (self.selector, self.mana)
 
+class XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(OneShotEffect):
+    def __init__ (self, selector, m1, c, m2):
+        self.selector = selector
+        self.m1 = m1
+        self.c = c
+        self.m2 = m2
+
+    def resolve(self, game, obj):
+
+        if self.c.evaluate(game, obj):
+            for player in self.selector.all(game, obj):
+                player.get_object().manapool += self.m2
+        else:
+            for player in self.selector.all(game, obj):
+                player.get_object().manapool += self.m1
+
+        return True
+
+    def __str__ (self):
+        return "XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(%s, %s, %s, %s)" % (self.selector, self.m1, self.c, self.m2)
+
+
 class RegenerateX(OneShotEffect):
     def __init__ (self, selector):
         self.selector = selector
