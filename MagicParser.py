@@ -558,6 +558,8 @@ r = [
     R("basicSelector", ["creature spell"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["creature spells"], lambda t:CreatureSpellSelector()),
     R("basicSelector", ["a creature spell"], lambda t:CreatureSpellSelector()),
+    R("basicSelector", ["enchantment spell"], lambda t:EnchantmentSpellSelector()),
+    R("basicSelector", ["an enchantment spell"], lambda t:EnchantmentSpellSelector()),
     R("basicSelector", ["other ", N("creatureType"), " creatures"], lambda t,c:OtherXCreaturesSelector(c)),
     R("basicSelector", ["spell or ability an opponent controls"], lambda t:SpellOrAbilityAnOpponentControls()),
     R("basicSelector", ["spell or ability"], lambda t:SpellOrAbilitySelector()),

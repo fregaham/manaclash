@@ -857,6 +857,18 @@ class CreatureSpellSelector(Selector):
     def __str__ (self):
         return "creature spell"
 
+class EnchantmentSpellSelector(Selector):
+    def __init__ (self):
+        pass
+
+    def all(self, game, context):
+        for item in game.objects.values():
+            if "spell" in item.get_state().tags and "enchantment" in item.get_state().types:
+                yield item
+
+    def __str__ (self):
+        return "enchantment spell"
+
 class ColorSpellSelector(Selector):
     def __init__ (self, color):
         self.color = color
