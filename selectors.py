@@ -794,6 +794,9 @@ class LandSubTypeSelector(Selector):
             if "permanent" in item.state.tags and self.type in item.state.subtypes and "land" in item.state.types:
                 yield item
 
+    def slots(self):
+        return ["it"]
+
     def __str__ (self):
         return "%s" % (self.type)
 
