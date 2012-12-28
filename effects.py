@@ -2669,3 +2669,39 @@ class ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBat
     def __str__ (self):
         return "ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(%s, %s)" % (self.x_selector, self.y_selector)
 
+class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector, n):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+        self.n = n
+           
+    def doResolve(self, game, obj, target):
+
+        from process import process_reveal_cards
+
+        player = target.get_object()
+
+        _as = QueryString(game, player, "Name a Card")
+        a = game.input.send(_as)
+
+        library = game.get_library(player)
+        hand = game.get_hand(player)
+        graveyard = game.get_graveyard(player)
+
+        if len(library.objects) == 0:
+            self.doLoseGame(player)
+        else:
+            top_card = library.objects[-1]
+            process_reveal_cards(game, player, [top_card])
+
+            if top_card.get_state().title.lower() == a.lower().strip():
+                game.doZoneTransfer(top_card, hand, obj)
+            else:
+                game.doZoneTransfer(top_card, graveyard, obj)
+                count = self.n.evaluate(game, obj)
+                damage = []
+                damage.append ( (obj, player, count) )
+                game.doDealDamage(damage)
+
+    def __str__ (self):
+        return "TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(%s, %s)" % (self.targetSelector, self.n)
+
