@@ -181,6 +181,8 @@ r = [
 
     R("triggeredAbility", ["at the beginning of each player's draw step, ", N("effectText")], lambda t,e:AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(e)),
 
+    R("triggeredAbility", ["at the beginning of the end step, ", N("effectText")], lambda t,e:AtTheBeginningOfEachPlayerssEndStepDoEffectAbility(e)),
+
     R("triggeredAbility", ["whenever a ", selector, " causes a ", selector, " to be put into your graveyard from the battlefield, ", N("effectText")], lambda t,x,y,e:WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(x,y,e)),
 
     R("activatedAbility", [N("tappingActivatedAbility")], id),
@@ -330,6 +332,7 @@ r = [
     R("effect", ["change the target of target ", selector, "."], lambda t,x: ChangeTargetOfTargetX(x)),
 
     R("effect", ["return ", selector, " to its owner's hand."], lambda t,x: ReturnXToOwnerHands(x)),
+    R("effect", ["return ", selector, " to its owner's hand. (return it only if it's on the battlefield.)"], lambda t,x: ReturnXToOwnerHands(x)),
     R("effect", ["return target ", selector, " to its owner's hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
     R("effect", ["return target ", selector, " to your hand."], lambda t,x: ReturnTargetXToOwnerHands(x)),
     R("effect", ["you may return target ", selector, " to your hand."], lambda t,x: ReturnTargetXToOwnerHands(x, True)),
