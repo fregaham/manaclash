@@ -342,6 +342,7 @@ r = [
     R("effect", ["return all ", selector, " to their owners' hands."], lambda t,x: ReturnXToOwnerHands(x)),
 
     R("effect", ["return ", selector, " to the battlefield."], lambda t,x:ReturnXToPlay(x)),
+    R("effect", ["return target ", selector, " to the battlefield."], lambda t,x:ReturnTargetXToPlay(x)),
 
     R("effect", ["you may tap or untap target ", selector, "."], lambda t,x: YouMayTapOrUntapTargetX(x)),
 
@@ -565,6 +566,7 @@ r = [
     R("basicSelector", ["artifact, enchantment, or land"], lambda t:ArtifactEnchantmentOrLandSelector()),
     R("basicSelector", ["artifact, creature, or land"], lambda t:ArtifactCreatureOrLandSelector()),
     R("basicSelector", ["enchantment"], lambda t:EnchantmentSelector()),
+    R("basicSelector", ["enchantment on the battlefield"], lambda t:EnchantmentSelector()),
     R("basicSelector", ["a ", color, " spell"], lambda t,c:ColorSpellSelector(c)),
     R("basicSelector", ["spell"], lambda t:SpellSelector()),
     R("basicSelector", ["each spell"], lambda t:SpellSelector()),

@@ -1565,6 +1565,20 @@ class ReturnXToPlay(OneShotEffect):
     def __str__ (self):
         return "ReturnXToPlay(%s)" % self.selector
 
+class ReturnTargetXToPlay(SingleTargetOneShotEffect):
+    def __init__ (self, selector):
+        SingleTargetOneShotEffect.__init__(self, selector)
+
+    def doResolve(self, game, obj, target):
+        if not target.is_moved():
+            in_play = game.get_in_play_zone()
+            game.doZoneTransfer(target.get_object(), in_play, obj)
+
+        return True
+
+    def __str__ (self):
+        return "ReturnTargetXToPlay(%s)" % self.targetSelector
+
 class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
