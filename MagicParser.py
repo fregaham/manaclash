@@ -299,6 +299,7 @@ r = [
     R("effect", ["target ", selector, " ", N("gain"), " ", N("Number"), " life."], lambda t,x,l,n: TargetXGainLife(x, n)),
     R("effect", ["target ", selector, " loses ", N("Number"), " life."], lambda t,x,l,n: TargetXLoseLife(x, n)),
     R("effect", ["target ", selector, " loses ", N("Number"), " life and ", selector, " gain ", N("Number"), " life."], lambda t,x,m,y,n:XAndY(TargetXLoseLife(x, m), PlayerGainLifeEffect(y, n))),
+    R("effect", ["SELF deals ", N("Number"), " damage to target ", selector, " and ", selector, " gain ", N("Number"), " life."], lambda t,n,x,y,m:XAndY(XDealNDamageToTargetYEffect(SelfSelector(), n, x), PlayerGainLifeEffect(y, m))),
 
     R("effect", ["prevent the next ", number, " damage that would be dealt to target ", selector, " this turn."], lambda t,n,s: PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(s, n)),
     R("effect", ["prevent all combat damage that would be dealt this turn."], lambda t:PreventAllCombatDamageThatWouldBeDealtThisTurn()),

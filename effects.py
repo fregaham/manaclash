@@ -289,7 +289,7 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
         game.doDealDamage([(source, target, count)])
 
     def __str__ (self):
-        return "XDealNDamageToTargetYEffect(%s, %s, %s)" % (self.targetSelector, self.number, self.sourceSelector)
+        return "XDealNDamageToTargetYEffect(%s, %s, %s)" % (self.sourceSelector, self.number, self.targetSelector)
 
 class XDealNDamageToTargetYAndMDamageToZEffect(SingleTargetOneShotEffect):
     def __init__ (self, sourceSelector, number, targetSelector, number2, otherSelector):
