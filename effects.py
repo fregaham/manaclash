@@ -1612,6 +1612,19 @@ class UntapAllX(OneShotEffect):
     def __str__ (self):
         return "UntapAllX(%s)" % (self.selector)
 
+class TapAllX(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        for o in self.selector.all(game, obj):
+            game.doTap(o)
+
+        return True
+
+    def __str__ (self):
+        return "TapAllX(%s)" % (self.selector)
+
 class UntapUpToNX(OneShotEffect):
     def __init__ (self, number, selector):
         self.number = number

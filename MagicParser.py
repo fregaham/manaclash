@@ -389,6 +389,9 @@ r = [
     R("effect", ["at the beginning of each player's draw step, if ", condition, ", that player draws an additional card."], lambda t,c:AtTheBeginningOfEachPlayerDrawStepIfXThatPlayerDrawsAnAdditionalCard(c)),
 
     R("effect", ["untap all ", selector, "."], lambda t,s: UntapAllX(s)),
+
+    R("effect", ["tap all ", selector, "."], lambda t,s: TapAllX(s)),
+
     R("effect", ["untap SELF."], lambda t: UntapAllX(SelfSelector())),
     R("effect", ["untap up to ", Number, " ", selector, "."], lambda t,n,x:UntapUpToNX(n,x)),
 
