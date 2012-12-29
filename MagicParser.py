@@ -123,7 +123,6 @@ r = [
     R("abilities", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " and have ", tag, "."], lambda t,x,g,a,b,tag:[ContinuousEffectStaticAbility(XGetsNN(x,a,b)), ContinuousEffectStaticAbility(XGetsTag(x, tag))]),
     R("abilities", [selector, " ", N("get"), " ", N("number"), "/", N("number"), " and have ", tag, ". (they're unblockable as long as defending player controls ", selector, ".)"], lambda t,x,g,a,b,tag,s:[ContinuousEffectStaticAbility(XGetsNN(x,a,b)), ContinuousEffectStaticAbility(XGetsTag(x, tag))]),
 
-    R("triggeredAbility", [N("whenXComesIntoPlayDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsDamageToYDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXDealsCombatDamageToYDoEffectAbility")], id),
     R("triggeredAbility", [N("whenXBlocksOrBecomesBlockedByYDoEffectAbility")], id),
@@ -131,8 +130,10 @@ r = [
     R("when", ["when"], lambda t:t),
     R("when", ["whenever"], lambda t:t),
 
-    R("whenXComesIntoPlayDoEffectAbility", [N("when"), " ", selector, " comes into play, ", N("effectText")], lambda t, w, s, e: WhenXComesIntoPlayDoEffectAbility(s, e)),
-    R("whenXComesIntoPlayDoEffectAbility", [N("when"), " ", selector, " enters the battlefield, ", N("effectText")], lambda t, w, s, e: WhenXComesIntoPlayDoEffectAbility(s, e)),
+    R("triggeredAbility", [N("when"), " ", selector, " comes into play, ", N("effectText")], lambda t, w, s, e: WhenXComesIntoPlayDoEffectAbility(s, e)),
+    R("triggeredAbility", [N("when"), " ", selector, " enters the battlefield, ", N("effectText")], lambda t, w, s, e: WhenXComesIntoPlayDoEffectAbility(s, e)),
+
+    R("triggeredAbility", [N("when"), " a ", selector, " is returned to a player's hand, ", N("effectText")], lambda t, w, s, e: WhenXIsReturnedToPlayersHandDoEffectAbility(s, e)),
 
     R("deal", ["deal"], lambda t:t),
     R("deal", ["deals"], lambda t:t),

@@ -928,3 +928,29 @@ class AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(TriggeredAbility):
     def __str__ (self):
         return "AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(%s)" % (self.effect)
 
+class WhenXIsReturnedToPlayersHandDoEffectAbility(TriggeredAbility):
+    def __init__(self, selector, effect):
+        self.selector = selector
+        self.effect = effect
+
+    def isActive(self, game, obj):
+        return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
+
+    def getEventHandlers(self, game, obj):
+        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
+
+    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
+        if self.selector.contains(game, SELF, obj) and zone_to.type == "hand" and zone_from.type == "in play":
+            from process import process_trigger_effect
+
+            slots = {}
+            for slot in self.selector.slots():
+                slots[slot] = obj
+
+            slots["that player"] = game.objects[zone_to.player_id]
+
+            process_trigger_effect(game, SELF, self.effect, slots)
+
+    def __str__ (self):
+        return "WhenXIsReturnedToPlayersHandDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
+
