@@ -56,6 +56,21 @@ class ExistsUntappedX(Condition):
     def __str__ (self):
         return "ExistsUntappedX(%s)" % self.selector
 
+class XControlsYCondition(Condition):
+    def __init__ (self, x_selector, y_selector):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def evaluate(self, game, context):
+        x = self.x_selector.only(game, context)
+        x_id = x.get_id()
+
+        for y in self.y_selector.all(game, context):
+            if y.get_controller_id() == x_id:
+                return True
+
+        return False
+
 class XControlsYAndZ(Condition):
     def __init__ (self, x_selector, y_selector, z_selector):
         self.x_selector = x_selector

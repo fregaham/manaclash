@@ -439,6 +439,26 @@ class XGetsTag(ContinuousEffect):
     def getLayer(self):
         return "other"
 
+class IfCXGetsTag(ContinuousEffect):
+    def __init__ (self, condition, selector, tag):
+        self.condition = condition
+        self.selector = selector
+        self.tag = tag
+
+    def apply(self, game, obj):
+        if self.condition.evaluate(game, obj):
+            for o in self.selector.all(game, obj):
+                if not o.is_moved():
+                    o.get_state().tags.add (self.tag)
+
+    def isSelf(self):
+        return isinstance(self.selector, SelfSelector)
+
+    def __str__ (self):
+        return "IfCXGetsTag(%s, %s, %s)" % (self.condition, self.selector, self.tag)
+
+    def getLayer(self):
+        return "other"
 
 class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention):
     def __init__ (self, context, x_selector, y_selector, n):

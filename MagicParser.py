@@ -432,6 +432,8 @@ r = [
 
     R("effect", ["target ", selector, " names a card, then reveals the top card of his or her library. if it's the named card, the player puts it into his or her hand. otherwise, the player puts it into his or her graveyard and SELF deals ", Number, " damage to him or her."], lambda t, x, n: TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(x, n)),
 
+    R("effect", ["if ", condition, ", damage that would reduce your life total to less than 1 reduces it to 1 instead."], lambda t, c:IfCXGetsTag(c, YouSelector(), "damage that would reduce your life total to less than 1 reduces it to 1 instead")),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", manaCost, " to your mana pool. if ", condition, ", add ", manaCost, " to your mana pool instead."], lambda t, m1, c, m2: XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(YouSelector(),m1, c, m2)),
 
@@ -448,6 +450,7 @@ r = [
     R("condition", [selector, " have ", number, " or less life"], lambda t,s,n:IfXHasNOrLessLife(s, n)),
     R("condition", ["SELF is untapped"], lambda t:ExistsUntappedX(SelfSelector())),
     R("condition", [selector, " control an ", selector, " and an ", selector], lambda t,x,y,z:XControlsYAndZ(x, y, z)),
+    R("condition", [selector, " control a ", selector], lambda t,x,y:XControlsYCondition(x, y)),
 
     R("dialog", ["choose a creature type."], lambda t:ChooseCreatureType()),
     R("dialog", ["choose a color."], lambda t:ChooseColor()),

@@ -453,7 +453,10 @@ class Game:
                 self.raise_event("pre_deal_damage", a, b, n)
 
                 if "player" in b.get_state().types:
-                    b.get_object().life -= n
+                    if "damage that would reduce your life total to less than 1 reduces it to 1 instead" in b.get_state().tags and (b.get_object().life - n < 1):
+                        b.get_object().life = 1
+                    else:
+                        b.get_object().life -= n
                 else:
                     b.get_object().damage += n
 
