@@ -438,6 +438,8 @@ r = [
 
     R("effect", ["if ", condition, ", damage that would reduce your life total to less than 1 reduces it to 1 instead."], lambda t, c:IfCXGetsTag(c, YouSelector(), "damage that would reduce your life total to less than 1 reduces it to 1 instead")),
 
+    R("effect", ["if a ", selector, " would draw a card, he or she reveals it instead. then any other player may ", costs, ". if a player does, put that card into its owner's graveyard. otherwise, that player draws a card."], lambda t, s, c: IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfAPlayerDoesPutThatCardIntoItsOwnersGraveyardOtherwiseThatPlayerDrawsACard(s, c)),
+
     R("manaEffect", ["add ", manaCost, " to your mana pool."], lambda t, m: XAddXToYourManaPool(YouSelector(),m)),
     R("manaEffect", ["add ", manaCost, " to your mana pool. if ", condition, ", add ", manaCost, " to your mana pool instead."], lambda t, m1, c, m2: XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(YouSelector(),m1, c, m2)),
 
@@ -482,6 +484,7 @@ r = [
     R("selector", [N("basicSelector"), ", ", N("basicSelector"), ", and ", N("basicSelector")], lambda t,x,y,z:OrSelector(x,OrSelector(y,z))),
 
     R("basicSelector", ["player"], lambda t:AllPlayersSelector()),
+    R("basicSelector", ["players"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["a player"], lambda t:AllPlayersSelector()),
     R("basicSelector", ["a source"], lambda t:AllSelector()),
     R("basicSelector", ["source"], lambda t:AllSelector()),

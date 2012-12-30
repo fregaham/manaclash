@@ -22,6 +22,34 @@ import random
 from objects import *
 from actions import Action,ActionSet
 
+class InterceptableMethod:
+    def __init__ (self, _callable):
+        self.original = _callable
+        self.reset()
+        self.pos = -1
+
+    def reset(self):
+        self.interceptors = [self.original]
+
+    def add(self, _callable):
+        self.interceptors = [_callable] + self.interceptors
+
+    def proceed(self, *args, **kargs):
+
+        self.pos += 1
+
+        assert self.pos >= 0
+        assert self.pos < len(self.interceptors)
+
+        ret = self.interceptors[self.pos](self, *args, **kargs)
+
+        self.pos -= 1
+
+        return ret
+
+    def __call__(self, *args, **kargs):
+        return self.proceed(*args, **kargs)
+
 class DamageReplacement:
     def __init__ (self, list, combat):
         self.list = list
@@ -86,6 +114,12 @@ class Game:
 
         self.creature_that_attacked_this_turn_lkis = set()
         self.additional_combat_phase_followed_by_an_additional_main_phase = False
+
+        self.interceptable_draw = InterceptableMethod(self._drawCard)
+
+    def reset_interceptables(self):
+        # TODO: have single method that also resets all the effects and other replacements stuff at the beginning of the evaluate process
+        self.interceptable_draw.reset()
 
     def add_object (self, object):
         self.obj_max_id += 1
@@ -302,7 +336,7 @@ class Game:
     def doAddMana (self, player, source, mana):
         player.manapool += mana
 
-    def doDrawCard (self, player):
+    def _drawCard(self, interceptable, player):
         library = self.get_library(player)
         if len(library.objects) == 0:
             self.doLoseGame(player)
@@ -311,6 +345,9 @@ class Game:
             self.doZoneTransfer(card, self.get_hand(player))
             self.raise_event ("post_draw", player, card)
 
+    def doDrawCard (self, player):
+        self.interceptable_draw(player)
+       
     def doLoseGame(self, player):
         # TODO: multiplayer
         for p in self.players:

@@ -815,7 +815,7 @@ class YouMayPayCostIfYouDoY(OneShotEffect):
 
         if a == _pay:
             from process import process_pay_cost, process_trigger_effect
-            if process_pay_cost(game, controller, obj, self.cost):
+            if process_pay_cost(game, controller, obj, obj, self.cost):
                 process_trigger_effect(game, obj, self.effectText, {})
      
         return True
@@ -1195,7 +1195,7 @@ class SacrificeAllXUnlessYouCost(OneShotEffect):
 
         if a == _pay:
             from process import process_pay_cost
-            if process_pay_cost(game, controller, obj, self.costs):
+            if process_pay_cost(game, controller, obj, obj, self.costs):
                 return
             # else, sacrifice...
              
@@ -1504,7 +1504,7 @@ class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
 
         if a == _pay:
             from process import process_pay_cost
-            if process_pay_cost(game, controller, obj, self.costs):
+            if process_pay_cost(game, controller, obj, obj, self.costs):
                 return
             # else, counter.
         return game.doCounter(target)
@@ -2751,4 +2751,59 @@ class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayer
 
     def __str__ (self):
         return "TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(%s, %s)" % (self.targetSelector, self.n)
+
+
+class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfAPlayerDoesPutThatCardIntoItsOwnersGraveyardOtherwiseThatPlayerDrawsACard(ContinuousEffect):
+    def __init__ (self, x_selector, cost):
+        self.x_selector = x_selector
+        self.cost = cost
+
+    def apply(self, game, obj):
+        game.interceptable_draw.add(partial(self.interceptDraw, game, obj))
+
+    def interceptDraw(self, game, SELF, interceptable, player):
+        from process import process_reveal_cards
+
+        if self.x_selector.contains(game, SELF, player):
+            library = game.get_library(player)
+            hand = game.get_hand(player)
+            graveyard = game.get_graveyard(player)
+
+            if len(library.objects) == 0:
+                self.doLoseGame(player)
+            else:
+                top_card = library.objects[-1]
+                process_reveal_cards(game, player, [top_card])
+
+                next_player = game.get_next_player(player)
+                while next_player.get_id() != player.get_id():
+
+                    _pay = Action()
+                    _pay.text = "Yes"
+        
+                    _notpay = Action()
+                    _notpay.text = "No"
+
+                    _as = ActionSet (game, next_player, ("Pay %s to put %s into its owner's graveyard?" % (", ".join(map(str, self.cost)), top_card.get_state().title)), [_pay, _notpay])
+                    a = game.input.send(_as)
+
+                    if a == _pay:
+                        from process import process_pay_cost
+                        if process_pay_cost(game, next_player, SELF, SELF, self.cost):
+                            game.doZoneTransfer(top_card, graveyard, SELF)
+                            return None
+                      
+                    next_player = game.get_next_player(next_player)
+
+                return interceptable.proceed(player)
+
+        else:
+            return interceptable.proceed(player)
+             
+
+    def isSelf(self):
+        return False
+
+    def __str__ (self):
+        return "IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfAPlayerDoesPutThatCardIntoItsOwnersGraveyardOtherwiseThatPlayerDrawsACard(%s, %s)" % (self.x_selector, self.cost)
 

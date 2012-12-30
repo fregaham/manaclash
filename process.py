@@ -104,6 +104,8 @@ def evaluate (game):
     game.volatile_events = {}
     game.play_cost_replacement_effects = []
 
+    game.reset_interceptables()
+
     for player in game.players:
         player.maximum_hand_size = 7
         player.land_play_limit = 1
