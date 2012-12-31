@@ -153,6 +153,10 @@ def game_state(game):
     state["in_play"] = zone_to_list(game, game.get_in_play_zone())
     state["stack"] = zone_to_list(game, game.get_stack_zone())
 
+    state["revealed"] = []
+    for o in game.revealed:
+        state["revealed"].append( object_to_map(game, game.objects[o]) )
+
     players = []
     for player in game.players:
         p = {}

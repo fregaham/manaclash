@@ -644,6 +644,9 @@
             var stack = $("<div id='zone_stack'></div>");
             displayZone("stack", state["stack"], stack);
 
+            $("#revealed_zone").empty();
+            displayZone("revealed", state["revealed"], $("#revealed_zone"));
+
             player_divs["opponent"].appendTo(table);
             stack.appendTo(table);
             player_divs["player"].appendTo(table);
@@ -796,6 +799,15 @@
 
             /* It is our "turn" now */
             if (g_role == state["player"]) {
+
+                if (state["revealed"].length > 0) {
+                    showZone($("#revealed_zone"));
+                }
+                else {
+                    if ($("#revealed_zone").is(":visible")) {
+                        showZone(null);
+                    }
+                }
 
                 $("#text").text(state["text"]);
 
@@ -976,6 +988,7 @@
             $("#opponent_graveyard_zone").hide();
             $("#opponent_library_zone").hide();
             $("#opponent_hand_zone").hide();
+            $("#revealed_zone").hide();
 
             if (zone != null) {
                 zone.show();
@@ -2233,6 +2246,7 @@ body {
                 <div class="zone" id="opponent_graveyard_zone"></div>
                 <div class="zone" id="opponent_library_zone"></div>
                 <div class="zone" id="opponent_hand_zone"></div>
+                <div class="zone" id="revealed_zone"></div>
             </div>
         </div>
 
