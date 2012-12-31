@@ -592,6 +592,37 @@
             $("#player_header").off("click");
             $("#opponent_header").off("click");
         }
+        
+        function selectActions(actions) {
+            var actions_div = $("#actions");
+            actions_div.empty();
+
+            var pass = $("#pass");
+            pass.attr("disabled", "disabled");
+
+            /* clear the "action_zone_button" classes from any zone_buttons */
+            $(".action_zone_button").removeClass("action_zone_button");
+            $(".action_zone").removeClass("action_zone");
+            $(".player_action").removeClass("player_action");
+            $(".action").off("click");
+            $(".action").removeClass("action");
+
+            /* clear the player header click handlers */
+            $("#player_header").off("click");
+            $("#opponent_header").off("click");
+ 
+            for (var i = 0; i < actions.length; ++i) {
+
+                var action = actions[i];
+
+                var action_span = $("<button></button>").appendTo(actions_div);
+                action_span.text(action["text"]);
+                action_span.addClass('action_button');
+                action_span.click({'i':action._index}, function(event) {
+                    selectAction(event.data.i);
+                });
+            }
+        }
 
         function onState(state) {
             if (g_waiting_for_game) {
@@ -820,55 +851,103 @@
                         autopass = false;
                     }
 
+        
+                    /* maps object ids/player roles to list of actions, we set _index property of the action object */
+                    var player2actions = {}
+                    var obj2actions = {};
+                    var otheractions = [];
+
                     for (var i = 0; i < state["actions"].length; ++i) {
                         var action = state["actions"][i];
-
+                        action._index = i;
                         if (action["player_object"] != null) {
                             var role = rolemap[action["player_object"]];
-                            $("#" + role + "_header").addClass("player_action");
-                            $("#" + role + "_header").on("click", {'i':i}, function(event) {
-                                    selectAction(event.data.i);
-                                }
-                            );
-                        }
-                        else if (action["object"] == null) {
-
-                            /* action with no object, display it as a button in the actions list */
-
-                            if (action["text"] != "Pass") {
-                                autopass = false;
-                                var action_span = $("<button></button>").appendTo(actions_div);
-                                action_span.text(action["text"]);
-                                action_span.addClass('action_button');
-                                action_span.click({'i':i}, function(event) {
-                                    selectAction(event.data.i);
-                                });
+                            if (role in player2actions) {
+                                player2actions[role].push(action);
                             }
                             else {
-                                haspass = true;
-                                pass.removeAttr("disabled");
+                                player2actions[role] = [];
+                                player2actions[role].push(action);
                             }
                         }
+                        else if (action["object"] == null) {
+                            otheractions.push(action);
+                        }
                         else {
-                            /* action with an object, let the user click on the object */
-
                             if (action["manaability"] == null || action["manaability"] == false) {
                                 autopass = false;
                             }
 
-                            var action_obj = $('#obj_' + action["object"]);
-                            action_obj.addClass('action');
-                            action_obj.click({'i':i}, function(event) {
+                            var objid = action["object"];
+                            if (objid in obj2actions) {
+                                obj2actions[objid].push(action);
+                            }
+                            else {
+                                obj2actions[objid] = [];
+                                obj2actions[objid].push(action);
+                            }
+                        }
+                    }
+
+                    for (var role in player2actions) {
+                        var actions = player2actions[role];
+                        $("#" + role + "_header").addClass("player_action");
+                        if (actions.length == 1) {
+                            $("#" + role + "_header").on("click", {'i':actions[0]._index}, function(event) {
+                                    selectAction(event.data.i);
+                                }
+                            );
+                        }
+                        else {
+                            $("#" + role + "_header").on("click", {'actions':actions}, function(event) {
+                                    selectActions(event.data.actions);
+                                }
+                            );
+                        }
+                    }
+
+                    for (var objid in obj2actions) {
+                        var actions = obj2actions[objid];
+
+                        var action_obj = $('#obj_' + objid);
+                        action_obj.addClass('action');
+
+                        /* Highlight the zone button if the object is in a zone that is not visible by default  */
+                        if (g_zone_map[objid] !== undefined) {
+                            var zone = $("#" + g_zone_map[objid]);
+                            if (zone !== undefined) {
+                                zone.addClass("action_zone");
+                            }
+                        }
+ 
+                        if (actions.length == 1) {
+                            var action = actions[0];
+                            action_obj.click({'i':action._index}, function(event) {
                                 selectAction(event.data.i);
                             });
+                        }
+                        else {
+                            action_obj.click({'actions':actions}, function(event) {
+                                selectActions(event.data.actions);
+                            });
+                        }
+                    }
 
-                            /* Highlight the zone button if the object is in a zone that is not visible by default  */
-                            if (g_zone_map[action["object"]] !== undefined) {
-                                var zone = $("#" + g_zone_map[action["object"]]);
-                                if (zone !== undefined) {
-                                    zone.addClass("action_zone");
-                                }
-                            }
+                    for (var i = 0; i < otheractions.length; ++i) {
+                        var action = otheractions[i];
+                        /* action with no object, display it as a button in the actions list */
+                        if (action["text"] != "Pass") {
+                            autopass = false;
+                            var action_span = $("<button></button>").appendTo(actions_div);
+                            action_span.text(action["text"]);
+                            action_span.addClass('action_button');
+                            action_span.click({'i':action._index}, function(event) {
+                                selectAction(event.data.i);
+                            });
+                        }
+                        else {
+                            haspass = true;
+                            pass.removeAttr("disabled");
                         }
                     }
 
