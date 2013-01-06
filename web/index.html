@@ -575,6 +575,136 @@
             }
         }
 
+        function _displayBattlefieldStackRecursive(stack_span, root_card, left_offset, top_offset, width, height, zindex, enchantments, zone_name) {
+
+            var card_span = displayCard(root_card);
+            card_span.appendTo(stack_span);
+            card_span.css("left", left_offset);
+            card_span.css("top", top_offset);
+            card_span.css("position", "absolute");
+            card_span.css("z-index", zindex);
+            if (root_card.tapped) {
+                width = Math.max(width, left_offset + 142);
+                height = Math.max(height, top_offset + 100);
+            }
+            else {
+                width = Math.max(width, left_offset + 100);
+                height = Math.max(height, top_offset + 142);
+            }
+
+            /* We set the zone name here, so the auras of different controllers get into the right zone in the zone_map */
+            g_zone_map[root_card.id] = zone_name;
+
+            top_offset += 17;
+            zindex ++;
+
+            if (root_card.id in enchantments) {
+                left_offset += 5;
+                for (var i = 0; i < enchantments[root_card.id].length; ++i) {
+                    var enchantment_card = enchantments[root_card.id][i];
+                    var dims = _displayBattlefieldStackRecursive(stack_span, enchantment_card, left_offset, top_offset, width, height, zindex, enchantments, zone_name);
+                    top_offset = dims[0];
+                    width = dims[1];
+                    height = dims[2];
+                    zindex = dims[3];
+                }
+            }
+
+            return [top_offset, width, height, zindex];
+        }
+
+        function _displayBattlefieldStack(stack, enchantments, div, zone_name) {
+            for (var i = 0; i < stack.length; ++i) {
+                var stack_span = $("<span class='card_stack'></span>");
+                var width = 0;
+                var height = 0;
+
+                var top_offset = 0;
+                var zindex = 0;
+
+                for (var j = 0; j < stack[i].length; ++j) {
+                    var obj = stack[i][j];
+                    var dims = _displayBattlefieldStackRecursive(stack_span, obj, 0, top_offset, width, height, zindex, enchantments);
+                    top_offset = dims[0];
+                    width = dims[1];
+                    height = dims[2];
+                    zindex = dims[3];
+                }
+                stack_span.css("width", width + 8);
+                stack_span.css("height", height + 8);
+
+                stack_span.appendTo(div);
+            }
+        }
+
+        function displayBattlefield(objects, in_play_divs, in_play_battle_divs, rolemap) {
+
+            /* Map object ids to list of enchantments */
+            var enchantments = {};
+
+            for (var i = 0; i < objects.length; ++i) {
+                var obj = objects[i];
+                if (obj.enchanted_id !== null) {
+                    if (!(obj.enchanted_id in enchantments)) {
+                        enchantments[obj.enchanted_id] = [];
+                    }
+                    enchantments[obj.enchanted_id].push(obj);
+                }
+            }
+
+            /* role to list of Stacks (list) of non-aura objects of the same name  */
+            var role2stacks = {};
+            var role2stacks_battle = {};
+
+            for (var i = 0; i < objects.length; ++i) {
+                var obj = objects[i];
+
+                if (obj.controller !== null && obj.enchanted_id === null) {
+                    var role = rolemap[obj.controller];
+                    var battle = (obj.tags.indexOf("attacking") >= 0 || obj.tags.indexOf("blocking") >= 0);
+
+                    var role2stacksmap = role2stacks;
+                    if (battle) {
+                        role2stacksmap = role2stacks_battle;
+                    }
+
+                    if (!(role in role2stacksmap)) {
+                       role2stacksmap[role] = [];
+                    }
+
+                    /* Look if there is already a stack of cards with the same name */
+                    var stacks = role2stacksmap[role];
+                    var found = false;
+                    for (var j = 0; j < stacks.length; ++j) {
+                        var stack = stacks[j];
+                        if (stack[0].title == obj.title) {
+
+                            /* Add the object to this stack */
+                            stack.push(obj);
+
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    /* No stack with this title yet, create a new one */
+                    if (!found) {
+                        var stack = [];
+                        stack.push(obj);
+                        stacks.push(stack);
+                    }
+                }
+            }
+
+            for (var role in role2stacks) {
+                _displayBattlefieldStack(role2stacks[role], enchantments, in_play_divs[role], role + "_in_play");
+            }
+
+            for (var role in role2stacks_battle) {
+                _displayBattlefieldStack(role2stacks_battle[role], enchantments, in_play_battle_divs[role], role + "_in_play_battle");
+            }
+        }
+
         function selectAction(i) {
             stopTimer();
             sess.publish(g_gameuri, i);
@@ -690,32 +820,7 @@
 
             player_hand = $("<div></div>").appendTo(player_divs["player"]);
 
-            for (var i = 0; i < state["in_play"].length; ++i) {
-                var obj = state["in_play"][i];
-
-                if (obj.controller != null) {
-                    objSpan = displayCard(obj);
-
-                    var zone = null;
-                    var zone_name = null;
-                    if (obj.tags.indexOf("attacking") >= 0 || obj.tags.indexOf("blocking") >= 0) {
-                        zone_name = rolemap[obj.controller] + "_in_play_battle";
-                        zone = in_play_battle[rolemap[obj.controller]];
-                    }
-                    else {
-                        zone_name = rolemap[obj.controller] + "_in_play";
-                        zone = in_play[rolemap[obj.controller]];
-                    }
-
-                    objSpan.appendTo(zone);
-
-                    if (obj.tapped) {
-                        $("<span class='tapped_dummy'></span>").appendTo(zone);
-                    }
-
-                    g_zone_map[obj.id] = zone_name;
-                }
-            }
+            displayBattlefield(state["in_play"], in_play, in_play_battle, rolemap);
 
             for (var i = 0; i < state["players"].length; ++i) {
                 var player = state["players"][i];
@@ -1837,7 +1942,7 @@
     height:100px;
     background: #ffbd6d;
     color: black;
-    z-index:10;
+    z-index:10000;
     border: 1px solid black;
 }
 
@@ -1968,7 +2073,7 @@
     top:100px;
     right:100px;
     bottom:100px;
-    z-index: 5;
+    z-index: 9000;
     background: #202020;
     border: 1px solid black;
     overflow: auto;
@@ -1983,7 +2088,7 @@
     margin-top: 1em;
     position: fixed;
     bottom: 8px;
-    z-index: 10; 
+    z-index: 10000; 
 }
 
 .card_detail {
@@ -2099,7 +2204,7 @@ body {
     top:0px;
     width: 100%;
     height: 100%;
-    z-index: 128;
+    z-index: 20000;
     position: fixed;
     background: black;
     opacity: 0.5;
@@ -2190,6 +2295,12 @@ body {
 #view_game_button.current_view {
    background: #202020 !important;
    color: white;
+}
+
+.card_stack {
+    display:inline-block;
+    vertical-align:top;
+    position:relative;
 }
 
     </style>
@@ -2303,6 +2414,24 @@ body {
             </div>
 
             <div id="table">
+<!--
+                <span class="cards_stack" style="width:100px;height:150px;background:red;display:inline-block;">
+                    <span  title="#1 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_1"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+
+                    <span style="position:relative; left:0px; top:20px;" title="#41 Swamp  basic land - swamp b" class="card_small card_tapped card_swamp" id="obj_41"><div class="card_content"><span class="header"><span class="title">Swamp</span><span class="manacost"></span></span><span class="body"><span class="types">basic land – swamp</span><span class="text">b</span></span></div></span>
+                </span>
+                <span class="tapped_dummy"></span>
+
+                <span class="cards_stack" style="width:100px;height:150px;background:red;display:inline-block;">
+                    <span title="#5 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_5"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                    <span style="position:relative; left:0px; top:20px;" title="#6 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_6"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                </span>
+
+                <span class="cards_stack" style="width:100px;height:150px;background:red;display:inline-block;">
+                    <span title="#5 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_5"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                    <span style="position:relative; left:0px; top:20px;" title="#6 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_6"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                </span>
+ -->
             </div>
 
             <div id="game_messages">
