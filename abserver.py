@@ -236,16 +236,16 @@ def ab_input_generator(ab_game):
             client_player, client_message = message
 
             # is the message from the proper client?
-            if client_player == ab_game.current_player and client_message is not None:
+            if client_player.user == ab_game.current_player.user and client_message is not None:
                 if isinstance(_as, ActionSet):
                     if client_message >= 0 and client_message < len(_as.actions):
                         action = _as.actions[client_message]
                         am = actions[client_message]
-                        g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/action", (client_player.role, am))
+                        g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/action", (ab_game.current_player.role, am))
                 elif isinstance(_as, QueryNumber):
                     try:
                         action = int(client_message)
-                        g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/number", (client_player.role, action))
+                        g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/number", (ab_game.current_player.role, action))
                     except ValueError:
                         action = None
 
@@ -298,6 +298,7 @@ class ABGame:
         self.current_state = None
         self.queue = Queue()
         self.game = None
+        self.solitaire = False
 
     def remove(self, player):
         self.players.remove(player)
@@ -433,6 +434,9 @@ chat_messages = []
 # Clients waiting for a random duel  [(abclient, deck)]
 random_duel_clients = []
 
+# clients waiting for a solitaire
+random_solitaire_clients = []
+
 def startGame(game_id):
     game = game_map.get(game_id)
     if game is not None:
@@ -441,8 +445,8 @@ def startGame(game_id):
         t.start()
 
 
-def joinGame(game, client, role, deck):
-    player = ABPlayer(client, client.user, game, role, deck)
+def joinGame(game, client, user, role, deck):
+    player = ABPlayer(client, user, game, role, deck)
 
     game.add(player)
     dispatchGames()
@@ -454,6 +458,7 @@ def joinGame(game, client, role, deck):
 def startDuels():
     """ Check if we can start any duels and start them if so """
     global random_duel_clients
+    global random_solitaire_clients
     global game_map
 
     # filter disconnected clients
@@ -468,14 +473,28 @@ def startDuels():
         if len(game.players) == 0:
             # We need at least two clients
             if len(random_duel_clients) <= 1:
-                return
+                break
 
+            game.solitaire = False
             # start the game
             client1, deck1 = random_duel_clients[0]
             client2, deck2 = random_duel_clients[1]
             random_duel_clients = random_duel_clients[2:]
-            joinGame(game, client1, "player1", deck1)
-            joinGame(game, client2, "player2", deck2)
+            joinGame(game, client1, client1.user, "player1", deck1)
+            joinGame(game, client2, client2.user, "player2", deck2)
+
+    for game in game_map.itervalues():
+        if len(game.players) == 0:
+            if len(random_solitaire_clients) == 0:
+                break
+
+            game.solitaire = True
+            client, deck1, deck2 = random_solitaire_clients[0]
+            random_solitaire_clients = random_solitaire_clients[1:]
+
+            joinGame(game, client, client.user, "player1", deck1)
+            joinGame(game, None, client.user, "player2", deck2)
+           
 
 def dispatchUsers(exclude=[], eligible=None):
     g_factory.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
@@ -493,6 +512,8 @@ def dispatchGames(exclude=[], eligible=None):
             pm["login"] = p.user.login
             pm["role"] = p.role
             players.append(pm)
+
+        gm["solitaire"] = game.solitaire
 
         gm["players"] = players
 
@@ -544,6 +565,7 @@ class MyServerProtocol(WampServerProtocol):
         self.registerForPubSub("http://manaclash.org/game/", prefixMatch=True)
 
         self.registerMethodForRpc("http://manaclash.org/random_duel", self, MyServerProtocol.onRandomDuel)
+        self.registerMethodForRpc("http://manaclash.org/solitaire", self, MyServerProtocol.onSolitaire)
 
         self.registerMethodForRpc("http://manaclash.org/login", self, MyServerProtocol.onLogin)
 
@@ -656,11 +678,13 @@ class MyServerProtocol(WampServerProtocol):
             # pure game message
             #game_id = int(url[len("http://manaclash.org/game/"):])
             game_id = int(foo)
+            client = client_map.get(self.session_id)
 
             game = game_map.get(game_id)
             if game is not None:
                 if game.current_player is not None:
-                    if game.current_player.client is not None and game.current_player.client.session_id == self.session_id:
+                    # we check the user is the same as the game's current player's user
+                    if game.current_player.user is not None and game.current_player.user == client.user:
                         # send the message to the game
                         game.queue.put( (game.current_player, message) )
                         return message
@@ -716,10 +740,27 @@ class MyServerProtocol(WampServerProtocol):
 
         return False
 
+    def onSolitaire(self, deck1, deck2):
+        global random_solitaire_clients
+        client = client_map.get(self.session_id)
+        # We don't allow users to play more than one game at a time
+        if client is not None and client.user is not None and (client.player is not None or len(client.user.players) > 0):
+            return False
+
+        random_solitaire_clients.append ( (client, deck1, deck2) )
+
+        reactor.callLater(1, startDuels)
+
+        return True
+
     def onTakeover(self, game_id, role):
         Context.current_protocol = self
 
         client = client_map.get(self.session_id)
+
+        # do we try to takeover a game/role we are already connected with?
+        if client.player is not None and client.player.game.id == game_id and role == client.player.role:
+            return ["http://manaclash.org/game/" + str(client.player.game.id), role]
 
         # disconnect the client from her current game
         if client is not None and client.user is not None and client.player is not None:

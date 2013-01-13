@@ -18,6 +18,7 @@
         var g_state = null;
         var g_playermap = null;
         var g_imgprefix = null;
+        var g_solitaire = false;
 
         // After clicking join, switch to game view automatically when the game starts
         var g_waiting_for_game = false;
@@ -31,7 +32,7 @@
         // map object id -> zone (e.g. "player_hand", "opponent_graveyard", etc.)
         var g_zone_map = {};
 
-        // Currently waiting for a random duel
+        // Currently waiting for a random duel or solitaire
         var g_waiting_for_duel = false;
 
         // currently detailed card id
@@ -145,6 +146,21 @@
                     if(ret) {
                         g_waiting_for_duel = true;
                         $("#lobby_random_duel").attr("disabled", "disabled");
+                        $("#lobby_solitaire").attr("disabled", "disabled");
+                    }
+                });
+        }
+
+        function lobbySolitaire() {
+            var deckname = $("#cards_decks").val();
+            var deck = g_cards_decks[deckname];
+
+            sess.call("http://manaclash.org/solitaire", deck, deck).then(
+                function(ret) {
+                    if(ret) {
+                        g_waiting_for_duel = true;
+                        $("#lobby_random_duel").attr("disabled", "disabled");
+                        $("#lobby_solitaire").attr("disabled", "disabled");
                     }
                 });
         }
@@ -203,6 +219,12 @@
 
             $("#lobby_continue_game").attr("disabled", "disabled");
             $("#lobby_random_duel").removeAttr("disabled");
+            $("#lobby_solitaire").removeAttr("disabled");
+
+            /* Has the continue button already been set? */
+            var continue_set = false;
+            $("#lobby_continue_game").off("click");
+
 
             for (var i = 0; i < games.length; i++) {
                 var gameElement = $("<div class='lobby_table'></div>").appendTo($("#gameslist"));
@@ -224,14 +246,16 @@
                     if (games[i].players[j].login == g_login) {
                         have_me = true;
                         $("#lobby_random_duel").attr("disabled", "disabled");
+                        $("#lobby_solitaire").attr("disabled", "disabled");
                     }
 
                     if (games[i].players[j].login == g_login && !(g_gameuri == games[i].uri && g_role == games[i].players[j].role)) {
-
                         if (g_waiting_for_duel) {
                             // Immediately takeover
                             g_waiting_for_duel = false;
-                            $("#lobby_random_duel").removeAttr("disabled");;
+                            g_solitaire = games[i].solitaire;
+
+                            $("#lobby_random_duel").removeAttr("disabled");
                             sess.call("http://manaclash.org/takeover", games[i].id, games[i].players[j].role).then(
                                 function(ret) {
                                     g_waiting_for_game = true;
@@ -244,13 +268,18 @@
                                 }
                             );
                         }
-                        else {
+                        else if (!continue_set) {
+                            continue_set = true;
                             $("#lobby_continue_game").removeAttr("disabled");
                             $("#lobby_random_duel").attr("disabled", "disabled");
-                            $("#lobby_continue_game").click({"game_id":games[i].id, "role":games[i].players[j].role}, function(event) {
+                            $("#lobby_solitaire").attr("disabled", "disabled");
+
+                            $("#lobby_continue_game").click({"game_id":games[i].id, "role":games[i].players[j].role, "solitaire":games[i].solitaire}, function(event) {
+                                g_solitaire = event.data.solitaire;
                                 sess.call("http://manaclash.org/takeover", event.data.game_id, event.data.role).then(
                                     function(ret) {
                                         g_waiting_for_game = true;
+                                        g_waiting_for_duel = false;
                                         var uri = ret[0];
                                         var role = ret[1];
                                         subscribeGame(uri);
@@ -346,7 +375,7 @@
 
             g_gameuri = null;
             g_role = null;
-
+            g_solitaire = false;
         }
 
         function onGameWin(uri, role) {
@@ -355,7 +384,7 @@
                 msg.addClass("player_message");
             }
             else {
-                var msg = appendLog("" + g_playermap[role].name + " wins the game!");
+                var msg = appendLog("" + getPlayerName(role) + " wins the game!");
                 if (role == g_role) {
                     msg.addClass("player_message");
                 }
@@ -463,7 +492,8 @@
             var objSpan = $("<span class='" + (obj.tapped ? "card_small card_tapped" : "card_small") + "' id='obj_" + obj.id + "'></span>");
             var detailSpan = $("<span class='card_detail' id='detail_" + obj.id + "'></span>");
 
-            if (obj.show_to.indexOf(g_role) >= 0) {
+            /* We should see it if our role is in the show_to list or if the card is shown to anybody and we play solitaire */
+            if (obj.show_to.indexOf(g_role) >= 0 || (obj.show_to.length > 0 && g_solitaire)) {
 
                 var fulltext =  "#" + obj.id + " " + obj.title + " " + obj.manacost + " " + obj.supertypes.join(" ") + " " + obj.types.join(" ");
                 if (obj.subtypes.length > 0) {
@@ -754,10 +784,27 @@
             }
         }
 
+        function getPlayerName(player) {
+            if (g_solitaire) {
+                return g_playermap[player].role;
+            }
+            else {
+                return g_playermap[player].name;
+            }
+        }
+
         function onState(state) {
             if (g_waiting_for_game) {
                 g_waiting_for_game = false;
                 view("view_game");
+            }
+
+            
+            if (g_solitaire) {
+                $("#opponent_hand_zone_button").hide();
+            }
+            else {
+                $("#opponent_hand_zone_button").show();
             }
 
             g_state = state;
@@ -812,13 +859,14 @@
             stack.appendTo(table);
             player_divs["player"].appendTo(table);
 
+            /* opponent hand is only shown in solitaire mode */
+            player_hand["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);
             in_play["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);
             in_play_battle["opponent"] = $("<div></div>").appendTo(player_divs["opponent"]);
 
             in_play_battle["player"] = $("<div></div>").appendTo(player_divs["player"]);
             in_play["player"] = $("<div></div>").appendTo(player_divs["player"]);
-
-            player_hand = $("<div></div>").appendTo(player_divs["player"]);
+            player_hand["player"] = $("<div></div>").appendTo(player_divs["player"]);
 
             displayBattlefield(state["in_play"], in_play, in_play_battle, rolemap);
 
@@ -827,8 +875,10 @@
 
                 g_playermap["player" + (i+1)] = player;
 
-                $("#" + rolemap[player.role] + "_name").empty(); 
-                $("#" + rolemap[player.role] + "_name").text(player.name);
+                $("#" + rolemap[player.role] + "_name").empty();
+
+                /* Player names are useless in solitaire */
+                $("#" + rolemap[player.role] + "_name").text(getPlayerName("player" + (i+1)));
 
                 if (player.library.length == 0) {
                     $("#" + rolemap[player.role] + "_library").empty();
@@ -872,12 +922,12 @@
                 displayZone(rolemap[player.role] + "_graveyard", player["graveyard"], $("#" + rolemap[player.role] + "_graveyard_zone"));
                 displayZone(rolemap[player.role] + "_library", player["library"], $("#" + rolemap[player.role] + "_library_zone"));
 
-                if (rolemap[player.role] == "player") {
-                    displayZone("player_hand", player["hand"], player_hand);
+                /* We show both hands in the play zone if we play solitaire */
+                if (rolemap[player.role] == "player" || g_solitaire) {
+                    displayZone(rolemap[player.role] + "_hand", player["hand"], player_hand[rolemap[player.role]]);
 
-                    $("#player_hand").empty(); 
-                    $("#player_hand").text(player.hand.length);
-
+                    $("#" + rolemap[player.role] + "_hand").empty(); 
+                    $("#" + rolemap[player.role] + "_hand").text(player.hand.length);
                 }
                 else {
                     $("#" + rolemap[player.role] + "_hand_zone").empty();
@@ -918,7 +968,8 @@
             }
 
             $("#turn").empty();
-            $("#turn").text(g_playermap[state["turn"]].name);
+
+            $("#turn").text(getPlayerName(state["turn"]));
 
             var actions_div = $("#actions");
             actions_div.empty();
@@ -930,11 +981,11 @@
             pass.attr("disabled", "disabled");
 
             if (state["text"] != "You have priority" && state["player"] != null) {
-                appendLog("" + g_playermap[state["player"]].name + ", " + state["text"]);
+                appendLog("" + getPlayerName(state["player"]) + ", " + state["text"]);
             }
 
-            /* It is our "turn" now */
-            if (g_role == state["player"]) {
+            /* It is our "turn" now, or we play solitaire and every turn is 'our' turn */
+            if (g_role == state["player"] || g_solitaire) {
 
                 if (state["revealed"].length > 0) {
                     showZone($("#revealed_zone"));
@@ -945,7 +996,7 @@
                     }
                 }
 
-                $("#text").text(state["text"]);
+                $("#text").text(getPlayerName(state["player"]) + ", " + state["text"]);
 
                 if (state["actions"] != null) {
 
@@ -1070,7 +1121,7 @@
                         sess.publish(g_gameuri, 0);
                     }
                     else {
-                        if (!g_autopass_cancel && state["text"] == "You have priority" && haspass && !(state["turn"] == g_role && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
+                        if (!g_autopass_cancel && state["text"] == "You have priority" && haspass && !((state["turn"] == g_role || g_solitaire) && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
                             g_timeout = 3;
                             g_timer = setTimeout('onTimer()', 1000);
 
@@ -1092,11 +1143,11 @@
             } 
             else {
                 if (state["player"] != null) {
-                    $("#text").append("Waiting for " + g_playermap[state["player"]].name);
+                    $("#text").append("Waiting for " + getPlayerName(state["player"]));
 
                     // It is not our turn
                     $("#autopass").empty();
-                    $("<div class='autopass_wait'></div>").text("Waiting for " + g_playermap[state["player"]].name).appendTo($("#autopass"));
+                    $("<div class='autopass_wait'></div>").text("Waiting for " + getPlayerName(state["player"])).appendTo($("#autopass"));
                     $("#autopass").show();
                 }
                 else {
@@ -1206,17 +1257,17 @@
 
         function onLogAction(uri, actionMessage) {
             if (actionMessage[1]["text"] != "Pass") {
-                appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]["text"]);
+                appendLog("" + getPlayerName(actionMessage[0]) + " " + actionMessage[1]["text"]);
             }
         }
 
         function onLogNumber(uri, actionMessage) {
-            appendLog("" + g_playermap[actionMessage[0]].name + " " + actionMessage[1]);
+            appendLog("" + getPlayerName(actionMessage[0]) + " " + actionMessage[1]);
         }
 
         /* Messages sent by players */
         function onLogMessage(uri, message) {
-            var msg = appendLog("" + g_playermap[message[0]].name + " " + message[1]);
+            var msg = appendLog("" + getPlayerName(message[0]) + " " + message[1]);
             if (message[0] == g_role) {
                 msg.addClass("player_message");
             }
@@ -2340,6 +2391,7 @@ body {
             <div id="lobby_buttons">
                 <button id="lobby_continue_game">Continue Game</button>
                 <button id="lobby_random_duel" onclick="lobbyRandomDuel();">Random Duel</button>
+                <button id="lobby_solitaire" onclick="lobbySolitaire();">Solitaire</button>
             </div>
 
             <h3>Users</h3>
