@@ -147,6 +147,7 @@
                         g_waiting_for_duel = true;
                         $("#lobby_random_duel").attr("disabled", "disabled");
                         $("#lobby_solitaire").attr("disabled", "disabled");
+                        updateLobbyMessage();
                     }
                 });
         }
@@ -296,6 +297,19 @@
                 if (players ==  0) {
                     gameElement.addClass("lobby_table_empty");
                 }
+            }
+
+            updateLobbyMessage();
+
+        }
+
+        function updateLobbyMessage() {
+            $("#lobby_message").hide();
+            $("#lobby_message").empty();
+
+            if (g_waiting_for_duel) {
+                $("#lobby_message").text("Waiting for other players.");
+                $("#lobby_message").show();
             }
         }
 
@@ -2278,7 +2292,7 @@ body {
     bottom:0px;
     left: 208px;
     right:5px;
-    top:100px;
+    top:180px;
     z-index:10;
     background: #ffbd6d;
     border: 1px solid black;
@@ -2392,6 +2406,9 @@ body {
                 <button id="lobby_continue_game">Continue Game</button>
                 <button id="lobby_random_duel" onclick="lobbyRandomDuel();">Random Duel</button>
                 <button id="lobby_solitaire" onclick="lobbySolitaire();">Solitaire</button>
+            </div>
+
+            <div id="lobby_message" style="background: rgb(252,248,227);width:600px;margin-top:2em;font-size:12pt;text-align:left;padding:1em;border:1px solid rgb(251,238,213);">
             </div>
 
             <h3>Users</h3>
