@@ -35,6 +35,9 @@
         // Currently waiting for a random duel or solitaire
         var g_waiting_for_duel = false;
 
+        // logins waiting for a duel
+        var g_duel_waitlist = [];
+
         // currently detailed card id
         var g_detail_id = null;
 
@@ -137,9 +140,8 @@
         }
 
         function lobbyRandomDuel() {
-            var deckname = $("#cards_decks").val();
+            var deckname = $("#lobby_deck").val();
             var deck = g_cards_decks[deckname];
-
 
             sess.call("http://manaclash.org/random_duel", deck).then(
                 function(ret) {
@@ -147,16 +149,18 @@
                         g_waiting_for_duel = true;
                         $("#lobby_random_duel").attr("disabled", "disabled");
                         $("#lobby_solitaire").attr("disabled", "disabled");
-                        updateLobbyMessage();
                     }
                 });
         }
 
         function lobbySolitaire() {
-            var deckname = $("#cards_decks").val();
-            var deck = g_cards_decks[deckname];
+            var deck1name = $("#lobby_deck").val();
+            var deck1 = g_cards_decks[deck1name];
 
-            sess.call("http://manaclash.org/solitaire", deck, deck).then(
+            var deck2name = $("#lobby_solitaire_deck").val();
+            var deck2 = g_cards_decks[deck2name];
+
+            sess.call("http://manaclash.org/solitaire", deck1, deck2).then(
                 function(ret) {
                     if(ret) {
                         g_waiting_for_duel = true;
@@ -215,7 +219,10 @@
             }
         }
 
-        function onGames(gamesUri, games) {
+        function onGames(gamesUri, message) {
+
+            var games = message["games"];
+
             $("#gameslist").empty();
 
             $("#lobby_continue_game").attr("disabled", "disabled");
@@ -226,6 +233,7 @@
             var continue_set = false;
             $("#lobby_continue_game").off("click");
 
+            g_duel_waitlist = message["duel"]
 
             for (var i = 0; i < games.length; i++) {
                 var gameElement = $("<div class='lobby_table'></div>").appendTo($("#gameslist"));
@@ -300,15 +308,37 @@
             }
 
             updateLobbyMessage();
-
         }
 
         function updateLobbyMessage() {
+
             $("#lobby_message").hide();
             $("#lobby_message").empty();
 
-            if (g_waiting_for_duel) {
+            var waiting = false;
+            for (var i = 0; i < g_duel_waitlist.length; i++) {
+                if (g_duel_waitlist[i] == g_login) {
+                    waiting = true;
+                }
+            }
+
+            if (waiting) {
+                $("#lobby_random_duel").attr("disabled", "disabled");
+                $("#lobby_solitaire").attr("disabled", "disabled");
+
                 $("#lobby_message").text("Waiting for other players.");
+
+                var cancelButton = $("<button>Cancel</button>");
+                cancelButton.click({}, function(event) {
+                    sess.call("http://manaclash.org/cancel_duel").then(
+                        function (ret) {
+                            g_waiting_for_duel = false;
+                        }
+                    );
+                });
+
+                cancelButton.appendTo($("#lobby_message"));
+
                 $("#lobby_message").show();
             }
         }
@@ -1307,6 +1337,20 @@
             }
         }
 
+        function _updateDeckMenu(menu) {
+            menu.empty();
+            for (var i = 0; i < g_cards_decknames.length; i++) {
+                $("<option>" + g_cards_decknames[i] + "</option>").appendTo(menu);
+            }
+            menu.val(localStorage.cardsDeckname);
+        }
+
+        /* Updates all the menus with the list of decks */
+        function updateDecksMenus() {
+            _updateDeckMenu($("#lobby_deck"));
+            _updateDeckMenu($("#lobby_solitaire_deck"));
+        }
+
         /* Stores the current decks into local storage */
         function cardsSave() {
             if(typeof(Storage)!=="undefined") {
@@ -1322,6 +1366,8 @@
 
                 localStorage.cardsDecks = decks;
             }
+
+            updateDecksMenus();
         }
 
         /* Reads available cards from the server and loads decks from the local storage */
@@ -1405,6 +1451,8 @@
                             cardsSelectDeck();
                         }
                     }
+
+                    updateDecksMenus();
                 },
                 function(){ alert("failed to fetch available cards!"); }
             );
@@ -2292,7 +2340,7 @@ body {
     bottom:0px;
     left: 208px;
     right:5px;
-    top:180px;
+    top:240px;
     z-index:10;
     background: #ffbd6d;
     border: 1px solid black;
@@ -2401,6 +2449,11 @@ body {
             <div class="view_margin">
 
             <h3>Lobby</h3>
+
+            <div>
+                <div>Duel deck: <select id="lobby_deck"></select></div>
+                <div>Solitaire opponent deck: <select id="lobby_solitaire_deck"></select></div>
+            </div>
 
             <div id="lobby_buttons">
                 <button id="lobby_continue_game">Continue Game</button>

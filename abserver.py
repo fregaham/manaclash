@@ -500,7 +500,11 @@ def dispatchUsers(exclude=[], eligible=None):
     g_factory.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
 
 def dispatchGames(exclude=[], eligible=None):
-    message = []
+    global random_duel_clients
+    global random_solitaire_clients
+    message = {}
+
+    games = []
     for game in game_map.values():
         gm = {}
         gm["id"] = game.id
@@ -517,7 +521,18 @@ def dispatchGames(exclude=[], eligible=None):
 
         gm["players"] = players
 
-        message.append(gm)
+        games.append(gm)
+
+    message["games"] = games
+
+    # just the logins
+
+    x2login = lambda x:x[0].user.login
+    userfilter = lambda x:x[0].user != None
+
+    message["duel"] = map(x2login, filter(userfilter, random_duel_clients))
+    message["solitaire"] = map(x2login, filter(userfilter, random_solitaire_clients))
+
     g_factory.dispatch("http://manaclash.org/games", message, exclude, eligible)
 
 def dispatchChatHistory(exclude=[], eligible=None):
@@ -566,6 +581,7 @@ class MyServerProtocol(WampServerProtocol):
 
         self.registerMethodForRpc("http://manaclash.org/random_duel", self, MyServerProtocol.onRandomDuel)
         self.registerMethodForRpc("http://manaclash.org/solitaire", self, MyServerProtocol.onSolitaire)
+        self.registerMethodForRpc("http://manaclash.org/cancel_duel", self, MyServerProtocol.onCancelDuel)
 
         self.registerMethodForRpc("http://manaclash.org/login", self, MyServerProtocol.onLogin)
 
@@ -735,10 +751,37 @@ class MyServerProtocol(WampServerProtocol):
 
         if client is not None and client.user is not None and client.player is None:
             random_duel_clients.append( (client, deck) )
+            reactor.callLater(0, dispatchGames, [], [self])
             reactor.callLater(1, startDuels)
             return True
 
         return False
+
+    def onCancelDuel(self):
+        global random_duel_clients
+        global random_solitaire_clients
+
+        client = client_map.get(self.session_id)
+
+        if client is not None and client.user is not None:
+            new_random_duel_clients = []
+            for c, d in random_duel_clients:
+                if client == c:
+                    pass
+                else:
+                    new_random_duel_clients.append ( (c, d) )
+            random_duel_clients = new_random_duel_clients
+
+            new_solitaire_clients = []
+            for c, d1, d2 in random_solitaire_clients:
+                if client == c:
+                    pass
+                else:
+                    new_solitaire_clients.append ( (c, d1, d2) )
+            random_solitaire_clients = new_solitaire_clients
+
+        reactor.callLater(0, dispatchGames, [], [self])
+
 
     def onSolitaire(self, deck1, deck2):
         global random_solitaire_clients
