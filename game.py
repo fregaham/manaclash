@@ -117,6 +117,11 @@ class Game:
 
         self.interceptable_draw = InterceptableMethod(self._drawCard)
 
+        self.process_stack = []
+
+        # game has ended
+        self.end = False
+
     def reset_interceptables(self):
         # TODO: have single method that also resets all the effects and other replacements stuff at the beginning of the evaluate process
         self.interceptable_draw.reset()
@@ -591,4 +596,19 @@ class Game:
             costs = effect(self, ability, obj, player, costs)
 
         return costs
+
+    def next(self, action):
+        pass
+
+    def process_push(self, process):
+        self.process_stack.append (process)
+
+    def process_pop(self):
+        self.process_stack.pop()
+
+    def process_top(self):
+        return self.process_stack[-1]
+
+    def obj(self, _id):
+        return self.objects(_id)
 

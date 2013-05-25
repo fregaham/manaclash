@@ -24,6 +24,26 @@ from cost import *
 from objects import *
 from game import AttackerValidator, BlockerValidator
 
+class Process:
+    def next(self, game, action):
+        pass
+
+class SandwichProcess(Process):
+    def __init__ (self):
+        self.state = 0
+    def next(self, game, action):
+        if self.state == 0:
+            self.state = 1
+            game.process_push(self)
+            self.pre(game)
+        elif self.state == 1:
+            self.state = 2
+            game.process_push(self)
+            self.main(game)
+        else:
+            self.post(game)
+
+
 class GameEndException(Exception):
     def __init__ (self, player):
         self.player = player
@@ -523,17 +543,49 @@ def process_priority_succession (game, player):
 
                 game.current_player_priority = np
 
+class UntapProcess(Process):
+    def __init__ (self, permanent):
+        self.permanent_id = permanent.id
 
+    def next(game, action):
+        game.doUntap(game.obj(self.permanent_id))
+
+# DONE
 def process_untap (game, permanent):
     game.doUntap(permanent)
 
+class DrawCardProcess(Process):
+    def next(game, action):
+        game.doDrawCard(player)
+
+# DONE
 def process_draw_card (game, player):
     game.doDrawCard(player)
 
+class PrePhaseProcess(Process):
+    def next(game, action):
+        game.current_step = ""
+        evaluate(game)
+
+# DONE
 def process_phase_pre (game):
     game.current_step = ""
     evaluate(game)
 
+class PostPhaseProcess(Process):
+    def next(game, action):
+        # 300.3
+        for player in game.players:
+            converted_mana = mana_converted_cost(player.manapool)
+            if converted_mana > 0:
+                howmuch = converted_mana
+                print("manaburn %d" % (howmuch))
+                player.manapool = ""
+                game.doLoseLife(player, howmuch)
+
+        evaluate(game)
+
+# DONE
 def process_phase_post (game):
     # 300.3
     for player in game.players:
@@ -546,13 +598,42 @@ def process_phase_post (game):
 
     evaluate(game)
 
+class PreStepProcess(Process):
+    def next(game, action):
+        evaluate(game)
+        game.raise_event("step")
+
+# DONE
 def process_step_pre (game):
     evaluate(game)
     game.raise_event("step")
 
+class PostStepProcess(Process):
+    def next(game, action):
+        evaluate(game)
+
+#DONE
 def process_step_post (game):
     evaluate(game)
 
+class UntapStepProcess(SandwichProcess):
+    def __init__ (self):
+        SandwichProcess.__init__ (self)
+
+    def pre(self, game):
+        game.current_step = "untap"
+        game.process_push(PreStepProcess())
+
+    def main(self, game):
+        selector = PermanentPlayerControlsSelector (game.get_active_player())
+        for permanent in selector.all (game, None):
+            if "does not untap" not in permanent.state.tags:
+                game.process_push(UntapProcess(permanent)
+
+    def post(self, game):
+        game.process_push(PostStepProcess())
+
+# DONE
 def process_step_untap (game):
     game.current_step = "untap"
     process_step_pre (game)
@@ -564,7 +645,27 @@ def process_step_untap (game):
 
     process_step_post (game)
 
+class UpkeepStepProcess(SandwichProcess):
+    """ 303.1 """
 
+    def __init__ (self):
+        SandwichProcess.__init__ (self)
+
+    def pre(self, game):
+        game.current_step = "upkeep"
+        game.process_push(PreStepProcess())
+
+    def main(self, game):
+        for ability in game.triggered_abilities:
+            game.stack_push (ability)
+        game.triggered_abilities = []
+
+        game.process_push(PrioritySuccessionProcess(game.get_active_player())
+
+    def post(self, game):
+        game.process_push(PostStepProcess())
+
+# DONE
 def process_step_upkeep (game):
     """ 303.1 """
 
@@ -579,6 +680,27 @@ def process_step_upkeep (game):
 
     process_step_post (game)
 
+class DrawStepProcess(SandwichProcess):
+    """ 304.1 """
+    def __init__ (self):
+        SandwichProcess.__init__ (self)
+
+    def pre(self, game):
+        game.current_step = "draw"
+        game.process_push(PreStepProcess())
+
+    def main(self, game):
+        game.process_push(DrawCardProcess(game.get_active_player()))
+
+    def post(self, game):
+        for ability in game.triggered_abilities:
+            game.stack_push (ability)
+        game.triggered_abilities = []
+
+        game.process_push(PostStepProcess())
+        game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
+# DONE
 def process_step_draw (game):
     """ 304.1 """
     game.current_step = "draw"
@@ -595,6 +717,32 @@ def process_step_draw (game):
 
     process_step_post (game)
 
+class BeginningPhaseProcess(SandwichProcess):
+    def __init__ (self):
+        SandwichProcess.__init__ (self)
+
+    def pre(game):
+        game.current_phase = "beginning"
+        game.process_push(PrePhaseProcess())
+
+    def main(game):
+        # remove the summoning sickness tag
+        selector = PermanentPlayerControlsSelector (game.get_active_player())
+        for permanent in selector.all (game, None):
+            if "summoning sickness" in permanent.initial_state.tags:
+                permanent.initial_state.tags.remove("summoning sickness")
+
+        # 101.6a
+        if not (game.turn_number == 0 and game.get_active_player() == game.players[0]):
+            game.process_push(DrawStepProcess())
+
+        game.process_push(UpkeepStepProcess())
+        game.process_push(UntapStepProcess())
+
+    def post(game):
+        game.process_push(PostPhaseProcess())
+
+# DONE
 def process_phase_beginning (game):
     game.current_phase = "beginning"
     process_phase_pre(game)
@@ -614,6 +762,26 @@ def process_phase_beginning (game):
 
     process_phase_post(game)
 
+class MainPhaseProcess(SandwichProcess):
+    def __init__ (self, which):
+        SandwichProcess.__init__ (self)
+        self.which = which
+
+    def pre(self, game):
+        game.current_phase = which
+        game.process_push(PrePhaseProcess())
+
+    def main(self, game):
+        for ability in game.triggered_abilities:
+            game.stack_push (ability)
+        game.triggered_abilities = []
+
+        game.process_push(PriotitySuccessionProcess(game.get_active_player()))
+    
+    def post(self, game):
+        game.process_push(PostPhaseProcess())
+        
+# DONE
 def process_phase_main (game, which):
     game.current_phase = which
     process_phase_pre(game)
@@ -1143,6 +1311,10 @@ def process_step_end_of_combat (game):
     game.declared_blockers_map = {}
 
 
+class CombatPhaseProcess(Process):
+    def next(game, action):
+        pass
+
 def process_phase_combat (game):
     game.current_phase = "combat"
 
@@ -1179,7 +1351,28 @@ def process_phase_combat (game):
 
     game.defending_player_id = None
 
+class EndOfTurnStepProcess(SandwichProcess):
 
+    def __init__(self):
+        SandwichProcess.__init__ (self)
+
+    def pre(game):
+        game.current_step = "end of turn"
+        game.process_push(PreStepProcess())
+
+    def main(game):
+        # 313.1
+        for ability in game.triggered_abilities:
+            game.stack_push (ability)
+
+        game.triggered_abilities = []
+        game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
+    def post(game):
+        game.process_push(PostStepProcess())
+
+
+# DONE
 def process_step_end_of_turn(game):
     game.current_step = "end of turn"
     process_step_pre (game)
@@ -1192,6 +1385,32 @@ def process_step_end_of_turn(game):
 
     process_step_post (game)
 
+class DiscardACardProcess(Process):
+    def __init__ (self, player, cause = None):
+        self.player_id = player.id
+        self.cause_id = cause.id
+
+    def next(game, action):
+
+        player = game.obj(self.player_id)
+        cause = None if self.cause_id is None else game.obj(self.cause_id)
+
+        if action == None:
+            if len(game.get_hand(player).objects) == 0:
+                return
+            actions = []
+            for card in game.get_hand(player).objects:
+                _p = Action ()
+                _p.object = card
+                _p.text = "Discard " + str(card)
+                actions.append (_p)
+
+            _as = ActionSet (game, player, "Discard a card", actions)
+            return _as
+        else:
+            game.doDiscard(player, action.object, cause)
+
+# DONE
 def process_discard_a_card(game, player, cause = None):
 
     if len(game.get_hand(player).objects) == 0:
@@ -1277,6 +1496,51 @@ def process_look_at_cards(game, player, cards):
 
     game.looked_at = oldlooked_at
 
+class CleanupStepProcess(Process):
+
+    def __init__(self):
+        self.state = 0
+        self.repeat = True
+
+    def next(self, game, action):
+        if self.state == 0:
+            self.state = 1
+            game.process_push(self)
+            game.process_push(PreStepProcess())
+        elif self.state == 1:
+            game.process_push(self)
+            if game.get_active_player().maximum_hand_size != None and "no maximum hand size" not in game.get_active_player().get_state().tags and  len(game.get_hand(game.get_active_player()).objects) > game.get_active_player().maximum_hand_size:
+                game.process_push(DiscardACardProcess(game.get_active_player()))
+            else:
+                self.state = 2
+        elif self.state == 2:
+            game.process_push(self)
+            self.state = 3
+
+            game.get_active_player().land_played = 0
+
+            if len(game.triggered_abilities) > 0:
+                game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+            else:
+                self.repeat = False
+        elif self.state == 3:
+            game.process_push(self)
+            game.process_push(PostStepProcess())
+
+            if self.repeat:
+                self.state = 0
+            else:
+                self.state = 4
+        elif self.state == 4:
+            selector = AllSelector ()
+            for permanent in selector.all (game, None):
+                permanent.damage = 0
+                permanent.regenerated = False
+                permanent.preventNextDamage = 0
+
+            game.until_end_of_turn_effects = []
+
+# DONE
 def process_step_cleanup(game):
 
     repeat = True
@@ -1285,17 +1549,6 @@ def process_step_cleanup(game):
         # 314.1
         if game.get_active_player().maximum_hand_size != None and "no maximum hand size" not in game.get_active_player().get_state().tags:
             while len(game.get_hand(game.get_active_player()).objects) > game.get_active_player().maximum_hand_size:
-                #actions = []
-                #for card in game.get_hand(game.get_active_player()).objects:
-                #    _p = Action ()
-                #    _p.object = card
-                #    _p.text = "Discard " + card.state.title
-                #    actions.append (_p)
-
-                #_as = ActionSet (game, game.get_active_player(), "Discard a card", actions)
-                #a = game.input.send (_as)
-
-                #game.doDiscard(game.get_active_player(), a.object)
                 process_discard_a_card(game, game.get_active_player())
 
 
@@ -1317,6 +1570,15 @@ def process_step_cleanup(game):
 
     game.until_end_of_turn_effects = []
 
+class EndPhaseProcess(Process):
+    def next(self, game, action):
+        game.current_phase = "end"
+        game.process_push(PostPhaseProcess())
+        game.process_push(CleanupStepProcess())
+        game.process_push(EndOfTurnStepProcess())
+        game.process_push(PrePhaseProcess())
+
+# DONE
 def process_phase_end (game):
     game.current_phase = "end"
     process_phase_pre(game)
@@ -1327,8 +1589,49 @@ def process_phase_end (game):
 
     process_phase_post(game)
 
+class TurnProcess(Process):
 
+    def __init__ (self, player):
+        self.player_id = player.id
+        self.state = 0
+        self.additional_combat_phase_followed_by_an_additional_main_phase = False
 
+    def next(self, game, action):
+        if self.state == 0:
+            # pre beginning phase
+            game.active_player_id = self.player_id
+            game.creature_that_attacked_this_turn_lkis = set()
+            self.state = 1
+
+            game.process_push(self)
+            game.process_push(MainPhaseProcess("precombat main"))
+            game.process_push(BeginningPhaseProcess())
+        elif self.state == 1:
+            # combat phase and additional combat and main phases
+            self.additional_combat_phase_followed_by_an_additional_main_phase = game.additional_combat_phase_followed_by_an_additional_main_phase
+            game.additional_combat_phase_followed_by_an_additional_main_phase = False
+
+            self.state = 2
+            game.process_push(self)
+            game.process_push(MainPhaseProcess("postcombat main"))
+
+            active_player = game.objects[game.active_player_id]
+            if active_player.skip_next_combat_phase:
+                active_player.skip_next_combat_phase = False
+            else:
+                game.process_push(CombatPhaseProcess())
+        elif self.state == 2:
+            game.process_push(self)
+            # additional combat phase followed by an additional main phase?
+            if not (self.additional_combat_phase_followed_by_an_additional_main_phase or game.additional_combat_phase_followed_by_an_additional_main_phase):
+                self.state = 3
+            else:
+                self.state = 1
+                game.additional_combat_phase_followed_by_an_additional_main_phase = False
+        elif self.state == 3:
+            game.process_push(EndPhaseProcess())
+
+# DONE
 def process_turn (game, player):
     game.active_player_id = player.id
 
@@ -1357,7 +1660,43 @@ def process_turn (game, player):
 
     process_phase_end (game)
 
+class DrawCardProcess(Process):
+    def __init__ (self, player):
+        self.player_id = player.id
 
+    def next(self, game, action):
+        game.doDrawCard(game.obj(self.player_id))
+
+class GameTurnProcess(Process):
+
+    def __init__ (self):
+        self.player_index = 0
+
+    def next(self, game, action):
+        if not game.end:
+            if self.player_index >= len(game.players):
+                self.player_index = 0
+                game.turn_number += 1
+
+            player = game.players[self.player_index]
+            self.player_index += 1
+           
+            game.process_push(self)
+            game.process_push(TurnProcess(player))
+
+
+class StartGameProcess(Process):
+    def next(self, game, action):
+        for player in game.players.__reversed__():
+            game.process_push(DrawCardProcess(player))
+
+
+class MainGameProcess(Process):
+    def next(self, game, action):
+        game.process_push(GameTurnProcess())
+        game.process_push(StartGameProcess())
+
+# DONE
 def process_game (game):
 
     for player in game.players:
