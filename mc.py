@@ -25,7 +25,7 @@ import random
 
 from mcio import Output, input_generator
 from game import Game
-from process import process_game
+from process import MainGameProcess
 from oracle import getParseableCards, createCardObject, parseOracle
 
 def parse_deckfile(deckfile):
@@ -58,11 +58,10 @@ if __name__ == "__main__":
         oracleFile.close()
 
     output = Output()
-    ig = input_generator()
-
-    n = ig.next()
-    g = Game(ig, output)
+    g = Game(output)
     g.create()
+
+#    ig = input_generator(g)
 
     c1 = []
     for count, name in parse_deckfile(sys.argv[1]):
@@ -90,6 +89,9 @@ if __name__ == "__main__":
     random.shuffle(c2)
     g.create_player("Player2", c2)
 
-    process_game(g)
+    g.process_push(MainGameProcess())
+
+    input_generator(g)
+    # process_game(g)
 
 

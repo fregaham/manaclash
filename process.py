@@ -31,6 +31,7 @@ class Process:
 class SandwichProcess(Process):
     def __init__ (self):
         self.state = 0
+
     def next(self, game, action):
         if self.state == 0:
             self.state = 1
@@ -43,6 +44,14 @@ class SandwichProcess(Process):
         else:
             self.post(game)
 
+    def pre(self, game):
+        pass
+
+    def main(self, game):
+        pass
+
+    def post(self, game):
+        pass
 
 class GameEndException(Exception):
     def __init__ (self, player):
@@ -505,6 +514,69 @@ def process_activate_ability(game, ability, player, obj, effect):
     game.onPlay(obj)
 
 
+class PrioritySuccessionProcess(Process):
+    def __init__ (self, player):
+        self.player_id = player.id
+        self.state = 0
+        self.first_passed_id = None
+
+    def next(self, game, action):
+        if self.state == 0:
+            game.current_player_priority = game.obj(self.player_id)
+            self.first_passed_id = None
+            self.state = 1
+            game.process_push(self)
+        elif self.state == 1:
+            for ability in game.triggered_abilities:
+                game.stack_push (ability)
+            game.triggered_abilities = []
+
+            self.state = 2
+            game.process_push(self)
+
+            evaluate(game)
+        elif self.state ==2:
+            actions = []
+            _pass = PassAction (game.current_player_priority)
+            actions.append (_pass)
+
+            actions.extend(get_possible_actions (game, game.current_player_priority))
+            _as = ActionSet (game, game.current_player_priority, "You have priority", actions)
+
+            self.state = 3
+
+            return _as
+        elif self.state == 3:
+            if not isinstance(action, PassAction):
+                self.state = 1
+                game.process_push(self)
+                self.first_passed_id = None
+                do_action (game, game.current_player_priority, action)
+            else:
+                np = game.get_next_player (game.current_player_priority)
+                if self.first_passed_id == np.id:
+                    if game.get_stack_length () == 0:
+                        return
+                    else:
+                        self.state = 4
+                        game.process_push(self)
+                        resolve (game, game.stack_top ())
+                else:
+                    if self.first_passed_id == None:
+                        self.first_passed_id = game.current_player_priority.id
+                    game.current_player_priority = np
+
+                    self.state = 1
+                    game.process_push(self)
+
+        elif self.state == 4:
+            self.first_passed_id = None
+            game.current_player_priority = game.obj(self.player_id)
+
+            self.state = 1
+            game.process_push(self)
+
+# DONE
 def process_priority_succession (game, player):
 
     game.current_player_priority = player
@@ -547,7 +619,7 @@ class UntapProcess(Process):
     def __init__ (self, permanent):
         self.permanent_id = permanent.id
 
-    def next(game, action):
+    def next(self, game, action):
         game.doUntap(game.obj(self.permanent_id))
 
 # DONE
@@ -555,7 +627,7 @@ def process_untap (game, permanent):
     game.doUntap(permanent)
 
 class DrawCardProcess(Process):
-    def next(game, action):
+    def next(self, game, action):
         game.doDrawCard(player)
 
 # DONE
@@ -563,7 +635,7 @@ def process_draw_card (game, player):
     game.doDrawCard(player)
 
 class PrePhaseProcess(Process):
-    def next(game, action):
+    def next(self, game, action):
         game.current_step = ""
         evaluate(game)
 
@@ -573,7 +645,7 @@ def process_phase_pre (game):
     evaluate(game)
 
 class PostPhaseProcess(Process):
-    def next(game, action):
+    def next(self, game, action):
         # 300.3
         for player in game.players:
             converted_mana = mana_converted_cost(player.manapool)
@@ -599,7 +671,7 @@ def process_phase_post (game):
     evaluate(game)
 
 class PreStepProcess(Process):
-    def next(game, action):
+    def next(self, game, action):
         evaluate(game)
         game.raise_event("step")
 
@@ -609,7 +681,7 @@ def process_step_pre (game):
     game.raise_event("step")
 
 class PostStepProcess(Process):
-    def next(game, action):
+    def next(self, game, action):
         evaluate(game)
 
 #DONE
@@ -628,10 +700,11 @@ class UntapStepProcess(SandwichProcess):
         selector = PermanentPlayerControlsSelector (game.get_active_player())
         for permanent in selector.all (game, None):
             if "does not untap" not in permanent.state.tags:
-                game.process_push(UntapProcess(permanent)
+                game.process_push(UntapProcess(permanent))
 
     def post(self, game):
         game.process_push(PostStepProcess())
+
 
 # DONE
 def process_step_untap (game):
@@ -660,7 +733,7 @@ class UpkeepStepProcess(SandwichProcess):
             game.stack_push (ability)
         game.triggered_abilities = []
 
-        game.process_push(PrioritySuccessionProcess(game.get_active_player())
+        game.process_push(PrioritySuccessionProcess(game.get_active_player()))
 
     def post(self, game):
         game.process_push(PostStepProcess())
@@ -721,11 +794,11 @@ class BeginningPhaseProcess(SandwichProcess):
     def __init__ (self):
         SandwichProcess.__init__ (self)
 
-    def pre(game):
+    def pre(self, game):
         game.current_phase = "beginning"
         game.process_push(PrePhaseProcess())
 
-    def main(game):
+    def main(self, game):
         # remove the summoning sickness tag
         selector = PermanentPlayerControlsSelector (game.get_active_player())
         for permanent in selector.all (game, None):
@@ -739,7 +812,7 @@ class BeginningPhaseProcess(SandwichProcess):
         game.process_push(UpkeepStepProcess())
         game.process_push(UntapStepProcess())
 
-    def post(game):
+    def post(self, game):
         game.process_push(PostPhaseProcess())
 
 # DONE
@@ -768,7 +841,7 @@ class MainPhaseProcess(SandwichProcess):
         self.which = which
 
     def pre(self, game):
-        game.current_phase = which
+        game.current_phase = self.which
         game.process_push(PrePhaseProcess())
 
     def main(self, game):
@@ -776,7 +849,7 @@ class MainPhaseProcess(SandwichProcess):
             game.stack_push (ability)
         game.triggered_abilities = []
 
-        game.process_push(PriotitySuccessionProcess(game.get_active_player()))
+        game.process_push(PrioritySuccessionProcess(game.get_active_player()))
     
     def post(self, game):
         game.process_push(PostPhaseProcess())
@@ -1312,7 +1385,7 @@ def process_step_end_of_combat (game):
 
 
 class CombatPhaseProcess(Process):
-    def next(game, action):
+    def next(self, game, action):
         pass
 
 def process_phase_combat (game):
@@ -1356,11 +1429,11 @@ class EndOfTurnStepProcess(SandwichProcess):
     def __init__(self):
         SandwichProcess.__init__ (self)
 
-    def pre(game):
+    def pre(self, game):
         game.current_step = "end of turn"
         game.process_push(PreStepProcess())
 
-    def main(game):
+    def main(self, game):
         # 313.1
         for ability in game.triggered_abilities:
             game.stack_push (ability)
@@ -1368,7 +1441,7 @@ class EndOfTurnStepProcess(SandwichProcess):
         game.triggered_abilities = []
         game.process_push(PrioritySuccessionProcess(game.get_active_player()))
 
-    def post(game):
+    def post(self, game):
         game.process_push(PostStepProcess())
 
 

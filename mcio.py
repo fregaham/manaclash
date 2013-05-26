@@ -130,7 +130,7 @@ class NullOutput(Output):
     def createDamageAssignment(self, id):
         pass
 
-def input_generator ():
+def input_generator (game):
 
     seed = random.randint(0,2**64)
 
@@ -138,7 +138,7 @@ def input_generator ():
 
     print(greeting)
 
-    _as = yield None
+    _as = game.next(None)
 
     log = []
 
@@ -213,7 +213,7 @@ def input_generator ():
             elif isinstance(_as, QueryString):
                 action = selected
 
-        _as = yield action
+        _as = game.next(action)
 
 
 def test_input_generator (sequence):

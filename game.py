@@ -67,7 +67,7 @@ class BlockerValidator:
         self.can = can
 
 class Game:
-    def __init__ (self, input, output):
+    def __init__ (self, output):
         self.zones = []
         self.objects = {}
         self.obj_max_id = 0
@@ -89,7 +89,6 @@ class Game:
         self.declared_blockers = set()
         self.declared_blockers_map = {}
 
-        self.input = input
         self.output = output
 
         self.events = {}
@@ -598,9 +597,18 @@ class Game:
         return costs
 
     def next(self, action):
-        pass
+        while True:
+
+            print "Stack: " + `self.process_stack`
+
+            p = self.process_stack.pop()
+            ret = p.next(self, action)
+            if ret is not None:
+                self.process_stack.append (p)
+                return ret
 
     def process_push(self, process):
+        assert process != None
         self.process_stack.append (process)
 
     def process_pop(self):
@@ -610,5 +618,5 @@ class Game:
         return self.process_stack[-1]
 
     def obj(self, _id):
-        return self.objects(_id)
+        return self.objects[_id]
 
