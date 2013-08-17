@@ -118,6 +118,8 @@ class Game:
 
         self.process_stack = []
 
+        self.process_returns_stack = []
+
         # game has ended
         self.end = False
 
@@ -591,10 +593,14 @@ class Game:
         self.raise_event ("play", spell)
 
     def replacePlayCost(self, ability, obj, player, costs):
-        for effect in self.play_cost_replacement_effects:
-            costs = effect(self, ability, obj, player, costs)
 
-        return costs
+        self.process_returns_push(costs)
+
+         # TODO:
+#        for effect in self.play_cost_replacement_effects:
+#            costs = effect(self, ability, obj, player, costs)
+
+#        return costs
 
     def next(self, action):
         while True:
@@ -616,6 +622,15 @@ class Game:
 
     def process_top(self):
         return self.process_stack[-1]
+
+    def process_returns_push(self, thing):
+        self.process_returns_stack.append(thing)
+
+    def process_returns_pop(self):
+        return self.process_returns_stack.pop()
+
+    def process_returns_top(self):
+        return self.process_returns_stack[-1]
 
     def obj(self, _id):
         return self.objects[_id]

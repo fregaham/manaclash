@@ -58,7 +58,7 @@ class ActivatedAbility(Ability):
         pass
 
     def determineCost(self, game, obj, player):
-        return []
+        game.process_returns_push([])
 
 class ManaAbility(ActivatedAbility):
     pass
@@ -101,8 +101,8 @@ class PlaySpell(ActivatedAbility):
         return (player.id == obj.state.controller_id  and ("instant" in obj.state.types or (obj.state.controller_id == game.active_player_id and (game.current_phase == "precombat main" or game.current_phase == "postcombat main") and game.get_stack_length() == 0)) and obj.zone_id == game.objects[obj.state.controller_id].hand_id)
 
     def activate(self, game, obj, player):
-        from process import process_play_spell
-        process_play_spell (game, self, player, obj)
+        from process import PlaySpellProcess
+        game.process_push(PlaySpellProcess(self, player, obj))
 
     def get_text(self, game, obj):
         return "Play " + str(obj) + " [%s]" % (obj.state.manacost)
@@ -116,7 +116,9 @@ class PlaySpell(ActivatedAbility):
             manacost = manacost.replace("X", xcost)
 
         c = ManaCost(manacost)
-        return [c]
+        game.process_returns_push([c])
+
+#        return [c]
 
     def __str__ (self):
         return "PlaySpell()"
@@ -181,7 +183,7 @@ class TapCostDoEffectAbility(ActivatedAbility):
         return "Activate \"%s\" [T %s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        return self.costs
+        game.process_returns_push(self.costs)
 
     def __str__ (self):
         return "TapCostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
@@ -225,7 +227,7 @@ class CostDoEffectAbility(ActivatedAbility):
         return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        return self.costs
+        game.process_returns_push(self.costs)
 
     def __str__ (self):
         return "CostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
@@ -246,7 +248,7 @@ class CostDoEffectAsSorceryAbility(ActivatedAbility):
         return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        return self.costs
+        game.process_returns_push(self.costs)
 
     def __str__ (self):
         return "CostDoEffectAsSorceryAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
@@ -267,7 +269,7 @@ class CostDoEffectGraveyardUpkeepAbility(ActivatedAbility):
         return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        return self.costs
+        game.process_returns_push(self.costs)
 
     def __str__ (self):
         return "CostDoEffectGraveyardUpkeepAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))
@@ -289,7 +291,7 @@ class SelfTurnTapCostDoEffectAbility(ActivatedAbility):
         return "Activate \"%s\" [T %s]" % (self.effect, ",".join(map(str,self.costs)))
 
     def determineCost(self, game, obj, player):
-        return self.costs
+        game.process_returns_push(self.costs)
 
     def __str__ (self):
         return "SelfTurnTapCostDoEffectAbility(%s, %s)" % (str(map(str,self.costs)), str(self.effect))

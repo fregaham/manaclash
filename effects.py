@@ -22,6 +22,7 @@ from objects import  *
 from selectors import *
 from actions import *
 from functools import partial
+from process import Process, SandwichProcess, SelectTargetProcess
 
 class Effect:
     def setText(self):
@@ -179,6 +180,38 @@ class XDealNDamageToY(OneShotEffect):
     def __str__ (self):
         return "XDealNDamageToY(%s, %s, %s)" % (self.x_selector, self.y_selector, self.count)
 
+class SingleTargetOneShotEffectSelectTargetsProcess(SandwichProcess):
+    def __init__ (self, effect, player, obj):
+        SandwichProcess.__init__(self)
+
+        self.effect = effect
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.state = 0
+
+    def pre(self, game):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        game.process_push(SelectTargetProcess(player, obj, self.effect.targetSelector, self.effect.optional))
+
+    def main(self, game):
+        target = game.process_returns_pop()
+        if target == None:
+            game.process_returns_push(False)
+            # TODO: return game state
+            return
+
+        obj = game.obj(self.obj_id)
+        obj.targets["target"] = LastKnownInformation(game, target)
+        game.raise_event ("target", obj, target)
+
+    def post(self, game):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        self.effect.doModal(game, player, obj)
+
 class SingleTargetOneShotEffect(OneShotEffect):
 
     def __init__ (self, targetSelector, optional = False):
@@ -199,19 +232,10 @@ class SingleTargetOneShotEffect(OneShotEffect):
         return process_validate_target(game, obj, self.targetSelector, obj.targets["target"])
 
     def selectTargets(self, game, player, obj):
-        from process import process_select_target
-        target = process_select_target(game, player, obj, self.targetSelector, self.optional)
-        if target == None:
-            return False
-
-        obj.targets["target"] = LastKnownInformation(game, target)
-
-        game.raise_event ("target", obj, target)
-
-        return self.doModal(game, player, obj)
+        game.process_push(SingleTargetOneShotEffectSelectTargetsProcess(self, player, obj))
     
     def doModal(self, game, player, obj):
-        return True
+        game.process_returns_push(True)
 
     def doResolve(self, game, obj, target):
         pass

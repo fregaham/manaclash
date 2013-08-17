@@ -388,6 +388,65 @@ def evaluate (game):
         raise GameEndException(None)
 
 
+class PayCostProcess(Process):
+    def __init__ (self, player, obj, effect, costs):
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.effect_id = effect.id
+        self.notpaid = costs
+
+        self.state = 0
+   
+    def next(self, game, action):
+        if self.state == 0:
+            if len(self.notpaid) > 0:
+
+                self.state = 1
+
+                player = game.obj(self.player_id)
+                obj = game.obj(self.obj_id)
+
+                actions = []
+                _pass = PassAction (player)
+                _pass.text = "Cancel"
+                actions.append (_pass)
+
+                _al = AllSelector()
+                for o in _al.all(game, None):
+                    for ability in o.state.abilities:
+                        if isinstance(ability, ManaAbility):
+                            if ability.canActivate(game, o, player):
+                                actions.append (AbilityAction(player, o, ability, ability.get_text(game, o)))
+
+                for cost in self.notpaid:
+                    if cost.canPay(game, obj, player):
+                        actions.append (PayCostAction(player, cost, cost.get_text(game, obj, player)))
+
+                _as = ActionSet (game, player, "Play Mana Abilities", actions)
+                return _as
+            else:
+                game.process_returns_push(True) 
+
+        elif self.state == 1:
+            if isinstance(action, PassAction):
+                game.process_returns_push(False)
+            else:
+
+                player = game.obj(self.player_id)
+                obj = game.obj(self.obj_id)
+                effect = game.obj(self.effect_id)
+
+                self.state = 0
+                game.process_push(self)
+
+                if isinstance(action, PayCostAction):
+                    if action.cost.pay(game, obj, effect, player):
+                        self.notpaid.remove(action.cost)
+
+                if isinstance(action, AbilityAction):
+                    do_action (game, player, action) 
+        
+# DONE
 def process_pay_cost (game, player, obj, effect, costs):
     notpaid = costs
     while len(notpaid) > 0:
@@ -423,6 +482,89 @@ def process_pay_cost (game, player, obj, effect, costs):
 
     return True
 
+class PlaySpellProcess(Process):
+    def __init__ (self, ability, player, obj):
+        self.player_id = player.id
+        self.ability = ability
+        self.obj_id = obj.id
+        self.state = 0
+
+    def next(self, game, action):
+        if self.state == 0:
+            # TODO save the game state before the playing spell and return to it if it failed to select targets
+
+            # move to stack
+            obj = game.objects[self.obj_id]
+            zone_from = game.objects[obj.zone_id]
+
+            stack = game.get_stack_zone()
+            obj.zone_id = stack.id
+            zone_from.objects.remove(obj)
+            stack.objects.append (obj)
+
+            self.state = 1
+            game.process_push(self)
+
+            evaluate(game)
+
+        elif self.state == 1:
+            self.state = 2
+            game.process_push(self)
+
+            player = game.objects[self.player_id]
+            obj = game.objects[self.obj_id]
+
+            obj = game.objects[self.obj_id]
+            if not obj.rules.selectTargets(game, player, obj):
+                # TODO: return state to the before playing spell
+                pass
+
+        elif self.state == 2:
+            self.state = 3
+            game.process_push(self)
+
+            player = game.objects[self.player_id]
+            obj = game.objects[self.obj_id]
+            
+            self.ability.determineCost(game, obj, player)
+
+        elif self.state == 3:
+            self.state = 4
+            game.process_push(self)
+
+            costs = game.process_returns_pop()
+            costs = costs[:]
+
+            player = game.objects[self.player_id]
+            obj = game.objects[self.obj_id]
+
+            game.replacePlayCost(self.ability, obj, player, costs)
+
+        elif self.state == 4:
+            self.state = 5
+            game.process_push(self)
+
+            player = game.objects[self.player_id]
+            obj = game.objects[self.obj_id]
+
+            costs = game.process_returns_pop()
+
+            if len(costs) > 0:
+                game.process_push(PayCostProcess(player, obj, obj, costs))
+
+        elif self.state == 5:
+            payed = game.process_returns_pop()
+
+            obj = game.objects[self.obj_id]
+
+            if not payed:
+                # TODO: return to the previus game state
+                pass
+            else:
+                game.onPlay(obj)
+
+
+# DONE?
 def process_play_spell (game, ability, player, obj):
     zone_from = game.objects[obj.zone_id]
     zone_index = zone_from.objects.index(obj)
@@ -576,44 +718,6 @@ class PrioritySuccessionProcess(Process):
             self.state = 1
             game.process_push(self)
 
-# DONE
-def process_priority_succession (game, player):
-
-    game.current_player_priority = player
-    first_passed = None
-    while True:
-
-        for ability in game.triggered_abilities:
-            game.stack_push (ability)
-        game.triggered_abilities = []
-
-        evaluate(game)
-        actions = []
-        _pass = PassAction (game.current_player_priority)
-        actions.append (_pass)
-
-        actions.extend(get_possible_actions (game, game.current_player_priority))
-
-        _as = ActionSet (game, game.current_player_priority, "You have priority", actions)
-        a = game.input.send (_as)
-
-        if a != _pass:
-            first_passed = None
-            do_action (game, game.current_player_priority, a)
-        else:
-            np = game.get_next_player (game.current_player_priority)
-            if first_passed == np:
-                if game.get_stack_length () == 0:
-                    break
-                else:
-                    resolve (game, game.stack_top ())
-                    first_passed = None
-                    game.current_player_priority = player
-            else:
-                if first_passed == None:
-                    first_passed = game.current_player_priority
-
-                game.current_player_priority = np
 
 class UntapProcess(Process):
     def __init__ (self, permanent):
@@ -622,27 +726,14 @@ class UntapProcess(Process):
     def next(self, game, action):
         game.doUntap(game.obj(self.permanent_id))
 
-# DONE
-def process_untap (game, permanent):
-    game.doUntap(permanent)
-
 class DrawCardProcess(Process):
     def next(self, game, action):
         game.doDrawCard(player)
-
-# DONE
-def process_draw_card (game, player):
-    game.doDrawCard(player)
 
 class PrePhaseProcess(Process):
     def next(self, game, action):
         game.current_step = ""
         evaluate(game)
-
-# DONE
-def process_phase_pre (game):
-    game.current_step = ""
-    evaluate(game)
 
 class PostPhaseProcess(Process):
     def next(self, game, action):
@@ -657,36 +748,14 @@ class PostPhaseProcess(Process):
 
         evaluate(game)
 
-# DONE
-def process_phase_post (game):
-    # 300.3
-    for player in game.players:
-        converted_mana = mana_converted_cost(player.manapool)
-        if converted_mana > 0:
-            howmuch = converted_mana
-            print("manaburn %d" % (howmuch))
-            player.manapool = ""
-            game.doLoseLife(player, howmuch)
-
-    evaluate(game)
-
 class PreStepProcess(Process):
     def next(self, game, action):
         evaluate(game)
         game.raise_event("step")
 
-# DONE
-def process_step_pre (game):
-    evaluate(game)
-    game.raise_event("step")
-
 class PostStepProcess(Process):
     def next(self, game, action):
         evaluate(game)
-
-#DONE
-def process_step_post (game):
-    evaluate(game)
 
 class UntapStepProcess(SandwichProcess):
     def __init__ (self):
@@ -705,18 +774,6 @@ class UntapStepProcess(SandwichProcess):
     def post(self, game):
         game.process_push(PostStepProcess())
 
-
-# DONE
-def process_step_untap (game):
-    game.current_step = "untap"
-    process_step_pre (game)
-
-    selector = PermanentPlayerControlsSelector (game.get_active_player())
-    for permanent in selector.all (game, None):
-        if "does not untap" not in permanent.state.tags:
-            process_untap (game, permanent)
-
-    process_step_post (game)
 
 class UpkeepStepProcess(SandwichProcess):
     """ 303.1 """
@@ -738,20 +795,6 @@ class UpkeepStepProcess(SandwichProcess):
     def post(self, game):
         game.process_push(PostStepProcess())
 
-# DONE
-def process_step_upkeep (game):
-    """ 303.1 """
-
-    game.current_step = "upkeep"
-    process_step_pre (game)
-
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    process_step_post (game)
 
 class DrawStepProcess(SandwichProcess):
     """ 304.1 """
@@ -773,22 +816,6 @@ class DrawStepProcess(SandwichProcess):
         game.process_push(PostStepProcess())
         game.process_push(PrioritySuccessionProcess(game.get_active_player()))
 
-# DONE
-def process_step_draw (game):
-    """ 304.1 """
-    game.current_step = "draw"
-    process_step_pre (game)
-
-    for i in range(game.get_active_player().draw_cards_count):
-        process_draw_card (game, game.get_active_player())
-
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    process_step_post (game)
 
 class BeginningPhaseProcess(SandwichProcess):
     def __init__ (self):
@@ -815,25 +842,6 @@ class BeginningPhaseProcess(SandwichProcess):
     def post(self, game):
         game.process_push(PostPhaseProcess())
 
-# DONE
-def process_phase_beginning (game):
-    game.current_phase = "beginning"
-    process_phase_pre(game)
-
-    # remove the summoning sickness tag
-    selector = PermanentPlayerControlsSelector (game.get_active_player())
-    for permanent in selector.all (game, None):
-        if "summoning sickness" in permanent.initial_state.tags:
-            permanent.initial_state.tags.remove("summoning sickness")
-
-    process_step_untap (game)
-    process_step_upkeep (game)
-
-    # 101.6a
-    if not (game.turn_number == 0 and game.get_active_player() == game.players[0]):
-        process_step_draw (game)
-
-    process_phase_post(game)
 
 class MainPhaseProcess(SandwichProcess):
     def __init__ (self, which):
@@ -854,17 +862,6 @@ class MainPhaseProcess(SandwichProcess):
     def post(self, game):
         game.process_push(PostPhaseProcess())
         
-# DONE
-def process_phase_main (game, which):
-    game.current_phase = which
-    process_phase_pre(game)
-
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-    process_phase_post(game)
 
 def process_step_beginning_of_combat (game):
     game.current_step = "beginning of combat"
@@ -1762,6 +1759,12 @@ class StartGameProcess(Process):
     def next(self, game, action):
         for player in game.players.__reversed__():
             game.process_push(DrawCardProcess(player))
+            game.process_push(DrawCardProcess(player))
+            game.process_push(DrawCardProcess(player))
+            game.process_push(DrawCardProcess(player))
+            game.process_push(DrawCardProcess(player))
+            game.process_push(DrawCardProcess(player))
+            game.process_push(DrawCardProcess(player))
 
 
 class MainGameProcess(Process):
@@ -1882,6 +1885,47 @@ def _is_valid_target(game, source, target):
 def is_valid_target(game, source, target):
     return _is_valid_target(game, source, target)
 
+class SelectTargetProcess(Process):
+    def __init__ (self, player, source, selector, optional=False):
+        self.player_id = player.id
+        self.source_id = source.id
+        self.selector = selector
+        self.optional = optional
+        self.state = 0
+
+    def next(self, game, action):
+        if self.state == 0:
+
+            player = game.obj(self.player_id)
+            source = game.obj(self.source_id)
+
+            self.state = 1
+
+            actions = []
+
+            _pass = PassAction (player)
+            _pass.text = "Cancel"
+
+            for obj in self.selector.all(game, source):
+                if _is_valid_target(game, source, obj):
+                    _p = Action ()
+                    _p.object = obj
+                    _p.text = "Target " + str(obj)
+                    actions.append (_p)
+
+            if len(actions) == 0 or self.optional:
+                actions = [_pass] + actions
+
+            _as = ActionSet (game, player, "Choose a target for " + str(source), actions)
+            return _as
+
+        elif self.state == 1:
+            if isinstance(action, PassAction):
+                game.process_returns_push(None)
+            else:
+                game.process_returns_push(action.object)
+
+# DONE
 def process_select_target(game, player, source, selector, optional=False):
     actions = []
 

@@ -20,7 +20,7 @@
 
 from abilities import *
 from objects import *
-from effects import *
+#from effects import *
 from selectors import *
 
 class ObjectRules:
