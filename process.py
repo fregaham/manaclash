@@ -861,8 +861,26 @@ class MainPhaseProcess(SandwichProcess):
     
     def post(self, game):
         game.process_push(PostPhaseProcess())
-        
 
+class BeginningOfCombatStepProcess(SandwichProcess):
+    def __init__(self):
+        SandwichProcess.__init__ (self)
+
+    def pre(self, game):
+        game.current_step = "beginning of combat"
+        game.process_push(PreStepProcess())
+
+    def main(self, game):
+        for ability in game.triggered_abilities:
+            game.stack_push (ability)
+        game.triggered_abilities = []
+
+        game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
+    def post(self, game):
+        game.process_push(PostPhaseProcess())
+        
+# DONE?
 def process_step_beginning_of_combat (game):
     game.current_step = "beginning of combat"
     process_step_pre (game)
@@ -873,6 +891,106 @@ def process_step_beginning_of_combat (game):
     process_priority_succession (game, game.get_active_player())
 
     process_step_post (game)
+
+
+class DeclareAttackersStepProcess(Process):
+    def __init__ (self):
+        self.state = 0
+        self.valid = False
+        self.attackers = set()
+
+    def next(self, game, action):
+        if self.state == 0:
+            game.current_step = "declare attackers"
+
+            self.state = 1
+            self.valid = False
+
+            game.process_push(self)
+            game.process_push(PreStepProcess())
+
+        elif self.state == 1:
+            if self.valid:
+                self.state = 5
+                game.process_push(self)
+            else:
+                self.attackers = set()
+                self.state = 2
+                game.process_push(self)
+
+        elif self.state == 2:
+
+            self.state = 3
+
+            actions = []
+            _pass = PassAction (game.get_attacking_player())
+            _pass.text = "No more attackers"
+            actions.append (_pass)
+
+            selector = PermanentPlayerControlsSelector(game.get_attacking_player())
+            for permanent in selector.all(game, None):
+                if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent not in attackers and "can't attack" not in permanent.state.tags and "can't attack or block" not in permanent.state.tags and ("defender" not in permanent.state.tags or "can attack as though it didn't have defender" in permanent.state.tags):
+
+                    v = AttackerValidator(permanent, True)
+                    game.raise_event("validate_attacker", v)
+                    if v.can:
+                        _p = Action ()
+                        _p.object = permanent
+                        _p.player = game.get_attacking_player()
+                        _p.text = "Attack with %s" % permanent
+                        actions.append (_p)
+
+            _as = ActionSet (game, game.get_attacking_player(), "Select attackers", actions)
+            return _as
+
+        elif self.state == 3:
+            if isinstance(action, PassAction):
+                self.state = 4
+                game.process_push(self)
+            else:
+                self.attackers.add(a.object.id)
+                self.state = 2
+                game.process_push(self)
+
+        elif self.state == 4:
+            self.valid = validate_attack(game, self.attackers)
+            self.state = 1
+            game.process_push(self)
+
+        elif self.state == 5:
+            for a in self.attackers:
+                a_lki = LastKnownInformation(game, game.obj(a))
+                game.declared_attackers.add (a_lki)
+                game.creature_that_attacked_this_turn_lkis.add (a_lki)
+
+            # tap attacking creatures
+            for a in game.declared_attackers:
+                if "vigilance" not in a.get_state().tags:
+                    game.doTap(a.get_object())
+
+            # attacks event
+            for a in game.declared_attackers:
+                game.raise_event("attacks", a)
+
+            for ability in game.triggered_abilities:
+                game.stack_push (ability)
+
+            game.triggered_abilities = []
+
+            self.state = 6
+            game.process_push(self)
+            game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
+        elif self.state == 6:
+            # remove the moved declared attackers
+            torm = []
+            for attacker in game.declared_attackers:
+                if attacker.is_moved():
+                    torm.append (attacker)
+            for attacker in torm:
+                game.declared_attackers.remove(attacker)
+        
+            game.process_push(PostStepProcess())
 
 
 def process_step_declare_attackers (game):
@@ -943,13 +1061,15 @@ def process_step_declare_attackers (game):
     process_step_post (game)
 
 
-def validate_attack(game, attackers):
+def validate_attack(game, attacker_ids):
 
-    for attacker in attackers:
+    for attacker_id in attacker_ids:
+        attacker = game.obj(attacker_id)
         if "can't attack unless a creature with greater power also attacks" in attacker.get_state().tags:
             isSuch = False
-            for other_attacker in attackers:
-                if attacker != other_attacker:
+            for other_attacker_id in attacker_ids:
+                if attacker_id != other_attacker_id:
+                    other_attacker = game.obj(other_attacker_id)
                     if other_attacker.get_state().power > attacker.get_state().power:
                         isSuch = True
                         break
@@ -1021,18 +1141,19 @@ def validate_block(game, blockers, blockers_map):
     blockers_inv_map = {}
 
     # evasion abilities
-    for blocker_id, attackers in blockers_map.items():
+    for blocker_id, attacker_ids in blockers_map.items():
         blocker = game.objects[blocker_id]
 
         # we normally allow only one attacker per blocker
-        if len(attackers) > 1:
+        if len(attacker_ids) > 1:
             if "can block any number of creatures" not in blocker.state.tags:
-                if len(attackers) == 2 and "can block an additional creature" in blocker.state.tags:
+                if len(attacker_ids) == 2 and "can block an additional creature" in blocker.state.tags:
                     pass
                 else:
                     return False
 
-        for attacker in attackers:
+        for attacker_id in attackers:
+            attacker = game.obj(attacker_id)
             if not is_valid_block(game, attacker, blocker):
                 return False
 
@@ -1047,12 +1168,13 @@ def validate_block(game, blockers, blockers_map):
             if not isSuch:
                 return False
 
-        for attacker in attackers:
-            lst = blockers_inv_map.get(attacker, [])
+        for attacker_id in attackers:
+            lst = blockers_inv_map.get(attacker_id, [])
             lst.append (blocker)
-            blockers_inv_map[attacker] = lst
+            blockers_inv_map[attacker_id] = lst
 
-    for attacker, a_blockers in blockers_inv_map.items():
+    for attacker_id, a_blockers in blockers_inv_map.items():
+        attacker = game.obj(attacker_id)
         if "can't be blocked except by three or more creatures" in attacker.get_state().tags:
             if len(a_blockers) > 0 and len(a_blockers) < 3:
                 return False
@@ -1086,6 +1208,152 @@ def validate_block(game, blockers, blockers_map):
 
     return True
 
+class DeclareBlockersStepProcess(Process):
+    def __init__ (self):
+        self.state = 0
+
+        self.blocker_id = None
+        self.blockers = set()
+        self.blockers_map = {}
+
+    def next(self, game, action):
+        if self.state == 0:
+            game.current_step = "declare blockers"
+
+            self.state = 2
+            game.process_push(self)
+            game.process_push(PreStepProcess())
+
+#        elif self.state == 1:
+#            if self.valid:
+#                self.state = XXX
+#                game.process_push(self)
+#            else:
+#                self.state = 2
+#                game.process_push(self)
+
+        elif self.state == 2:
+            self.blockers = set()
+            self.blockers_map = {}
+
+            self.state = 3
+            self.process_push(self)
+
+        elif self.state == 3:
+
+            self.state = 4
+
+            self.blocker_id = None
+
+            actions = []
+            _pass = PassAction (game.get_defending_player())
+            _pass.text = "No more blockers"
+            actions.append (_pass)
+
+            selector = PermanentPlayerControlsSelector(game.get_defending_player())
+            for permanent in selector.all(game, None):
+                if "creature" not in permanent.state.types:
+                    continue
+                if permanent.tapped:
+                    continue
+                if permanent in blockers:
+                    blocked = self.blockers_map.get(permanent.id, [])
+
+                    if "can block any number of creatures" not in permanent.state.tags:
+                        if len(blocked) == 1 and "can block an additional creature" in permanent.state.tags:
+                            pass
+                        else:
+                            continue
+
+                _p = Action ()
+                _p.object = permanent
+                _p.player = game.get_defending_player()
+                _p.text = "Block with %s" % permanent
+                actions.append (_p)
+
+            _as = ActionSet (game, game.get_defending_player(), "Select blockers", actions)
+            return _as
+
+        elif self.state == 4:
+            if isinstance(action, PassAction):
+                self.state = 6
+                game.process_push(self)
+            else:
+
+                self.blocker_id = action.object.id
+                blocker = game.obj(self.blocker_id)
+
+                self.state = 5
+
+                actions = []
+                _pass = PassAction (game.get_defending_player())
+                _pass.text = "Cancel block"
+                actions.append (_pass)
+
+                selector = AllPermanentSelector()
+                for permanent in selector.all(game, None):
+                    if "attacking" in permanent.state.tags:
+                        # cannot block the same object more than once
+                        if permanent.id in self.blockers_map.get(self.blocker_id, []):
+                            continue
+
+                        if is_valid_block(game, permanent, blocker):
+                            _p = Action ()
+                            _p.object = permanent
+                            _p.player = game.get_defending_player()
+                            _p.text = "Let %s block %s" % (blocker, permanent)
+                            actions.append (_p)
+                _as = ActionSet (game, game.get_defending_player(), "Block which attacker", actions) 
+                return _as
+
+        elif self.state == 5:
+            if isinstance(action, PassAction):
+                self.state = 3
+                game.process_push(self)
+            else:
+                self.blockers.add (self.blocker_id)
+
+                _as = self.blockers_map.get(self.blocker_id, [])
+                self.blockers_map[self.blocker_id] = _as + [action.object.id]
+
+                self.state = 6
+                game.process_push(self)
+
+        elif self.state == 6:
+            valid = validate_block(game, self.blockers, self.blockers_map)
+            if not valid:
+                self.state = 2
+                game.process_push(self)
+            else:
+                for b_id in self.blockers:
+                    b = game.obj(b_id)
+                    b_lki = LastKnownInformation(game, b)
+                    game.declared_blockers.add (b_lki)
+                    game.declared_blockers_map[b_id] = self.blockers_map[b_id][:]
+
+                process_raise_blocking_events(game)
+
+                for ability in game.triggered_abilities:
+                    game.stack_push (ability)
+
+                game.triggered_abilities = []
+
+                self.state = 7
+                game.process_push(self)
+                game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
+        elif self.state == 7:
+            # remove the moved declared attackers
+            torm = []
+            for attacker in game.declared_attackers:
+                if attacker.is_moved():
+                    torm.append (attacker)
+            for attacker in torm:
+                game.declared_attackers.remove(attacker)
+
+            game.process_push(PostStepProcess())
+   
+# DONE ?
 def process_step_declare_blockers (game):
     game.current_step = "declare blockers"
     process_step_pre (game)
