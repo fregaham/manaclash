@@ -1382,9 +1382,65 @@ def process_step_end_of_combat (game):
 
 
 class CombatPhaseProcess(Process):
-    def next(self, game, action):
-        pass
 
+    def __init__ (self):
+        self.state = 0
+
+    def next(self, game, action):
+        if self.state == 0:
+            game.current_phase = "combat"
+
+            # 306.2
+            game.attacking_player_id = game.active_player_id
+            game.defending_player_id = game.get_next_player(game.get_active_player()).id
+
+            self.state = 1
+            game.process_push(self)
+            game.process_push(DeclareAttackersStepProcess())
+            game.process_push(BeginningOfCombatStepProcess())
+            game.process_push(PrePhaseProcess())
+
+        elif self.state == 1:
+            # 308.5
+            if len(game.declared_attackers) != 0:
+                self.state = 2
+                game.process_push(self)
+                game.process_push(DeclareBlockersStepProcess())
+
+            else:
+                self.state = 3
+                game.process_push(self)
+
+        elif self.state == 2:
+
+            self.state = 3
+            game.process_push(self)
+
+            # any first or double strikers?
+            firstStrike = False
+            for a in game.declared_attackers:
+                if "first strike" in a.get_state().tags or "double strike" in a.get_state().tags:
+                    firstStrike = True
+
+            for b in game.declared_blockers:
+                if "first strike" in b.get_state().tags or "double strike" in b.get_state().tags:
+                    firstStrike = True
+
+            game.process_push(CombatDamageStepProcess(False))
+
+            if firstStrike:
+                game.process_push(CombatDamageStepProcess(True))
+
+        elif self.state == 3:
+            self.state = 4
+            game.process_push(self)
+            game.process_push(PostPhaseProcess())
+            game.process_push(EndOfCombatStepProcess())
+
+        elif self.state == 4:
+            game.defending_player_id = None 
+    
+# DONE?
 def process_phase_combat (game):
     game.current_phase = "combat"
 
@@ -1441,19 +1497,6 @@ class EndOfTurnStepProcess(SandwichProcess):
     def post(self, game):
         game.process_push(PostStepProcess())
 
-
-# DONE
-def process_step_end_of_turn(game):
-    game.current_step = "end of turn"
-    process_step_pre (game)
-    # 313.1
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    process_step_post (game)
 
 class DiscardACardProcess(Process):
     def __init__ (self, player, cause = None):
@@ -1610,35 +1653,6 @@ class CleanupStepProcess(Process):
 
             game.until_end_of_turn_effects = []
 
-# DONE
-def process_step_cleanup(game):
-
-    repeat = True
-    while repeat:
-        process_step_pre (game)
-        # 314.1
-        if game.get_active_player().maximum_hand_size != None and "no maximum hand size" not in game.get_active_player().get_state().tags:
-            while len(game.get_hand(game.get_active_player()).objects) > game.get_active_player().maximum_hand_size:
-                process_discard_a_card(game, game.get_active_player())
-
-
-        game.get_active_player().land_played = 0
-
-        if len(game.triggered_abilities) > 0:
-            process_priority_succession (game, game.get_active_player())
-        else:
-            repeat = False
-
-        process_step_post(game)
-
-
-    selector = AllSelector ()
-    for permanent in selector.all (game, None):
-        permanent.damage = 0
-        permanent.regenerated = False
-        permanent.preventNextDamage = 0
-
-    game.until_end_of_turn_effects = []
 
 class EndPhaseProcess(Process):
     def next(self, game, action):
@@ -1648,16 +1662,6 @@ class EndPhaseProcess(Process):
         game.process_push(EndOfTurnStepProcess())
         game.process_push(PrePhaseProcess())
 
-# DONE
-def process_phase_end (game):
-    game.current_phase = "end"
-    process_phase_pre(game)
-
-    # 312.1.
-    process_step_end_of_turn(game)
-    process_step_cleanup(game)
-
-    process_phase_post(game)
 
 class TurnProcess(Process):
 
@@ -1701,35 +1705,6 @@ class TurnProcess(Process):
         elif self.state == 3:
             game.process_push(EndPhaseProcess())
 
-# DONE
-def process_turn (game, player):
-    game.active_player_id = player.id
-
-    game.creature_that_attacked_this_turn_lkis = set()
-
-    process_phase_beginning (game)
-    process_phase_main (game, "precombat main")
-
-    while True:
-
-        additional_combat_phase_followed_by_an_additional_main_phase = game.additional_combat_phase_followed_by_an_additional_main_phase
-        game.additional_combat_phase_followed_by_an_additional_main_phase = False
-
-        active_player = game.objects[game.active_player_id]
-        if active_player.skip_next_combat_phase:
-            active_player.skip_next_combat_phase = False
-        else:
-            process_phase_combat (game)
-
-        process_phase_main (game, "postcombat main")
-
-        if not (additional_combat_phase_followed_by_an_additional_main_phase or game.additional_combat_phase_followed_by_an_additional_main_phase):
-            break
-
-        game.additional_combat_phase_followed_by_an_additional_main_phase = False
-
-    process_phase_end (game)
-
 class DrawCardProcess(Process):
     def __init__ (self, player):
         self.player_id = player.id
@@ -1772,24 +1747,6 @@ class MainGameProcess(Process):
         game.process_push(GameTurnProcess())
         game.process_push(StartGameProcess())
 
-# DONE
-def process_game (game):
-
-    for player in game.players:
-        for i in range(7):
-            game.doDrawCard(player)
-
-    while True:
-        for player in game.players:
-            try:
-                process_turn (game, player)
-            except StopIteration:
-                return
-            except GameEndException, x:
-                game.output.gameEnds(x.player)
-                return
-
-        game.turn_number += 1
 
 def process_trigger_effect(game, source, effect, slots):
     e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, effect, slots)
@@ -1925,31 +1882,6 @@ class SelectTargetProcess(Process):
             else:
                 game.process_returns_push(action.object)
 
-# DONE
-def process_select_target(game, player, source, selector, optional=False):
-    actions = []
-
-    _pass = PassAction (player)
-    _pass.text = "Cancel"
-    # actions.append (_pass)
-
-    for obj in selector.all(game, source):
-        if _is_valid_target(game, source, obj):
-            _p = Action ()
-            _p.object = obj
-            _p.text = "Target " + str(obj)
-            actions.append (_p)
-
-    if len(actions) == 0 or optional:
-        actions = [_pass] + actions
-
-    _as = ActionSet (game, player, "Choose a target for " + str(source), actions)
-    a = game.input.send (_as)
-
-    if a == _pass:
-        return None
-
-    return a.object
 
 def process_select_targets(game, player, source, selector, n, optional=False):
 
