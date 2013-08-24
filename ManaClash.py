@@ -21,7 +21,6 @@ import sys
 
 from mcio import Output, input_generator
 from game import Game
-from process import process_game
        
 if __name__ == "__main__":
 

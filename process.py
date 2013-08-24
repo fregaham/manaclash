@@ -929,7 +929,7 @@ class DeclareAttackersStepProcess(Process):
 
             selector = PermanentPlayerControlsSelector(game.get_attacking_player())
             for permanent in selector.all(game, None):
-                if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent not in attackers and "can't attack" not in permanent.state.tags and "can't attack or block" not in permanent.state.tags and ("defender" not in permanent.state.tags or "can attack as though it didn't have defender" in permanent.state.tags):
+                if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent.id not in self.attackers and "can't attack" not in permanent.state.tags and "can't attack or block" not in permanent.state.tags and ("defender" not in permanent.state.tags or "can attack as though it didn't have defender" in permanent.state.tags):
 
                     v = AttackerValidator(permanent, True)
                     game.raise_event("validate_attacker", v)
@@ -948,7 +948,7 @@ class DeclareAttackersStepProcess(Process):
                 self.state = 4
                 game.process_push(self)
             else:
-                self.attackers.add(a.object.id)
+                self.attackers.add(action.object.id)
                 self.state = 2
                 game.process_push(self)
 
@@ -1237,7 +1237,7 @@ class DeclareBlockersStepProcess(Process):
             self.blockers_map = {}
 
             self.state = 3
-            self.process_push(self)
+            game.process_push(self)
 
         elif self.state == 3:
 
@@ -1469,6 +1469,268 @@ def process_raise_blocking_events(game):
 
             game.raise_event("blocks", obj, blocked_lki)
 
+class CombatDamageStepProcess(Process):
+    # TODO: cleanup, factor
+
+    def __init__ (self, firstStrike):
+        self.firstStrike = firstStrike
+        self.state = 0
+
+        # map attacker id to list of blocker ids that block the attacker
+        self.a_id2b_ids = []
+        # map blocker id to list of attacker ids it blocks
+        self.b_id2a_ids = []
+
+        # map object ids to object last known information
+        # TODO: store id2lki globally in game somewhere...
+        self.id2lki = {}
+
+        self.i = 0
+        self.damage = []
+
+        self.damageToAssign = 0
+ 
+    def next(self, game, action):
+        if self.state == 0:
+            game.current_step = "combat damage"
+            
+            self.state = 1
+            game.process_push(self)
+
+            game.process_push(PreStepProcess())
+
+        elif self.state == 1:
+            a_id2b_ids = {}
+            b_id2a_ids = {}
+
+            self.damage = []
+
+            # Init the maps... for attackers
+            for a in game.declared_attackers:
+                # declared_attackers is an LastKnownInformation
+                _id = a.get_object().id
+                self.id2lki[_id] = a
+                a_id2b_ids[_id] = []
+
+            # ...and for blockers...
+            for b in game.declared_blockers:
+                _id = b.get_object().id
+                self.id2lki[_id] = b
+
+                b_id2a_ids[_id] = []
+
+                # the declared_blockers_map map blocker id to the attacker ids it
+                # blocks
+                a_ids = game.declared_blockers_map[b.get_object().id]
+
+                for a_id in a_ids:
+                    a_id2b_ids[a_id].append (_id)
+                    b_id2a_ids[_id].append (a_id)
+
+            self.i = 0
+
+            self.a_id2b_ids = a_id2b_ids.items()
+            self.b_id2a_ids = b_id2a_ids.items()
+
+            self.state = 2
+            game.process_push(self)
+
+        elif self.state == 2:
+            if self.i >= len(self.a_id2b_ids):
+                self.i = 0
+                self.state = 6
+                game.process_push(self)
+            else:
+                a_id, b_ids = self.a_id2b_ids[self.i]
+
+                a_lki = self.id2lki[a_id]
+                a_obj = self.id2lki[a_id].get_object()
+                a_state = self.id2lki[a_id].get_state()
+
+                # only creatures deal combat damage
+                if not a_lki.is_moved() and "creature" in a_state.types and ((self.firstStrike and "first strike" in a_lki.get_state().tags) or (not self.firstStrike and "first strike" not in a_lki.get_state().tags) or (self.firstStrike and "double strike" in a_lki.get_state().tags)):
+                    if len(b_ids) == 0:
+                        # unblocked creature deal damage to the defending player
+                        self.damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
+
+                        self.i += 1
+                        game.process_push(self)
+                    else:
+                        if "x-sneaky" in a_lki.get_state().tags:
+                            self.state = 3
+                            game.process_push(self)
+                        else:
+                            self.state = 4
+                            game.process_push(self)
+
+                else:
+                    self.i += 1
+                    game.process_push(self)
+
+        elif self.state == 3:
+            # x-sneaky
+            a_id, b_ids = self.a_id2b_ids[self.i]
+            a_lki = id2lki[a_id]
+            a_obj = self.id2lki[a_id].get_object()
+            a_state = self.id2lki[a_id].get_state()
+
+            if action is None:
+                actions = []
+                _yes = Action()
+                _yes.text = "Yes"
+                actions.append (_yes)
+
+                _no = Action()
+                _no.text = "No" 
+                actions.append (_no)
+
+                _as = ActionSet (game, game.get_attacking_player(), "Assign %s combat damage as though it wasn't blocked" % (a_lki.get_object()), actions)
+
+                return _as 
+
+            else:
+                if action.text == "Yes":
+                    self.damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
+                    self.i += 1
+                    self.state = 2
+                    game.process_push(self)
+                else:
+                    self.state = 4
+                    game.process_push(self)
+
+        elif self.state == 4:
+            a_id, b_ids = self.a_id2b_ids[self.i]
+            a_lki = id2lki[a_id]
+            a_obj = self.id2lki[a_id].get_object()
+            a_state = self.id2lki[a_id].get_state()
+            
+            if len(b_ids) == 1:
+                # blocked by one creature deal all damage to that creature
+                b_id = b_ids[0]
+                b_lki = self.id2lki[b_id]
+                self.damage.append ( (a_lki, b_lki, a_state.power) )
+            else:
+                self.damageToAssign = a_state.power
+
+                self.state = 5
+                game.process_push(self)
+
+        elif self.state == 5:
+            a_id, b_ids = self.a_id2b_ids[self.i]
+            a_lki = id2lki[a_id]
+            a_obj = self.id2lki[a_id].get_object()
+            a_state = self.id2lki[a_id].get_state()
+
+            if self.damageToAssign > 0:
+                if action is None:
+                    # attacking player choose how to assign damage
+                    actions = []
+
+                    for b_id in b_ids:
+                        _p = Action ()
+                        _p.object = self.id2lki[b_id].get_object()
+                        _p.text = str(_p.object)
+                        actions.append (_p)
+
+                    _as = ActionSet (game, game.get_attacking_player(), "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
+                    return _as
+                else:
+                    b_lki = self.id2lki[a.object.id]
+                    self.damage.append ( (a_lki, b_lki, 1) )
+
+                    self.damageToAssign -= 1
+
+                    game.process_push(self)
+                    
+            else:
+                self.i += 1
+                self.state = 2
+                game.process_push(self)
+
+        elif self.state == 6:
+            # damage done by blocker creatures           
+            if self.i >= len(self.b_id2a_ids):
+                self.i = 0
+                self.state = 8
+                game.process_push(self)
+            else:
+                b_id, a_ids = self.b_id2a_ids[self.i]
+                b_lki = self.id2lki[b_id]
+                b_obj = self.id2lki[b_id].get_object()
+                b_state = self.id2lki[b_id].get_state()
+
+                if not b_lki.is_moved() and "creature" in b_state.types and ((self.firstStrike and "first strike" in b_lki.get_state().tags) or (not self.firstStrike and "first strike" not in b_lki.get_state().tags) or (self.firstStrike and "double strike" in b_lki.get_state().tags)):
+
+                    if len(a_ids) == 0:
+                        # creature not blocking any attacker, do nothing
+                        self.i += 1
+                        game.process_push(self)
+
+                    elif len(a_ids) == 1:
+                        # creature blocking one attacker
+                        a_id = a_ids[0]
+                        a_lki = id2lki[a_id]
+                        damage.append ( (b_lki, a_lki, b_state.power) )
+
+                        self.i += 1
+                        game.process_push(self)
+
+                    else:
+                        self.damageToAssign = b_state.power
+                        self.state = 7
+                        game.process_push(self)
+
+        elif self.state == 7:
+             b_id, a_ids = self.b_id2a_ids[self.i]
+             b_lki = self.id2lki[b_id]
+             b_obj = self.id2lki[b_id].get_object()
+             b_state = self.id2lki[b_id].get_state()
+
+             if self.damageToAssign > 0:
+                if action is None:
+                    actions = []
+
+                    for a_id in a_ids:
+                        _p = Action ()
+                        _p.object = self.id2lki[a_id].get_object()
+                        _p.text = str(_p.object)
+                        actions.append (_p)
+
+                    _as = ActionSet (game, game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
+                    return _as
+                else:
+                    b_lki = self.id2lki[action.object.id]
+                    damage.append ( (a_lki, b_lki, 1) )
+
+                    self.damageToAssign -= 1
+                    game.process_push(self)
+
+             else:
+                self.i += 1
+                self.state = 6
+                game.process_push(self)
+
+        elif self.state == 8:
+            merged = {}
+            for a, b, n in self.damage:
+                d = merged.get( (a,b), 0)
+                merged[ (a,b) ] = d + n
+
+            damage = []
+            for (a,b), n in merged.iteritems():
+                damage.append ( (a, b, n) )
+
+            damage_object = game.create_damage_assignment(damage, True)
+            game.stack_push(damage_object)
+            for ability in game.triggered_abilities:
+                game.stack_push (ability)
+            game.triggered_abilities = []
+
+            game.process_push(PostStepProcess())
+            game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+  
+
+# DONE?
 def process_step_combat_damage (game, firstStrike):
     game.current_step = "combat damage"
     process_step_pre (game)
@@ -1628,6 +1890,32 @@ def process_step_combat_damage (game, firstStrike):
 
     process_step_post (game)
 
+class EndOfCombatStepProcess(SandwichProcess):
+    def __init__(self):
+        SandwichProcess.__init__ (self)
+
+    def pre(self, game):
+        game.current_step = "end of combat"
+        game.process_push(PreStepProcess())
+
+    def main(self, game):
+        for ability in game.end_of_combat_triggers:
+            game.triggered_abilities.append (ability)
+        game.end_of_combat_triggers = []
+
+        for ability in game.triggered_abilities:
+            game.stack_push (ability)
+        game.triggered_abilities = []
+
+        game.process_push(PostPhaseProcess())
+        game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
+    def post(self, game):
+        game.declared_attackers = set()
+        game.declared_blockers = set()
+        game.declared_blockers_map = {}
+
+# DONE?
 def process_step_end_of_combat (game):
     game.current_step = "end of combat"
     process_step_pre (game)
