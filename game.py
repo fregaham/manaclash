@@ -293,12 +293,18 @@ class Game:
         event_handlers.append (handler)
 
     def raise_event (self, event, *args, **kargs):
+
+        print "EVENT: " + `event`
+
         event_handlers = self.events.get(event, [])
         for handler in event_handlers:
+            print "EVENT: " + `event` + " handler: " + `handler`
             handler (*args, **kargs)
 
         event_handlers = self.volatile_events.get(event, [])
         for handler in event_handlers:
+            print "EVENT: " + `event` + " volatile handler: " + `handler`
+
             handler (*args, **kargs)
 
     def _get_zone (self, type):
@@ -604,11 +610,13 @@ class Game:
 
     def next(self, action):
         while True:
-
-            print "Stack: " + `self.process_stack`
+            print "Stack: " + `self.process_stack` + " Returns: " + `self.process_returns_stack`
 
             p = self.process_stack.pop()
             ret = p.next(self, action)
+
+            action = None
+
             if ret is not None:
                 self.process_stack.append (p)
                 return ret

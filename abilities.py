@@ -402,7 +402,7 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
 
     def onPostDealDamage(self, game, SELF, source, dest, n):
         if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
@@ -413,7 +413,7 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
 
             slots["that much"] = n
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXDealsDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))

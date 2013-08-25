@@ -22,16 +22,17 @@ from abilities import *
 from objects import *
 #from effects import *
 from selectors import *
+from process import Process, SandwichProcess
 
 class ObjectRules:
     def getAbilities(self):
         return []
 
     def resolve(self, game, obj):
-        pass
+        game.process_returns_push(True)
 
     def selectTargets(self, game, player, obj):
-        return True
+        game.process_returns_push(True)
 
 
 class BasicLandRules(ObjectRules):
@@ -51,7 +52,7 @@ class NonBasicLandRules(ObjectRules):
     def resolve(self, game, obj):
         game.onResolve(obj)
         game.doZoneTransfer(obj, game.get_in_play_zone())
-        return True
+        game.process_returns_push(True)
 
     def __str__(self):
         return "NonBasicLandRules(" + (",".join(map(str, self.abilities))) + ")"
@@ -67,7 +68,7 @@ class BasicPermanentRules(ObjectRules):
         print("resolving permanenet %s" % obj.state.title)
         game.onResolve(obj)
         game.doZoneTransfer(obj, game.get_in_play_zone())
-        return True
+        game.process_returns_push(True)
 
     def __str__(self):
         return "BasicPermanentRules(" + (",".join(map(str, self.abilities))) + ")"
@@ -77,22 +78,38 @@ class DamageAssignmentRules(ObjectRules):
         game.onResolve(obj)
         game.doDealDamage(obj.damage_assignment_list, obj.combat)
         game.delete(obj)
+        game.process_returns_push(True)
 
     def __str__(self):
         return "DamageAssignmentRules()"
 
+class EffectRulesProcess(SandwichProcess):
+    def __init__ (self, effect, obj):
+        SandwichProcess.__init__ (self)
+        self.effect = effect
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        self.effect.resolve(game, game.obj(self.obj_id))
+
+    def main(self, game):
+        # peek at the return, pass it over to the upstream process
+        if game.process_returns_top():
+            game.onResolve(game.obj(self.obj_id))
+
+    def post(self, game):
+        game.delete(game.obj(self.obj_id))
+
 class EffectRules(ObjectRules):
     def __init__(self, effect):
         self.effect = effect
+
     def resolve(self, game, obj):
-        ret = self.effect.resolve(game, obj)
-        if ret:
-            game.onResolve(obj)
-        game.delete(obj)
-        return ret
+        game.process_push(EffectRulesProcess(self.effect, obj))
 
     def selectTargets(self, game, player, obj):
-        return self.effect.selectTargets(game, player, obj)
+        print "XXX: EffectRules: " + `self.effect`
+        self.effect.selectTargets(game, player, obj)
 
     def __str__(self):
         return "EffectRules(%s)" % str(self.effect)

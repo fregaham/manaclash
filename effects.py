@@ -49,10 +49,10 @@ class ContinuousEffect(Effect):
 
 class OneShotEffect(Effect):
     def resolve(self, game, obj):
-        pass
+        game.process_returns_push(True)
 
     def selectTargets(self, game, player, obj):
-        return True
+        game.process_returns_push(True)
 
     def validateTargets(self, game, obj):
         return True
@@ -142,14 +142,16 @@ class PlayerDiscardsCardEffect(OneShotEffect):
         self.count = count
 
     def resolve(self, game, obj):
+
+        game.process_returns_push(True)
+
         n = self.count.evaluate(game, obj)
         for player in self.selector.all(game, obj):
             assert player is not None
             for i in range(n):
-                from process import process_discard_a_card
-                process_discard_a_card(game, player.get_object(), obj)
-
-        return True
+                from process import DiscardACardProcess
+                game.process_push(DiscardACardProcess(player.get_object(), obj))
+#                process_discard_a_card(game, player.get_object(), obj)
 
     def __str__ (self):
         return "PlayerDiscardsCardEffect(%s, %s)" % (self.selector, self.count)
@@ -222,10 +224,8 @@ class SingleTargetOneShotEffect(OneShotEffect):
         if self.validateTargets(game, obj):
             target = obj.targets["target"]
             self.doResolve(game, obj, target)
-
-            return True
-
-        return False
+        else:
+            game.process_returns_push(False)
 
     def validateTargets(self, game, obj):
         from process import process_validate_target
@@ -238,7 +238,7 @@ class SingleTargetOneShotEffect(OneShotEffect):
         game.process_returns_push(True)
 
     def doResolve(self, game, obj, target):
-        pass
+        game.process_returns_push(True)
 
     def __str__ (self):
         return "SingleTargetOneShotEffect(%s)" % self.targetSelector

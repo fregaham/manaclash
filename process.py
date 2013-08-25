@@ -17,13 +17,6 @@
 #
 # 
 
-from selectors import *
-from rules import *
-from actions import *
-from cost import *
-from objects import *
-from game import AttackerValidator, BlockerValidator
-
 class Process:
     def next(self, game, action):
         pass
@@ -53,6 +46,14 @@ class SandwichProcess(Process):
     def post(self, game):
         pass
 
+
+from selectors import *
+from rules import *
+from actions import *
+from cost import *
+from objects import *
+from game import AttackerValidator, BlockerValidator
+
 class GameEndException(Exception):
     def __init__ (self, player):
         self.player = player
@@ -77,6 +78,9 @@ def do_action (game, player, a):
 
 def resolve (game, resolvable):
     evaluate(game)
+
+    print "XXX: " + `resolvable.rules`
+
     resolvable.rules.resolve(game, resolvable)
 
 def sort_effects(effects):
@@ -515,11 +519,13 @@ class PlaySpellProcess(Process):
             obj = game.objects[self.obj_id]
 
             obj = game.objects[self.obj_id]
-            if not obj.rules.selectTargets(game, player, obj):
-                # TODO: return state to the before playing spell
-                pass
+            obj.rules.selectTargets(game, player, obj)
 
         elif self.state == 2:
+            if not game.process_returns_pop():
+                # TODO: return state to the before playing spell if target selection failed
+                return
+
             self.state = 3
             game.process_push(self)
 
@@ -712,6 +718,10 @@ class PrioritySuccessionProcess(Process):
                     game.process_push(self)
 
         elif self.state == 4:
+
+            # have the spell resolution succeeded?
+            game.process_returns_pop()
+
             self.first_passed_id = None
             game.current_player_priority = game.obj(self.player_id)
 
@@ -2057,16 +2067,18 @@ class EndOfTurnStepProcess(SandwichProcess):
 class DiscardACardProcess(Process):
     def __init__ (self, player, cause = None):
         self.player_id = player.id
-        self.cause_id = cause.id
+        self.cause_id = None if cause is None else cause.id
 
-    def next(game, action):
+    def next(self, game, action):
 
         player = game.obj(self.player_id)
         cause = None if self.cause_id is None else game.obj(self.cause_id)
 
-        if action == None:
+        if action is None:
+
             if len(game.get_hand(player).objects) == 0:
                 return
+
             actions = []
             for card in game.get_hand(player).objects:
                 _p = Action ()
@@ -2304,6 +2316,34 @@ class MainGameProcess(Process):
         game.process_push(StartGameProcess())
 
 
+class TriggerEffectProcess(SandwichProcess):
+
+    def __init__ (self, source, effect, slots):
+        SandwichProcess.__init__ (self)
+
+        self.source_id = source.id
+        self.effect = effect
+        self.slots = slots
+
+    def pre(self, game):
+        source = game.obj(self.source_id)
+        e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, self.effect, self.slots)
+        self.effect_object_id = e.id
+
+        game.triggered_abilities.append (e)
+        evaluate(game)
+
+        print "XXX: TriggerEffectProcess: " + `e.rules.selectTargets`
+
+        e.rules.selectTargets(game, game.objects[e.get_state().controller_id], e)
+
+    def main(self, game):
+        if not game.process_returns_pop():
+            e = game.obj(self.effect_object_id)
+            game.delete(e)
+            game.triggered_abilities.remove(e)
+        
+# DONE?
 def process_trigger_effect(game, source, effect, slots):
     e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, effect, slots)
 

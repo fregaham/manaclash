@@ -213,6 +213,8 @@ def input_generator (game):
             elif isinstance(_as, QueryString):
                 action = selected
 
+        # print "Action: " + `action`
+
         _as = game.next(action)
 
 
