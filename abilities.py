@@ -308,13 +308,13 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "in play":
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.selector.slots():
                 slots[slot] = obj
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXComesIntoPlayDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
@@ -350,13 +350,13 @@ class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play":
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.selector.slots():
                 slots[slot] = obj
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
@@ -375,14 +375,14 @@ class WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(TriggeredAbilit
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
         if cause is not None and  self.x_selector.contains(game, SELF, cause) and self.y_selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play" and zone_to.player_id == SELF.get_controller_id():
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             slots["that card"] = obj
             for slot in self.y_selector.slots():
                 slots[slot] = obj
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
@@ -430,7 +430,7 @@ class WhenXDealsDamageDoEffectAbility(TriggeredAbility):
 
     def onPostDealDamage(self, game, SELF, source, dest, n):
         if self.x_selector.contains(game, SELF, source):
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
@@ -438,7 +438,7 @@ class WhenXDealsDamageDoEffectAbility(TriggeredAbility):
 
             slots["that much"] = n
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXDealsDamageDoEffectAbility(%s, %s)" % (str(self.x_selector), str(self.effect))
@@ -457,7 +457,7 @@ class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
 
     def onPostDealDamage(self, game, SELF, source, dest, n):
         if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
@@ -468,7 +468,7 @@ class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
 
             slots["that much"] = n
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXDealsCombatDamageToYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
@@ -486,7 +486,7 @@ class WhenXDealsCombatDamageDoEffectAbility(TriggeredAbility):
 
     def onPostDealDamage(self, game, SELF, source, dest, n):
         if self.x_selector.contains(game, SELF, source):
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
@@ -494,7 +494,7 @@ class WhenXDealsCombatDamageDoEffectAbility(TriggeredAbility):
 
             slots["that much"] = n
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXDealsCombatDamageDoEffectAbility(%s, %s)" % (str(self.x_selector), str(self.effect))
@@ -511,13 +511,13 @@ class WhenXAttacksDoEffectAbility(TriggeredAbility):
         return [("attacks", partial(self.onAttacks, game, obj))]
 
     def onAttacks(self, game, SELF, attacker):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.selector.contains(game, SELF, attacker):
             slots = {}
             for slot in self.selector.slots():
                 slots[slot] = attacker
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXAttacksDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
@@ -534,13 +534,13 @@ class WhenXBlocksDoEffectAbility(TriggeredAbility):
         return [("blocks", partial(self.onBlocks, game, obj))]
 
     def onBlocks(self, game, SELF, blocker, attacker):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.selector.contains(game, SELF, blocker):
             slots = {}
             for slot in self.selector.slots():
                 slots[slot] = blocker
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXBlocksDoEffectAbility(%s, %s)" % (self.selector, self.effect)
@@ -557,22 +557,22 @@ class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
         return [("attacks", partial(self.onAttacks, game, obj)), ("blocks", partial(self.onBlocks, game, obj))]
 
     def onAttacks(self, game, SELF, attacker):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.selector.contains(game, SELF, attacker):
             slots = {}
             for slot in self.selector.slots():
                 slots[slot] = attacker
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def onBlocks(self, game, SELF, blocker, attacker):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.selector.contains(game, SELF, blocker):
             slots = {}
             for slot in self.selector.slots():
                 slots[slot] = blocker
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXAttacksOrBlocksDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))
@@ -591,18 +591,20 @@ class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
         return [("blocks", partial(self.onBlocks, game, obj))]
 
     def onBlocks(self, game, SELF, blocker, attacker):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, blocker) and self.y_selector.contains(game, SELF, attacker):
             slots = {}
             for slot in self.y_selector.slots():
                 slots[slot] = attacker
-            process_trigger_effect(game, SELF, self.effect, slots)
+
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
         elif (self.x_selector.contains(game, SELF, attacker) and self.y_selector.contains(game, SELF, blocker)):
             slots = {}
             for slot in self.y_selector.slots():
                 slots[slot] = blocker
-            process_trigger_effect(game, SELF, self.effect, slots)
+
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
   
     def __str__ (self):
         return "WhenXBlocksOrBecomesBlockedByYDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
@@ -619,12 +621,13 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
         return [("post_discard", partial(self.onDiscard, game, obj))]
 
     def onDiscard(self, game, SELF, player, card, cause):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, player):
             slots = {}
             for slot in self.x_selector.slots():
                 slots[slot] = player
-            process_trigger_effect(game, SELF, self.effect, slots)
+
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
     def __str__ (self):
         return "WhenXDiscardsACardDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
@@ -641,12 +644,13 @@ class WhenXDrawsACardDoEffectAbility(TriggeredAbility):
         return [("post_draw", partial(self.onDraw, game, obj))]
 
     def onDraw(self, game, SELF, player, card):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, player):
             slots = {}
             for slot in self.x_selector.slots():
                 slots[slot] = player
-            process_trigger_effect(game, SELF, self.effect, slots)
+
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
     def __str__ (self):
         return "WhenXDrawsACardDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
@@ -665,7 +669,7 @@ class WhenXCausesYToDiscardZ(TriggeredAbility):
         return [("post_discard", partial(self.onDiscard, game, obj))]
 
     def onDiscard(self, game, SELF, player, card, cause):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, cause) and self.y_selector.contains(game, SELF, player) and self.z_selector.contains(game, SELF, card):
             slots = {}
             for slot in self.x_selector.slots():
@@ -675,7 +679,7 @@ class WhenXCausesYToDiscardZ(TriggeredAbility):
             for slot in self.z_selector.slots():
                 slots[slot] = card
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXCausesYToDiscardZ(%s, %s, %s, %s)" % (self.x_selector, self.y_selector, self.z_selector, self.effect)
@@ -694,7 +698,7 @@ class WhenXCastsYDoEffectAbility(TriggeredAbility):
         return [("play", partial(self.onPlay, game, obj))]
 
     def onPlay(self, game, SELF, spell):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
 
         if self.x_selector.contains(game, SELF, game.objects[spell.get_controller_id()]) and self.y_selector.contains(game, SELF, spell):
 
@@ -702,7 +706,7 @@ class WhenXCastsYDoEffectAbility(TriggeredAbility):
             for slot in self.y_selector.slots():
                 slots[slot] = spell
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXCastsYDoEffectAbility(%s, %s, %s)" % (str(self.x_selector), str(self.y_selector), str(self.effect))
@@ -719,16 +723,20 @@ class WhenXBecomesTappedDoEffectAbility(TriggeredAbility):
         return [("post_tap", partial(self.onTap, game, obj))]
 
     def onTap(self, game, SELF, obj):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, obj):
             slots = {}
             for slot in self.x_selector.slots():
                 slots[slot] = obj
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
     def __str__ (self):
         return "WhenXBecomesTappedDoEffectAbility(%s, %s)" % (self.x_selector, self.effect)
+
+class ConsumeStackProcess:
+    def next(self, game, action):
+        game.process_returns_pop()
 
 class WhenXBecomesTappedForManaDoManaEffectAbility(TriggeredAbility):
     def __init__ (self, x_selector, effect):
@@ -742,13 +750,17 @@ class WhenXBecomesTappedForManaDoManaEffectAbility(TriggeredAbility):
         return [("tapped_for_mana", partial(self.onTap, game, obj))]
 
     def onTap(self, game, SELF, obj, player, mana):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, obj):
             slots = {}
             for slot in self.x_selector.slots():
                 slots[slot] = obj
 
             # mana abilities don't use stack, resolve immediately
+
+            # we need to consume the effect.resolve return value
+            game.process_push(ConsumeStackProcess())
+
             from rules import manaEffect
             e = EffectObject(obj, obj.get_controller_id(), self.effect, slots)
             effect = manaEffect(self.effect)
@@ -770,7 +782,7 @@ class WhenXTapsYForManaDoEffectAbility(TriggeredAbility):
         return [("tapped_for_mana", partial(self.onTap, game, obj))]
 
     def onTap(self, game, SELF, obj, player, mana):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, player) and self.y_selector.contains(game, SELF, obj):
             slots = {}
             for slot in self.x_selector.slots():
@@ -779,7 +791,7 @@ class WhenXTapsYForManaDoEffectAbility(TriggeredAbility):
             for slot in self.y_selector.slots():
                 slots[slot] = obj
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXTapsYForManaDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
@@ -797,7 +809,7 @@ class WhenXBecomesTargetOfYDoEffectAbility(TriggeredAbility):
         return [("target", partial(self.onTarget, game, obj))]
 
     def onTarget(self, game, SELF, source, target):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, target) and self.y_selector.contains(game, SELF, source):
             slots = {}
             for slot in self.y_selector.slots():
@@ -806,7 +818,7 @@ class WhenXBecomesTargetOfYDoEffectAbility(TriggeredAbility):
             for slot in self.x_selector.slots():
                 slots[slot] = target
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
     def __str__ (self):
         return "WhenXBecomesTargetOfYDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
@@ -821,7 +833,7 @@ class WhenXControlsNoOtherYDoEffectAbility(StateBasedAbility):
         return game.isInPlay(obj)
 
     def register(self, game, obj):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
 
         player = self.x_selector.only(game, obj)
         for o in self.y_selector.all(game, obj):
@@ -841,8 +853,8 @@ class WhenXControlsNoOtherYDoEffectAbility(StateBasedAbility):
                     return
 
         slots = {}
-        process_trigger_effect(game, obj, self.effect, slots)
-                   
+        game.process_push(TriggerEffectProcess(obj, self.effect, slots))
+
     def __str__ (self):
         return "WhenXControlsNoOtherYDoEffectAbility(%s, %s, %s)" % (self.x_selector, self.y_selector, self.effect)
 
@@ -857,11 +869,12 @@ class AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(TriggeredAbility):
         return [("step", partial(self.onStep, game, obj))]
 
     def onStep(self, game, SELF):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if game.current_step == "upkeep":
             slots = {}
             slots["that player"] = game.get_active_player()
-            process_trigger_effect(game, SELF, self.effect, slots)
+
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
 
     def __str__ (self):
@@ -878,11 +891,12 @@ class AtTheBeginningOfYourUpkeepDoEffectAbility(TriggeredAbility):
         return [("step", partial(self.onStep, game, obj))]
 
     def onStep(self, game, SELF):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if game.current_step == "upkeep" and str(SELF.get_controller_id()) == str(game.get_active_player().id):
             slots = {}
             slots["that player"] = game.get_active_player()
-            process_trigger_effect(game, SELF, self.effect, slots)
+
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "AtTheBeginningOfYourUpkeepDoEffectAbility(%s)" % (self.effect)
@@ -898,12 +912,12 @@ class AtTheBeginningOfEachPlayerssEndStepDoEffectAbility(TriggeredAbility):
         return [("step", partial(self.onStep, game, obj))]
 
     def onStep(self, game, SELF):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if game.current_step == "end of turn":
             slots = {}
             slots["that player"] = game.get_active_player()
-            process_trigger_effect(game, SELF, self.effect, slots)
 
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "AtTheBeginningOfEachPlayerssEndStepDoEffectAbility(%s)" % (self.effect)
@@ -919,12 +933,12 @@ class AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(TriggeredAbility):
         return [("step", partial(self.onStep, game, obj))]
 
     def onStep(self, game, SELF):
-        from process import process_trigger_effect
+        from process import TriggerEffectProcess
         if game.current_step == "draw":
             slots = {}
             slots["that player"] = game.get_active_player()
-            process_trigger_effect(game, SELF, self.effect, slots)
 
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(%s)" % (self.effect)
@@ -942,7 +956,7 @@ class WhenXIsReturnedToPlayersHandDoEffectAbility(TriggeredAbility):
 
     def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
         if self.selector.contains(game, SELF, obj) and zone_to.type == "hand" and zone_from.type == "in play":
-            from process import process_trigger_effect
+            from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.selector.slots():
@@ -950,7 +964,7 @@ class WhenXIsReturnedToPlayersHandDoEffectAbility(TriggeredAbility):
 
             slots["that player"] = game.objects[zone_to.player_id]
 
-            process_trigger_effect(game, SELF, self.effect, slots)
+            game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
     def __str__ (self):
         return "WhenXIsReturnedToPlayersHandDoEffectAbility(%s, %s)" % (str(self.selector), str(self.effect))

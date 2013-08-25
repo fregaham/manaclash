@@ -87,6 +87,7 @@ class PlayerGainLifeEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
         self.selector = playerSelector
         self.count = count
+
     def resolve(self, game, obj):
 
         n = self.count.evaluate(game, obj)
@@ -94,7 +95,7 @@ class PlayerGainLifeEffect(OneShotEffect):
         for player in self.selector.all(game, obj):
             game.doGainLife(player, n)
 
-        return True
+        game.process_returns_push(True)
 
     def __str__ (self):
         return "PlayerGainLifeEffect(%s, %s)" % (self.selector, str(self.count))
