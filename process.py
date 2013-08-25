@@ -1146,7 +1146,7 @@ def validate_block(game, blockers, blockers_map):
                 else:
                     return False
 
-        for attacker_id in attackers:
+        for attacker_id in attacker_ids:
             attacker = game.obj(attacker_id)
             if not is_valid_block(game, attacker, blocker):
                 return False
@@ -1162,7 +1162,7 @@ def validate_block(game, blockers, blockers_map):
             if not isSuch:
                 return False
 
-        for attacker_id in attackers:
+        for attacker_id in attacker_ids:
             lst = blockers_inv_map.get(attacker_id, [])
             lst.append (blocker)
             blockers_inv_map[attacker_id] = lst
@@ -1250,7 +1250,7 @@ class DeclareBlockersStepProcess(Process):
                     continue
                 if permanent.tapped:
                     continue
-                if permanent in blockers:
+                if permanent.id in self.blockers:
                     blocked = self.blockers_map.get(permanent.id, [])
 
                     if "can block any number of creatures" not in permanent.state.tags:
@@ -1594,7 +1594,7 @@ class CombatDamageStepProcess(Process):
 
         elif self.state == 4:
             a_id, b_ids = self.a_id2b_ids[self.i]
-            a_lki = id2lki[a_id]
+            a_lki = self.id2lki[a_id]
             a_obj = self.id2lki[a_id].get_object()
             a_state = self.id2lki[a_id].get_state()
             

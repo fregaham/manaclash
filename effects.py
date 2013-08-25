@@ -132,7 +132,7 @@ class PlayerGainLifeForEachXEffect(OneShotEffect):
             eachcount = len([x for x in self.eachSelector.all(game, obj)])
             game.doGainLife(player, n * eachcount)
 
-        return True
+        game.process_returns_push(True)
 
     def __str__ (self):
         return "PlayerGainLifeForEachXEffect(%s, %s, %s)" % (self.selector, self.count, self.eachSelector)
@@ -152,7 +152,6 @@ class PlayerDiscardsCardEffect(OneShotEffect):
             for i in range(n):
                 from process import DiscardACardProcess
                 game.process_push(DiscardACardProcess(player.get_object(), obj))
-#                process_discard_a_card(game, player.get_object(), obj)
 
     def __str__ (self):
         return "PlayerDiscardsCardEffect(%s, %s)" % (self.selector, self.count)
@@ -164,6 +163,8 @@ class XDealNDamageToY(OneShotEffect):
         self.count = n
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         sources = [x for x in self.x_selector.all(game, obj)]
         assert len(sources) == 1
 
@@ -177,8 +178,6 @@ class XDealNDamageToY(OneShotEffect):
                 damage.append ( (source, y, count) )
 
         game.doDealDamage(damage)
-
-        return True
 
     def __str__ (self):
         return "XDealNDamageToY(%s, %s, %s)" % (self.x_selector, self.y_selector, self.count)
@@ -317,6 +316,8 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
         self.number = number
            
     def doResolve(self, game, obj, target): 
+        game.process_returns_push(True)
+
         sources = [x for x in self.sourceSelector.all(game, obj)]
         assert len(sources) == 1
 
@@ -326,7 +327,6 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
 
         game.doDealDamage([(source, target, count)])
 
-        game.process_returns_push(True)
 
     def __str__ (self):
         return "XDealNDamageToTargetYEffect(%s, %s, %s)" % (self.sourceSelector, self.number, self.targetSelector)
@@ -340,6 +340,8 @@ class XDealNDamageToTargetYAndMDamageToZEffect(SingleTargetOneShotEffect):
         self.otherSelector = otherSelector
            
     def doResolve(self, game, obj, target): 
+        game.process_returns_push(True)
+
         sources = [x for x in self.sourceSelector.all(game, obj)]
         assert len(sources) == 1
 
@@ -632,6 +634,7 @@ class DestroyTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
         game.doDestroy(target, obj)
 
     def __str__ (self):
@@ -642,6 +645,7 @@ class BuryTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
         game.doBury(target, obj)
 
     def __str__ (self):
@@ -653,6 +657,8 @@ class DestroyTargetXYGainLifeEqualsToItsPower(SingleTargetOneShotEffect):
         self.playerSelector = playerSelector
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
+
         game.doDestroy(target, obj)
 
         count = target.get_state().power
@@ -668,6 +674,8 @@ class BuryTargetXYGainLifeEqualsToItsToughness(SingleTargetOneShotEffect):
         self.playerSelector = playerSelector
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
+
         game.doBury(target, obj)
 
         count = target.get_state().toughness
@@ -682,10 +690,10 @@ class DoXAtEndOfCombat(OneShotEffect):
         self.effect = effect
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         e = game.create_effect_object(obj.get_source_lki(), obj.get_controller_id(), self.effect, obj.get_slots())
         game.end_of_combat_triggers.append (e)
-
-        return True
 
     def __str__ (self):
         return "DoXAtEndOfCombat(%s)" % self.effect
@@ -695,11 +703,11 @@ class DestroyX(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             if not o.is_moved():
                 game.doDestroy(o, obj)
-
-        return True
 
     def __str__ (self):
         return "DestroyX(%s)" % self.selector
@@ -709,11 +717,11 @@ class BuryX(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             if not o.is_moved():
                 game.doBury(o, obj)
-
-        return True
 
     def __str__ (self):
         return "BuryX(%s)" % self.selector
@@ -819,6 +827,7 @@ class YouMayTapTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector, True)
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
         game.doTap(target.get_object())
 
     def __str__ (self):
@@ -829,6 +838,7 @@ class TapTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector, False)
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
         game.doTap(target.get_object())
 
     def __str__ (self):
@@ -904,6 +914,8 @@ class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEff
         self.n = n
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
+
         n = self.n
         if n == "X":
             n = obj.x
@@ -978,6 +990,7 @@ class PreventAllCombatDamage(ContinuousEffect):
 
 class PreventAllCombatDamageThatWouldBeDealtThisTurn(OneShotEffect):
     def resolve(self, game, obj):
+        game.process_returns_push(True)
         game.until_end_of_turn_effects.append ( (obj, PreventAllCombatDamage()) )
 
     def __str__(self):
@@ -989,10 +1002,9 @@ class XAddXToYourManaPool(OneShotEffect):
         self.mana = mana
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
         for player in self.selector.all(game, obj):
             player.get_object().manapool += self.mana
-
-        return True
 
     def __str__ (self):
         return "XAddXToYourManaPool(%s, %s)" % (self.selector, self.mana)
@@ -1005,6 +1017,7 @@ class XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(OneShotEffect):
         self.m2 = m2
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
 
         if self.c.evaluate(game, obj):
             for player in self.selector.all(game, obj):
@@ -1012,8 +1025,6 @@ class XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(OneShotEffect):
         else:
             for player in self.selector.all(game, obj):
                 player.get_object().manapool += self.m1
-
-        return True
 
     def __str__ (self):
         return "XAddXToYourManaPoolIfCAddYToYourManaPoolInstead(%s, %s, %s, %s)" % (self.selector, self.m1, self.c, self.m2)
@@ -1024,11 +1035,11 @@ class RegenerateX(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             if not o.is_moved():
                 game.doRegenerate(o)
-
-        return True
 
     def __str__ (self):
         return "RegenerateX(%s)" % self.selector
@@ -1146,6 +1157,7 @@ class XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(On
         self.y_selector = y_selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
 
         for player in self.x_selector.all(game, obj):
 
@@ -1160,7 +1172,6 @@ class XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(On
                 else:
                     game.doZoneTransfer(card, graveyard, obj)
 
-        return True
 
     def __str__ (self):
         return "XRevealTopCardOfHisLibraryIfItIsYPutItInPlayOtherwisePutItIntoGraveyard(%s, %s)" % (self.x_selector, self.y_selector)
@@ -1252,10 +1263,10 @@ class SacrificeAllX(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             game.doSacrifice(o, obj)
-
-        return True
         
     def __str__ (self):
         return "SacrificeX(%s)" % (self.selector)
@@ -1341,6 +1352,7 @@ class TargetXGainLife(SingleTargetOneShotEffect):
         self.count = count
     
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
 
         n = self.count.evaluate(game, obj)
         game.doGainLife(target.get_object(), n)
@@ -1354,7 +1366,8 @@ class TargetXLoseLife(SingleTargetOneShotEffect):
         self.count = count
     
     def doResolve(self, game, obj, target):
-
+        game.process_returns_push(True)
+   
         n = self.count.evaluate(game, obj)
         game.doLoseLife(target.get_object(), n)
 
@@ -1557,7 +1570,7 @@ class CounterTargetX(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
-        return game.doCounter(target)
+        game.process_returns_push(game.doCounter(target))
 
     def __str__ (self):
         return "CounterTargetX(%s)" % (self.targetSelector)
@@ -1567,13 +1580,13 @@ class ReturnXToOwnerHands(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             if not o.is_moved():
                 owner = game.objects[o.get_object().owner_id]
                 hand = game.get_hand(owner)
                 game.doZoneTransfer(o.get_object(), hand, obj)
-
-        return True
 
     def __str__ (self):
         return "ReturnXToOwnerHands(%s)" % self.selector
@@ -1583,6 +1596,9 @@ class ReturnTargetXToOwnerHands(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, targetSelector, optional)
 
     def doResolve(self, game, obj, target):
+
+        game.process_returns_push(True)
+
         owner = game.objects[target.get_object().owner_id]
         hand = game.get_hand(owner)
         game.doZoneTransfer(target.get_object(), hand, obj)
@@ -1595,12 +1611,12 @@ class ReturnXToPlay(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             if not o.is_moved():
                 in_play = game.get_in_play_zone()
                 game.doZoneTransfer(o.get_object(), in_play, obj)
-
-        return True
 
     def __str__ (self):
         return "ReturnXToPlay(%s)" % self.selector
@@ -1610,11 +1626,11 @@ class ReturnTargetXToPlay(SingleTargetOneShotEffect):
         SingleTargetOneShotEffect.__init__(self, selector)
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
+
         if not target.is_moved():
             in_play = game.get_in_play_zone()
             game.doZoneTransfer(target.get_object(), in_play, obj)
-
-        return True
 
     def __str__ (self):
         return "ReturnTargetXToPlay(%s)" % self.targetSelector
@@ -1658,10 +1674,10 @@ class UntapAllX(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             game.doUntap(o)
-
-        return True
 
     def __str__ (self):
         return "UntapAllX(%s)" % (self.selector)
@@ -1671,10 +1687,10 @@ class TapAllX(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             game.doTap(o)
-
-        return True
 
     def __str__ (self):
         return "TapAllX(%s)" % (self.selector)
@@ -1743,13 +1759,13 @@ class DrawCards(OneShotEffect):
         self.number = number
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         n = self.number.evaluate(game, obj)
         for o in self.selector.all(game, obj):
             for i in range(n):
                 game.doDrawCard(o)
-
-        game.process_returns_push(True)
-
+        
     def __str__ (self):
         return "DrawCards(%s, %s)" % (self.selector, str(self.number))
 
@@ -1759,6 +1775,8 @@ class TargetXDrawCards(SingleTargetOneShotEffect):
         self.number = number
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
+
         n = self.number.evaluate(game, obj)
         for i in range(n):
             game.doDrawCard(target.get_object())
@@ -1862,6 +1880,8 @@ class IfTargetPlayerHasMoreCardsInHandThanYouDrawCardsEqualToTheDifference(Singl
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
+
         for you in YouSelector().all(game, obj):
             for player in self.targetSelector.all(game, obj):
                 you_hand = game.get_hand(you)
@@ -2041,6 +2061,8 @@ class PlayerSkipsNextCombatPhase(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for player in self.selector.all(game, obj):
             player.get_object().skip_next_combat_phase = True
 
@@ -2130,11 +2152,11 @@ class PutXCounterOnY(OneShotEffect):
         self.selector = selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for o in self.selector.all(game, obj):
             if not o.is_moved():
                 o.get_object().counters.append (self.counter)
-
-        return True
 
     def __str__ (self):
         return "PutXCounterOnY(%s, %s)" % (self.counter, self.selector)
@@ -2205,6 +2227,7 @@ class AllXBecomeNNCreaturesUntilEndOfTurn(OneShotEffect):
         self.toughnessNumber = toughnessNumber
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
 
         power = self.powerNumber.evaluate(game, obj)
         toughness = self.toughnessNumber.evaluate(game, obj)
@@ -2213,8 +2236,6 @@ class AllXBecomeNNCreaturesUntilEndOfTurn(OneShotEffect):
 
         for o in self.selector.all(game, obj):
             game.until_end_of_turn_effects.append ( (o, XIsANNCreature(LKISelector(LastKnownInformation(game, o)), NNumber(power), NNumber(toughness))))
-
-        return True
 
     def __str__ (self):
         return "AllXBecomeNNCreaturesUntilEndOfTurn(%s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber)
@@ -2253,6 +2274,9 @@ class TargetXPutsTheTopNCardsOfLibraryIntoGraveyard(SingleTargetOneShotEffect):
         self.number = number
 
     def doResolve(self, game, obj, target):
+
+        game.process_returns_push(True)
+
         n = self.number.evaluate(game, obj)
         library = game.get_library(target.get_object())
         graveyard = game.get_graveyard(target.get_object())
@@ -2429,6 +2453,8 @@ class PutNTargetXOnTopOfOwnersLibraries(MultipleTargetOneShotEffect):
         MultipleTargetOneShotEffect.__init__(self, selector, number, False)
 
     def doResolve(self, game, obj, targets):
+        game.process_returns_push(True)
+
         for target in targets.values():
             library = game.get_library(game.objects[target.get_state().owner_id])
             if not target.is_moved():
@@ -2556,6 +2582,7 @@ class PreventAllDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEffec
         SingleTargetOneShotEffect.__init__(self, targetSelector, True)
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
         game.until_end_of_turn_effects.append ( (obj, PreventAllDamageThatWouldBeDealtToX(LKISelector(target))))
 
     def __str__ (self):
@@ -2566,6 +2593,8 @@ class PreventAllDamageThatWouldBeDealtThisTurnToUpToNTargetX(MultipleTargetOneSh
         MultipleTargetOneShotEffect.__init__(self, selector, number, True)
 
     def doResolve(self, game, obj, targets):
+        game.process_returns_push(True)
+
         for target in targets.values():
             game.until_end_of_turn_effects.append ( (obj, PreventAllDamageThatWouldBeDealtToX(LKISelector(target))))
 
@@ -2577,8 +2606,8 @@ class AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMain
         pass
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
         game.additional_combat_phase_followed_by_an_additional_main_phase = True
-        return True
 
     def __str__ (self):
         return "AfterThisMainPhaseThereIsAnAdditionalCombatPhaseFollowedByAnAdditionalMainPhase()"
@@ -2610,14 +2639,14 @@ class PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(
 
     def resolve(self, game, obj):
 
+        game.process_returns_push(True)
+
         power = self.power.evaluate(game, obj)
         toughness = self.toughness.evaluate(game, obj)
 
         handler = PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStepEventHandler(obj.get_controller_id(), power, toughness, self.color, self.typ, self.tag)
 
         game.add_event_handler("step", partial(handler.handle, game, obj))
-
-        return True
 
     def __str__(self):
         return "PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(%s, %s, %s, %s, %s)" % (self.power, self.toughness, self.color, self.typ, self.tag)
