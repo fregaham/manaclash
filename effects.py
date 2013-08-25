@@ -55,7 +55,7 @@ class OneShotEffect(Effect):
         game.process_returns_push(True)
 
     def validateTargets(self, game, obj):
-        return True
+        game.process_returns_push(True)
 
 class DamagePrevention(Effect):
     def canApply(self, game, damage, combat):
@@ -214,6 +214,23 @@ class SingleTargetOneShotEffectSelectTargetsProcess(SandwichProcess):
 
         self.effect.doModal(game, player, obj)
 
+class SingleTargetOneShotEffectResolveProcess(SandwichProcess):
+    def __init__ (self, effect, obj):
+        SandwichProcess.__init__ (self)
+        self.effect = effect
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        self.effect.validateTargets(game, game.obj(self.obj_id))
+
+    def main(self, game):
+        if game.process_returns_pop():
+            obj = game.obj(self.obj_id)
+            target = obj.targets["target"]
+            self.effect.doResolve(game, obj, target)
+        else:
+            game.process_returns_push(False)
+
 class SingleTargetOneShotEffect(OneShotEffect):
 
     def __init__ (self, targetSelector, optional = False):
@@ -221,15 +238,11 @@ class SingleTargetOneShotEffect(OneShotEffect):
         self.optional = optional
 
     def resolve(self, game, obj):
-        if self.validateTargets(game, obj):
-            target = obj.targets["target"]
-            self.doResolve(game, obj, target)
-        else:
-            game.process_returns_push(False)
+        game.process_push(SingleTargetOneShotEffectResolveProcess(self, obj))
 
     def validateTargets(self, game, obj):
-        from process import process_validate_target
-        return process_validate_target(game, obj, self.targetSelector, obj.targets["target"])
+        from process import ValidateTargetProcess
+        game.process_push(ValidateTargetProcess(obj, self.targetSelector, obj.targets["target"]))
 
     def selectTargets(self, game, player, obj):
         game.process_push(SingleTargetOneShotEffectSelectTargetsProcess(self, player, obj))
@@ -311,6 +324,8 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
         count = self.number.evaluate(game, obj)
 
         game.doDealDamage([(source, target, count)])
+
+        game.process_returns_push(True)
 
     def __str__ (self):
         return "XDealNDamageToTargetYEffect(%s, %s, %s)" % (self.sourceSelector, self.number, self.targetSelector)

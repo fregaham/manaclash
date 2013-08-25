@@ -114,6 +114,25 @@ class EffectRules(ObjectRules):
     def __str__(self):
         return "EffectRules(%s)" % str(self.effect)
 
+class BasicNonPermanentRulesResolveProcess(SandwichProcess):
+    def __init__ (self, effect, obj):
+        SandwichProcess.__init__ (self)
+        self.effect = effect
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        print "XXX BasicNonPermanentRulesResolveProcess " + `self.effect`
+        self.effect.resolve(game, game.obj(self.obj_id))
+
+    def main(self, game):
+        # peek at the return, pass it over to the upstream process
+        if game.process_returns_top():
+            game.onResolve(game.obj(self.obj_id))
+
+    def post(self, game):
+        obj = game.obj(self.obj_id)
+        game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
+
 class BasicNonPermanentRules(ObjectRules):
     def __init__(self, effect, abilities = []):
         self.effect = effect
@@ -123,17 +142,10 @@ class BasicNonPermanentRules(ObjectRules):
         return [PlaySpell()] + self.abilities
 
     def resolve(self, game, obj):
-        ret = self.effect.resolve(game, obj)
-
-        if ret:
-            game.onResolve(obj)
-
-        game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
-
-        return ret
+        game.process_push(BasicNonPermanentRulesResolveProcess(self.effect, obj))
 
     def selectTargets(self, game, player, obj):
-        return self.effect.selectTargets(game, player, obj)
+        self.effect.selectTargets(game, player, obj)
 
     def __str__ (self):
         return "BasicNonPermanentRules(%s, %s)" % (str(self.effect), ",".join(map(str, self.abilities)))

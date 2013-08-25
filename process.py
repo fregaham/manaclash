@@ -2343,19 +2343,6 @@ class TriggerEffectProcess(SandwichProcess):
             game.delete(e)
             game.triggered_abilities.remove(e)
         
-# DONE?
-def process_trigger_effect(game, source, effect, slots):
-    e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, effect, slots)
-
-    game.triggered_abilities.append (e)
-
-    evaluate(game)
-
-    if not e.rules.selectTargets(game, game.objects[e.get_state().controller_id], e):
-        game.delete(e)
-        game.triggered_abilities.remove(e)
-
-
 def process_select_selector(game, player, source, selector, text, optional=False):
     actions = []
     _pass = PassAction(player)
@@ -2550,6 +2537,28 @@ def process_put_card_into_play(game, card, controller, cause, tapped=False):
 
     return True
 
+class ValidateTargetProcess(Process):
+    def __init__ (self, source, selector, target):
+        assert isinstance(target, LastKnownInformation)
+        self.source_id = source.id
+        self.selector = selector
+        self.target = target
+
+    def next(self, game, action):
+
+        source = game.obj(self.source_id)
+
+        if self.target.is_moved():
+            game.process_returns_push(False)
+            return
+
+        if not self.selector.contains(game, source, self.target):
+            game.process_returns_push(False)
+            return
+
+        game.process_returns_push( _is_valid_target(game, source, self.target) )
+
+# DONE?
 def process_validate_target(game, source, selector, target):
     assert isinstance(target, LastKnownInformation)
     if target.is_moved():
