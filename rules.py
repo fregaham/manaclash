@@ -121,7 +121,7 @@ class BasicNonPermanentRulesResolveProcess(SandwichProcess):
         self.obj_id = obj.id
 
     def pre(self, game):
-        print "XXX BasicNonPermanentRulesResolveProcess " + `self.effect`
+        print "XXX BasicNonPermanentRulesResolveProcess " + str(self.effect)
         self.effect.resolve(game, game.obj(self.obj_id))
 
     def main(self, game):

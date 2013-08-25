@@ -78,7 +78,7 @@ class PlayerLooseLifeEffect(OneShotEffect):
         for player in self.selector.all(game, obj):
             game.doLoseLife(player, count)
 
-        return True
+        game.process_returns_push(True)
 
     def __str__ (self):
         return "PlayerLooseLifeEffect(%s, %s)" % (str(self.selector), str(self.count))
@@ -1747,7 +1747,7 @@ class DrawCards(OneShotEffect):
             for i in range(n):
                 game.doDrawCard(o)
 
-        return True
+        game.process_returns_push(True)
 
     def __str__ (self):
         return "DrawCards(%s, %s)" % (self.selector, str(self.number))
@@ -1765,25 +1765,31 @@ class TargetXDrawCards(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXDrawCards(%s, %s)" % (self.targetSelector, self.number)
 
+class AndProcess(Process):
+    def next(self, game, action):
+        first = game.process_returns_pop()
+        second = game.process_returns_pop()
+        game.process_returns_push(first and second)
+
 class XAndY(OneShotEffect):
     def __init__ (self, x, y):
         self.x = x
         self.y = y
 
     def resolve(self, game, obj):
-        if self.x.resolve(game, obj):
-            return self.y.resolve(game, obj)
-        return False
+        game.process_push(AndProcess())
+        self.x.resolve(game, obj)
+        self.y.resolve(game, obj)
 
     def selectTargets(self, game, player, obj):
-        if self.x.selectTargets(game, player, obj):
-            return self.y.selectTargets(game, player, obj)
-        return False
+        game.process_push(AndProcess())
+        self.x.selectTargets(game, player, obj)
+        self.y.selectTargets(game, player, obj)
 
     def validateTargets(self, game, obj):
-        if self.x.validateTargets(game, obj):
-            return y.validateTargets(game, obj)
-        return False
+        game.process_push(AndProcess())
+        self.x.validateTargets(game, obj)
+        self.y.validateTargets(game, obj)
 
     def __str__(self):
         return "XAndY(%s, %s)" % (self.x, self.y)
