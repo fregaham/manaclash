@@ -175,9 +175,8 @@ class TapCostDoEffectAbility(ActivatedAbility):
         return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags or "haste" in obj.state.tags))
 
     def activate(self, game, obj, player):
-        from process import process_activate_tapping_ability
-
-        process_activate_tapping_ability(game, self, player, obj, self.effect)
+        from process import ActivateTappingAbilityProcess
+        game.process_push(ActivateTappingAbilityProcess(self, player, obj, self.effect))
 
     def get_text(self, game, obj):
         return "Activate \"%s\" [T %s]" % (self.effect, ",".join(map(str,self.costs)))

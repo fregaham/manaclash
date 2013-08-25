@@ -486,25 +486,41 @@ def process_pay_cost (game, player, obj, effect, costs):
 
     return True
 
-class PlaySpellProcess(Process):
-    def __init__ (self, ability, player, obj):
-        self.player_id = player.id
+class AbstractPlayProcess(Process):
+    def __init__ (self, ability, player):
         self.ability = ability
-        self.obj_id = obj.id
+        self.player_id = player.id
         self.state = 0
+
+    def getSelfObject(self, game):
+        # e.g. object with an activated ability, same as object for ordinary spells
+        pass
+
+    def getObject(self, game):
+        # e.g. an effect object representing an activated ability on the stack.  same as selfObject for ordinary spells
+        pass
+
+    def onPlay(self, game):
+        game.onPlay(self.getObject(game))
 
     def next(self, game, action):
         if self.state == 0:
             # TODO save the game state before the playing spell and return to it if it failed to select targets
 
-            # move to stack
-            obj = game.objects[self.obj_id]
-            zone_from = game.objects[obj.zone_id]
+            obj = self.getObject(game)
+            if obj.zone_id is not None:
+                # move to stack
+                obj = game.objects[self.obj_id]
+                zone_from = game.objects[obj.zone_id]
 
-            stack = game.get_stack_zone()
-            obj.zone_id = stack.id
-            zone_from.objects.remove(obj)
-            stack.objects.append (obj)
+                stack = game.get_stack_zone()
+                obj.zone_id = stack.id
+                zone_from.objects.remove(obj)
+                stack.objects.append (obj)
+            else:
+                stack = game.get_stack_zone()
+                obj.zone_id = stack.id
+                stack.objects.append (obj)
 
             self.state = 1
             game.process_push(self)
@@ -516,9 +532,7 @@ class PlaySpellProcess(Process):
             game.process_push(self)
 
             player = game.objects[self.player_id]
-            obj = game.objects[self.obj_id]
-
-            obj = game.objects[self.obj_id]
+            obj = self.getObject(game)
             obj.rules.selectTargets(game, player, obj)
 
         elif self.state == 2:
@@ -530,7 +544,7 @@ class PlaySpellProcess(Process):
             game.process_push(self)
 
             player = game.objects[self.player_id]
-            obj = game.objects[self.obj_id]
+            obj = self.getObject(game)
             
             self.ability.determineCost(game, obj, player)
 
@@ -542,7 +556,7 @@ class PlaySpellProcess(Process):
             costs = costs[:]
 
             player = game.objects[self.player_id]
-            obj = game.objects[self.obj_id]
+            obj = self.getObject(game)
 
             game.replacePlayCost(self.ability, obj, player, costs)
 
@@ -551,89 +565,59 @@ class PlaySpellProcess(Process):
             game.process_push(self)
 
             player = game.objects[self.player_id]
-            obj = game.objects[self.obj_id]
+            obj = self.getObject(game)
+            selfObj = self.getSelfObject(game)
 
             costs = game.process_returns_pop()
 
             if len(costs) > 0:
-                game.process_push(PayCostProcess(player, obj, obj, costs))
+                game.process_push(PayCostProcess(player, selfObj, obj, costs))
 
         elif self.state == 5:
             payed = game.process_returns_pop()
 
-            obj = game.objects[self.obj_id]
+            obj = self.getObject(game)
 
             if not payed:
                 # TODO: return to the previus game state
                 pass
             else:
-                game.onPlay(obj)
+                self.onPlay(game)
 
 
-# DONE?
-def process_play_spell (game, ability, player, obj):
-    zone_from = game.objects[obj.zone_id]
-    zone_index = zone_from.objects.index(obj)
+class PlaySpellProcess(AbstractPlayProcess):
+    def __init__ (self, ability, player, obj):
+        AbstractPlayProcess.__init__ (self, ability, player)
+        self.obj_id = obj.id
 
-    # move to stack
-    stack = game.get_stack_zone()
-    obj.zone_id = stack.id
-    zone_from.objects.remove(obj)
-    stack.objects.append (obj)
+    def getObject(self, game):
+        return game.obj(self.obj_id)
 
-    evaluate(game)
+    def getSelfObject(self, game):
+        return game.obj(self.obj_id)
 
-    if not obj.rules.selectTargets(game, player, obj):
-        obj.zone_id = zone_from.id
-        stack.objects.remove(obj)
-        zone_from.objects.insert(zone_index, obj)
-        return
+class ActivateTappingAbilityProcess(AbstractPlayProcess):
+    def __init__ (self, ability, player, obj, effect):
+        AbstractPlayProcess.__init__ (self, ability, player)
+        self.self_obj_id = obj.id
+        self.effect = effect
+        self.obj_id = None
 
-    costs = ability.determineCost(game, obj, player)
-    costs = costs[:]
+    def getObject(self, game):
+        if self.obj_id is None:
+            selfObj = self.getSelfObject(game)
+            e = game.create_effect_object (LastKnownInformation(game, selfObj), self.player_id, self.effect, {})
+            self.obj_id = e.id
+       
+        return game.obj(self.obj_id)
 
-    costs = game.replacePlayCost(ability, obj, player, costs)
+    def getSelfObject(self, game):
+        return game.obj(self.self_obj_id)
 
-    # cost = ability.get_cost(game, player, obj)
-    if len(costs) > 0:
-        if not process_pay_cost(game, player, obj, obj, costs):
+    def onPlay(self, game):
+        game.doTap(self.getSelfObject(game))
+        game.onPlay(self.getObject(game))
 
-            print("not payed, returning to previous state")
-
-            # return the state of the game...
-            obj.zone_id = zone_from.id
-            stack.objects.remove(obj)
-            zone_from.objects.insert(zone_index, obj)
-            return
-
-    game.onPlay(obj)
-
-def process_activate_tapping_ability(game, ability, player, obj, effect):
-
-    e = game.create_effect_object (LastKnownInformation(game, obj), player.id, effect, {})
-
-    stack = game.get_stack_zone()
-    e.zone_id = stack.id
-    stack.objects.append (e)
-
-    evaluate(game)
-
-    if not e.rules.selectTargets(game, player, e):
-        game.delete(e)
-        return
-
-    costs = ability.determineCost(game, obj, player)
-    costs = costs[:]
-    # cost = ability.get_cost(game, player, obj)
-    if len(costs) > 0:
-        if not process_pay_cost(game, player, obj, e, costs):
-
-            print("not payed, returning to previous state")
-            game.delete(e)
-            return
-
-    game.doTap(obj)
-    game.onPlay(obj)
 
 def process_activate_ability(game, ability, player, obj, effect):
 
