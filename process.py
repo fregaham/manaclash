@@ -1485,6 +1485,7 @@ class CombatDamageStepProcess(Process):
         self.damageToAssign = 0
  
     def next(self, game, action):
+
         if self.state == 0:
             game.current_step = "combat damage"
             
@@ -1603,6 +1604,11 @@ class CombatDamageStepProcess(Process):
                 b_id = b_ids[0]
                 b_lki = self.id2lki[b_id]
                 self.damage.append ( (a_lki, b_lki, a_state.power) )
+
+                self.i += 1
+                self.state = 2
+                game.process_push(self)
+
             else:
                 self.damageToAssign = a_state.power
 
@@ -1663,8 +1669,8 @@ class CombatDamageStepProcess(Process):
                     elif len(a_ids) == 1:
                         # creature blocking one attacker
                         a_id = a_ids[0]
-                        a_lki = id2lki[a_id]
-                        damage.append ( (b_lki, a_lki, b_state.power) )
+                        a_lki = self.id2lki[a_id]
+                        self.damage.append ( (b_lki, a_lki, b_state.power) )
 
                         self.i += 1
                         game.process_push(self)
@@ -1694,7 +1700,7 @@ class CombatDamageStepProcess(Process):
                     return _as
                 else:
                     b_lki = self.id2lki[action.object.id]
-                    damage.append ( (a_lki, b_lki, 1) )
+                    self.damage.append ( (a_lki, b_lki, 1) )
 
                     self.damageToAssign -= 1
                     game.process_push(self)
@@ -1707,6 +1713,7 @@ class CombatDamageStepProcess(Process):
         elif self.state == 8:
             merged = {}
             for a, b, n in self.damage:
+
                 d = merged.get( (a,b), 0)
                 merged[ (a,b) ] = d + n
 
