@@ -150,6 +150,50 @@ class BasicNonPermanentRules(ObjectRules):
     def __str__ (self):
         return "BasicNonPermanentRules(%s, %s)" % (str(self.effect), ",".join(map(str, self.abilities)))
 
+class EnchantPermanentRulesResolveProcess(SandwichProcess):
+    def __init__ (self, selector, obj):
+        SandwichProcess.__init__ (self)
+        self.selector = selector
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        from process import ValidateTargetProcess
+        obj = game.obj(self.obj_id)
+        game.process_push(ValidateTargetProcess(obj, self.selector, obj.targets["target"]))
+
+    def main(self, game):
+        # peek at the return, pass it over to the upstream process
+        if game.process_returns_top():
+            game.onResolve(game.obj(self.obj_id))
+
+    def post(self, game):
+        if game.process_returns_top():
+            game.doZoneTransfer(game.obj(self.obj_id), game.get_in_play_zone())
+        else:
+            game.doZoneTransfer(game.obj(self.obj_id), game.get_graveyard(game.objects[obj.state.owner_id]))
+
+class EnchantPermanentRulesSelectTargets(SandwichProcess):
+    def __init__ (self, player, selector, obj):
+        SandwichProcess.__init__ (self)
+        self.selector = selector
+        self.player_id = player.id
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        from process import SelectTargetProcess
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+        game.process_push(SelectTargetProcess(player, obj, self.selector))
+
+    def main(self, game):
+        target = game.process_returns_pop()
+        if target == None:
+            game.process_returns_push(False)
+        else:
+            game.obj(self.obj_id).targets["target"] = LastKnownInformation(game, target)
+            game.process_returns_push(True)
+        
+
 class EnchantPermanentRules(ObjectRules):
     def __init__(self, selector, abilities = []):
         self.selector = selector
@@ -161,25 +205,19 @@ class EnchantPermanentRules(ObjectRules):
 #            obj.state.abilities.append(self.ability)
 
     def resolve(self, game, obj):
-        from process import process_validate_target
-        if process_validate_target(game, obj, self.selector, obj.targets["target"]):
-            obj.enchanted_id = obj.targets["target"].get_id()
-            game.onResolve(obj)
-            game.doZoneTransfer(obj, game.get_in_play_zone())
-            return True
-        else:
-            game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
-            return False
+        game.process_push(EnchantPermanentRulesResolveProcess(self.selector, obj))
+#        from process import process_validate_target
+#        if process_validate_target(game, obj, self.selector, obj.targets["target"]):
+#            obj.enchanted_id = obj.targets["target"].get_id()
+#            game.onResolve(obj)
+#            game.doZoneTransfer(obj, game.get_in_play_zone())
+#            return True
+#        else:
+#            game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
+#            return False
 
     def selectTargets(self, game, player, obj):
-        from process import process_select_target
-        target = process_select_target(game, player, obj, self.selector)
-        if target == None:
-            return False
-
-        obj.targets["target"] = LastKnownInformation(game, target)
-
-        return True
+        game.process_push(EnchantPermanentRulesSelectTargets(player, self.selector, obj))
         
     def __str__ (self):
         return "EnchantPermanentRules(%s, %s)" % (str(self.selector), ",".join(map(str, self.abilities)))

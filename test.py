@@ -185,6 +185,13 @@ def declareAttackers(g, ax, lst):
     assert ax.text == "Select attackers"
     return _pass(g, ax)
 
+def emptyStack(g, ax):
+    # passes until everything on stack resolves
+    while len(g.get_stack_zone().objects) > 0:
+        ax = _pass(g, ax)
+
+    return ax
+
 def activateAbility(g, ax, name, player_id):
     while ax.text != "You have priority" or ax.player.id != player_id:
         ax = _pass(g, ax)
@@ -303,7 +310,47 @@ class ManaClashTest(unittest.TestCase):
         a = activateAbility(g, a, "Angelic Page", p1)
         assert len(a.actions) == 1
 
+    def testArchivist(self):
+        g = createGameInMainPhase(["Archivist"], [], [], [])
+        p1 = g.players[0].id
 
+        a = g.next(None)
+        a = precombatMainPhase(g, a)
+
+        assert len(g.get_hand(g.obj(p1)).objects) == 0
+        a = activateAbility(g, a, "Archivist", p1)
+        a = emptyStack(g, a)
+        assert len(g.get_hand(g.obj(p1)).objects) == 1
+
+    def testAvatarOfHope(self):
+        g = createGameInMainPhase(["Plains", "Plains"], ["Avatar of Hope"], [], [])
+        p1 = g.players[0].id
+        a = g.next(None)
+
+        g.obj(p1).life = 3
+
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = playSpell(g, a, "Avatar of Hope")
+        a = payCost(g, a)
+
+        a = emptyStack(g, a) 
+
+        findObjectInPlay(g, "Avatar of Hope")
+
+    def testAvenCloudchaser(self):
+        g = createGameInMainPhase(["Plains", "Plains"], ["Pacifism"], ["Plains", "Plains", "Plains", "Plains", "Raging Goblin"], ["Aven Cloudchaser"])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = playSpell(g, a, "Pacifism")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCost(g, a)
+       
+         
 if __name__ == "__main__":
     unittest.main()
 

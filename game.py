@@ -600,12 +600,13 @@ class Game:
 
     def replacePlayCost(self, ability, obj, player, costs):
 
-        self.process_returns_push(costs)
+#        self.process_returns_push(costs)
 
          # TODO:
-#        for effect in self.play_cost_replacement_effects:
-#            costs = effect(self, ability, obj, player, costs)
+        for effect in self.play_cost_replacement_effects:
+            costs = effect(self, ability, obj, player, costs)
 
+        self.process_returns_push(costs)
 #        return costs
 
     def next(self, action):
