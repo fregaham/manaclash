@@ -17,84 +17,219 @@
 #
 # 
 
-from ManaClash import *
-from game import *
-from process import *
-from mcio import *
+import os
+import sys
+
+from mcio import Output, input_generator
+from game import Game
+from process import GameTurnProcess, TurnProcess, MainPhaseProcess, evaluate
+from oracle import getParseableCards, createCardObject, parseOracle
+from abilities import PlayLandAbility, PlaySpell
+from actions import AbilityAction, PassAction
 
 import unittest
 
-def test_common(g):
+# read the oracle
+cards = {}
+for fname in os.listdir("oracle"):
+    print ("reading %s " % fname)
+    oracleFile = open(os.path.join("oracle", fname), "r")
+    for card in parseOracle(oracleFile):
+        print card.name
+        cards[card.name] = card
+
+    oracleFile.close()
+
+def createCard(g, name):
+    return createCardObject(g, cards[name])
+
+def createCardToHand(g, name, player):
+    cardObject = createCard(g, name)
+    zone = g.get_hand(player)
+    cardObject.zone_id = zone.id
+    cardObject.owner_id = player.id
+    cardObject.controller_id = player.id
+    zone.objects.append (cardObject)
+
+def createGameInMainPhase(cards1, cards2):
+
+    output = Output()
+    g = Game(output)
     g.create()
 
-    c1 = []
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Hasty Suntail Hawk", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying",u"haste"]), "", 1, 1))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Suntail Hawk", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying"]), "", 1, 1))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Suntail Hawk", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying"]), "", 1, 1))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Suntail Hawk", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying"]), "", 1, 1))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Plains", None, set([u"basic"]), set([u"land"]), set(), set(), "[W]", None, None))
-    c1.append (g.create_card (u"Hasty Suntail Hawk", "W", set(), set([u"creature"]), set([u"bird"]), set([u"flying",u"haste"]), "", 1, 1))
+    library1 = []
+    for i in range(10):
+        cardObject = createCard(g, "Plains")
+        library1.append(cardObject)
 
-    p1 = g.create_player("Alice", c1)
+    library2 = []
+    for i in range(10):
+        cardObject = createCard(g, "Plains")
+        library2.append(cardObject)
 
-    c2 = []
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Scatchy Zombies", "B", set(), set([u"creature"]), set([u"zombie"]), set([u"haste"]), "", 2, 2))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Scatchy Zombies", "B", set(), set([u"creature"]), set([u"zombie"]), set([u"haste"]), "", 2, 2))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Scatchy Zombies", "B", set(), set([u"creature"]), set([u"zombie"]), set([u"haste"]), "", 2, 2))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Scatchy Zombies", "B", set(), set([u"creature"]), set([u"zombie"]), set([u"haste"]), "", 2, 2))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Scatchy Zombies", "B", set(), set([u"creature"]), set([u"zombie"]), set([u"haste"]), "", 2, 2))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
-    c2.append (g.create_card (u"Swamp", None, set([u"basic"]), set([u"land"]), set(), set(), "[B]", None, None))
 
-    p2 = g.create_player("Bob", c2)
+    player1 = g.create_player("Player1", library1)
+    player2 = g.create_player("Player2", library2)
 
-    process_game(g)
+    for c in cards1:
+        createCardToHand(g, c, player1)
+        
+    for c in cards2:
+        createCardToHand(g, c, player2)
 
-    return (p1, p2)
+    g.process_push(GameTurnProcess())
+    turnProcess = TurnProcess(player1)
+    turnProcess.state = 1
+    g.active_player_id = player1.id
+    g.process_push(turnProcess)
+    g.process_push(MainPhaseProcess("precombat main"))
 
+    evaluate(g)
+
+    return g
+
+def _pass(g, ax):
+    printState(g, ax)
+    for a in ax.actions:
+        if isinstance(a, PassAction):
+            return g.next(a)
+
+    assert False    
+
+def playSpell(g, ax, name):
+    printState(g, ax)
+    for a in ax.actions:
+        if isinstance(a, AbilityAction):
+            if isinstance(a.ability, PlaySpell):
+                if a.object.get_state().title == name:
+                    return g.next(a)
+
+    assert False
+
+def playLand(g, ax, name):
+    printState(g, ax)
+    for a in ax.actions:
+        if isinstance(a, AbilityAction):
+            if isinstance(a.ability, PlayLandAbility):
+                if a.object.get_state().title == name:
+                    return g.next(a)
+
+    assert False
+
+
+def printState(g, a):
+    print ("player %s: %s" % (a.player.name, a.text))
+    print ("turn %s, phase: %s, step: %s" % (a.game.get_active_player().name, a.game.current_phase, a.game.current_step))
+    print ("battlefield: %s" % (" ".join(map(lambda x:str(x),a.game.get_in_play_zone().objects))))
+    print ("stack: %s" % (" ".join(map(lambda x:"["+str(x)+"]",a.game.get_stack_zone().objects))))
+    print ("library: %d graveyard: %d" % (len(a.game.get_library(a.player).objects), len(a.game.get_graveyard(a.player).objects) ))
+    print ("hand: %s" % (" ".join(map(lambda x:"["+str(x)+"]",a.game.get_hand(a.player).objects))))
+    print ("manapool: %s" % (a.player.manapool))
+    print ("life: %d" % (a.player.life))
+
+    for _ in a.actions:
+        print `_` + " " + _.text
+
+def endOfTurn(g, ax):
+    turn_id = g.get_active_player().id
+    while g.get_active_player().id == turn_id:
+        ax = _pass(g, ax)
+
+    return ax
+
+def precombatMainPhase(g, ax):
+    turn_id = g.get_active_player().id
+    while g.current_phase != "precombat main" or ax.text != "You have priority":
+        ax = _pass(g, ax)
+
+    return ax
+
+def postcombatMainPhase(g, ax):
+    turn_id = g.get_active_player().id
+    while g.current_phase != "postcombat main" or ax.text != "You have priority":
+        ax = _pass(g, ax)
+
+    return ax
+
+def declareAttackersStep(g, ax):
+    while g.current_phase != "combat" or g.current_step != "declare attackers":
+        ax = _pass(g, ax)
+    return ax
+
+def declareAttackers(g, ax, lst):
+    for attacker in lst:
+        assert ax.text == "Select attackers"
+        for a in ax.actions:
+            if a.object != None and a.object.get_state().title == attacker:
+                ax = g.next(a)
+
+    assert ax.text == "Select attackers"
+    return _pass(g, ax)
+
+def activateAbility(g, ax, name, player_id):
+    while ax.text != "You have priority" or ax.player.id != player_id:
+        ax = _pass(g, ax)
+
+    for a in ax.actions:
+        if isinstance(a, AbilityAction):
+            if a.text.startswith("Activate") and a.object.get_state().title == name:
+                return g.next(a)
+
+    assert False
+
+def selectTarget(g, ax, name):
+    printState(g, ax)
+    assert ax.text.startswith("Choose a target")
+    for a in ax.actions:
+        if a.object is not None:
+            if a.object.get_state().title == name:
+                return g.next(a)
+
+    assert False
+
+def findObjectInPlay(g, name):
+    zone = g.get_in_play_zone()
+    for o in zone.objects:
+        if o.get_state().title == name:
+            return o
+
+    assert False
 
 class ManaClashTest(unittest.TestCase):
 
-    def test1(self):
-        ig = test_input_generator([0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-        n = ig.next()
-        o = Output()
-        g = Game(ig, o)
-        test_common(g)
+    def testAngelicPage(self):
+        g = createGameInMainPhase(["Plains", "Angelic Page"], ["Mountain", "Raging Goblin"])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
 
-    def test2(self):
-        ig = test_input_generator([0, 0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 1, 3,1, 2, 0, 0, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0])
-        n = ig.next()
-        o = Output()
-        g = Game(ig, o)
-        alice, bob = test_common(g)    
-        alice_graveyard = g.get_graveyard(alice)
-        bob_graveyard = g.get_graveyard(bob)
-        assert len(alice_graveyard.objects) == 2 
-        assert alice_graveyard.objects[0].state.title == "Suntail Hawk"
-        print alice_graveyard.objects[1].state.title
-        assert alice_graveyard.objects[1].state.title == "Hasty Suntail Hawk"
-    
-        assert len(bob_graveyard.objects) == 1
-        assert bob_graveyard.objects[0].state.title == "Scatchy Zombies"
+        a = g.next(None)
+        a = playLand(g, a, "Plains")
+        a = playSpell(g, a, "Angelic Page")
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+        a = playLand(g, a, "Mountain")
+        a = playSpell(g, a, "Raging Goblin")
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = activateAbility(g, a, "Angelic Page", p1)
+        a = selectTarget(g, a, "Raging Goblin")
+        a = postcombatMainPhase(g, a)
+
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        assert g.obj(p1).life == 18
+        assert goblin.get_state().power == 2
+        assert goblin.get_state().toughness == 2
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        assert goblin.get_state().power == 1
+        assert goblin.get_state().toughness == 1
+
+        a = activateAbility(g, a, "Angelic Page", p1)
+        assert len(a.actions) == 1
+
 
 if __name__ == "__main__":
     unittest.main()
