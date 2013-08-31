@@ -567,6 +567,9 @@ class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
         self.toughness = toughness
 
     def doResolve(self, game, obj, target):
+
+        game.process_returns_push(True)
+
         power = self.power
         toughness = self.toughness
         if power == "+X":
@@ -590,6 +593,7 @@ class XGetsNNUntilEndOfTurn(OneShotEffect):
         self.toughness = toughness
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
         game.until_end_of_turn_effects.append ( (obj, XGetsNN(self.selector, self.power, self.toughness)))
 
     def __str__ (self):
@@ -601,6 +605,7 @@ class XGetsTagUntilEndOfTurn(OneShotEffect):
         self.tag = tag
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
         game.until_end_of_turn_effects.append ( (obj, XGetsTag(self.selector, self.tag)) )
 
     def __str__ (self):
@@ -612,6 +617,7 @@ class TargetXGetsTagUntilEndOfTurn(SingleTargetOneShotEffect):
         self.tag = tag
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
         game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target), self.tag)) )
 
     def __str__ (self):
@@ -623,6 +629,7 @@ class UpToNTargetXGetTagUntilEndOfTurn(MultipleTargetOneShotEffect):
         self.tag = tag
 
     def doResolve(self, game, obj, targets):
+        game.process_returns_push(True)
         for target in targets.values():
             game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target), self.tag)) )
 

@@ -572,6 +572,9 @@ class AbstractPlayProcess(Process):
 
             if len(costs) > 0:
                 game.process_push(PayCostProcess(player, selfObj, obj, costs))
+            else:
+                # no cost, consider as payed
+                game.process_returns_push(True)
 
         elif self.state == 5:
             payed = game.process_returns_pop()
