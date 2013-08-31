@@ -170,6 +170,11 @@ def declareAttackersStep(g, ax):
         ax = _pass(g, ax)
     return ax
 
+def combatDamageStep(g, ax):
+    while g.current_phase != "combat" or g.current_step != "combat damage":
+        ax = _pass(g, ax)
+    return ax
+
 def declareAttackers(g, ax, lst):
     for attacker in lst:
         assert ax.text == "Select attackers"
@@ -213,6 +218,15 @@ def payCost(g, ax):
     assert not (len(ax.actions) == 1 and ax.actions[0].text == "Cancel" and ax.text == "Play Mana Abilities")
     return ax
 
+def discardACard(g, ax, name):
+    printState(g, ax)
+    assert ax.text == "Discard a card"
+    for a in ax.actions:
+        if a.text.startswith("Discard") and a.object.get_state().title == name:
+            return g.next(a)
+
+    assert False
+
 def selectTarget(g, ax, name):
     printState(g, ax)
     assert ax.text.startswith("Choose a target")
@@ -231,7 +245,25 @@ def findObjectInPlay(g, name):
 
     assert False
 
+
 class ManaClashTest(unittest.TestCase):
+
+    def testAbyssalSpecter(self):
+        g = createGameInMainPhase(["Abyssal Specter"], [], [], ["Plains", "Mountain"])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Abyssal Specter"])
+        
+        a = combatDamageStep(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = discardACard(g, a, "Plains")
+        assert len(g.get_hand(g.obj(p2)).objects) == 1
 
     def testAngelicPage(self):
         g = createGameInMainPhase(["Plains", "Plains"], ["Angelic Page"], [], ["Mountain", "Raging Goblin"])
