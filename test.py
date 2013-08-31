@@ -24,8 +24,8 @@ from mcio import Output, input_generator
 from game import Game
 from process import GameTurnProcess, TurnProcess, MainPhaseProcess, evaluate
 from oracle import getParseableCards, createCardObject, parseOracle
-from abilities import PlayLandAbility, PlaySpell
-from actions import AbilityAction, PassAction
+from abilities import PlayLandAbility, PlaySpell, BasicManaAbility
+from actions import AbilityAction, PassAction, PayCostAction
 
 import unittest
 
@@ -51,7 +51,15 @@ def createCardToHand(g, name, player):
     cardObject.controller_id = player.id
     zone.objects.append (cardObject)
 
-def createGameInMainPhase(cards1, cards2):
+def createCardToPlay(g, name, player):
+    cardObject = createCard(g, name)
+    zone = g.get_in_play_zone()
+    cardObject.zone_id = zone.id
+    cardObject.owner_id = player.id
+    cardObject.controller_id = player.id
+    zone.objects.append (cardObject)
+
+def createGameInMainPhase(inPlay1, cards1, inPlay2, cards2):
 
     output = Output()
     g = Game(output)
@@ -76,6 +84,12 @@ def createGameInMainPhase(cards1, cards2):
         
     for c in cards2:
         createCardToHand(g, c, player2)
+
+    for c in inPlay1:
+        createCardToPlay(g, c, player1)
+        
+    for c in inPlay2:
+        createCardToPlay(g, c, player2)
 
     g.process_push(GameTurnProcess())
     turnProcess = TurnProcess(player1)
@@ -177,6 +191,28 @@ def activateAbility(g, ax, name, player_id):
 
     assert False
 
+def basicManaAbility(g, ax, name, player_id):
+    for a in ax.actions:
+        if isinstance(a, AbilityAction):
+            if isinstance(a.ability, BasicManaAbility) and a.object.get_state().title == name:
+                return g.next(a) 
+
+    assert False
+
+def payCost(g, ax):
+    while True:
+        isCost = False
+        for a in ax.actions:
+            if isinstance(a, PayCostAction):
+                ax = g.next(a)
+                isCost = True
+                break
+        if not isCost:
+            break
+
+    assert not (len(ax.actions) == 1 and ax.actions[0].text == "Cancel" and ax.text == "Play Mana Abilities")
+    return ax
+
 def selectTarget(g, ax, name):
     printState(g, ax)
     assert ax.text.startswith("Choose a target")
@@ -198,17 +234,22 @@ def findObjectInPlay(g, name):
 class ManaClashTest(unittest.TestCase):
 
     def testAngelicPage(self):
-        g = createGameInMainPhase(["Plains", "Angelic Page"], ["Mountain", "Raging Goblin"])
+        g = createGameInMainPhase(["Plains", "Plains"], ["Angelic Page"], [], ["Mountain", "Raging Goblin"])
         p1 = g.players[0].id
         p2 = g.players[1].id
 
         a = g.next(None)
-        a = playLand(g, a, "Plains")
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
         a = playSpell(g, a, "Angelic Page")
+        a = payCost(g, a)
+
         a = endOfTurn(g, a)
         a = precombatMainPhase(g, a)
         a = playLand(g, a, "Mountain")
+        a = basicManaAbility(g, a, "Mountain", p2)
         a = playSpell(g, a, "Raging Goblin")
+        a = payCost(g, a)
 
         a = declareAttackersStep(g, a)
         a = declareAttackers(g, a, ["Raging Goblin"])
