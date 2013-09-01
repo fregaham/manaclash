@@ -406,6 +406,40 @@ class ManaClashTest(unittest.TestCase):
 
         assert len(g.get_hand(g.obj(p1)).objects) == 1
        
+    def testAvenFlock (self):
+        g = createGameInMainPhase(["Plains", "Plains", "Plains", "Aven Flock"], [], [], [])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+
+        flock = findObjectInPlay(g, "Aven Flock")
+        assert flock.get_state().power == 2
+        assert flock.get_state().toughness == 3
+
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+
+        a = activateAbility(g, a, "Aven Flock", p1)
+        a = payCost(g, a)
+        a = activateAbility(g, a, "Aven Flock", p1)
+        a = payCost(g, a)
+        a = activateAbility(g, a, "Aven Flock", p1)
+        a = payCost(g, a)
+
+        a = emptyStack(g, a)
+
+        flock = findObjectInPlay(g, "Aven Flock")
+        assert flock.get_state().power == 2
+        assert flock.get_state().toughness == 6
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        flock = findObjectInPlay(g, "Aven Flock")
+        assert flock.get_state().power == 2
+        assert flock.get_state().toughness == 3
+   
          
 if __name__ == "__main__":
     unittest.main()

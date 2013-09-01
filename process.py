@@ -621,32 +621,26 @@ class ActivateTappingAbilityProcess(AbstractPlayProcess):
         game.doTap(self.getSelfObject(game))
         game.onPlay(self.getObject(game))
 
+class ActivateAbilityProcess(AbstractPlayProcess):
+    def __init__ (self, ability, player, obj, effect):
+        AbstractPlayProcess.__init__ (self, ability, player)
+        self.self_obj_id = obj.id
+        self.effect = effect
+        self.obj_id = None
 
-def process_activate_ability(game, ability, player, obj, effect):
+    def getObject(self, game):
+        if self.obj_id is None:
+            selfObj = self.getSelfObject(game)
+            e = game.create_effect_object (LastKnownInformation(game, selfObj), self.player_id, self.effect, {})
+            self.obj_id = e.id
+       
+        return game.obj(self.obj_id)
 
-    e = game.create_effect_object (LastKnownInformation(game, obj), player.id, effect, {})
+    def getSelfObject(self, game):
+        return game.obj(self.self_obj_id)
 
-    stack = game.get_stack_zone()
-    e.zone_id = stack.id
-    stack.objects.append (e)
-
-    evaluate(game)
-
-    if not e.rules.selectTargets(game, player, e):
-        game.delete(e)
-        return
-
-    costs = ability.determineCost(game, obj, player)
-    costs = costs[:]
-    # cost = ability.get_cost(game, player, obj)
-    if len(costs) > 0:
-        if not process_pay_cost(game, player, obj, e, costs):
-
-            print("not payed, returning to previous state")
-            game.delete(e)
-            return
-
-    game.onPlay(obj)
+    def onPlay(self, game):
+        game.onPlay(self.getObject(game))
 
 
 class PrioritySuccessionProcess(Process):

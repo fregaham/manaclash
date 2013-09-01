@@ -219,8 +219,8 @@ class CostDoEffectAbility(ActivatedAbility):
         return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id)
 
     def activate(self, game, obj, player):
-        from process import process_activate_ability
-        process_activate_ability(game, self, player, obj, self.effect)
+        from process import ActivateAbilityProcess
+        game.process_push(ActivateAbilityProcess(self, player, obj, self.effect))
 
     def get_text(self, game, obj):
         return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
@@ -240,8 +240,8 @@ class CostDoEffectAsSorceryAbility(ActivatedAbility):
         return (player.id == obj.state.controller_id and obj.zone_id == game.get_in_play_zone().id and (obj.state.controller_id == game.active_player_id and (game.current_phase == "precombat main" or game.current_phase == "postcombat main") and game.get_stack_length() == 0))
 
     def activate(self, game, obj, player):
-        from process import process_activate_ability
-        process_activate_ability(game, self, player, obj, self.effect)
+        from process import ActivateAbilityProcess
+        game.process_push(ActivateAbilityProcess(self, player, obj, self.effect))
 
     def get_text(self, game, obj):
         return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
@@ -261,8 +261,8 @@ class CostDoEffectGraveyardUpkeepAbility(ActivatedAbility):
         return player.id == obj.state.controller_id and obj.zone_id == game.get_graveyard(player).id and game.current_step == "upkeep" and player.id == game.active_player_id
 
     def activate(self, game, obj, player):
-        from process import process_activate_ability
-        process_activate_ability(game, self, player, obj, self.effect)
+        from process import ActivateAbilityProcess
+        game.process_push(ActivateAbilityProcess(self, player, obj, self.effect))
 
     def get_text(self, game, obj):
         return "Activate \"%s\" [%s]" % (self.effect, ",".join(map(str,self.costs)))
@@ -282,9 +282,8 @@ class SelfTurnTapCostDoEffectAbility(ActivatedAbility):
         return (player.id == obj.state.controller_id and obj.state.controller_id == game.active_player_id and obj.zone_id == game.get_in_play_zone().id and not obj.tapped and ("creature" not in obj.state.types or "summoning sickness" not in obj.state.tags or "haste" in obj.state.tags))
 
     def activate(self, game, obj, player):
-        from process import process_activate_tapping_ability
-
-        process_activate_tapping_ability(game, self, player, obj, self.effect)
+        from process import ActivateTappingAbilityProcess
+        game.process_push(ActivateTappingAbilityProcess(self, player, obj, self.effect))
 
     def get_text(self, game, obj):
         return "Activate \"%s\" [T %s]" % (self.effect, ",".join(map(str,self.costs)))
