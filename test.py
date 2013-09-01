@@ -244,6 +244,13 @@ def selectTarget(g, ax, name):
 
     assert False
 
+def answerQuestion(g, ax, question, answer):
+    assert ax.text.startswith(question)
+    for a in ax.actions:
+        if a.text.startswith(answer):
+            return g.next(a)
+    assert False
+
 def findObjectInPlay(g, name):
     zone = g.get_in_play_zone()
     for o in zone.objects:
@@ -252,6 +259,10 @@ def findObjectInPlay(g, name):
 
     assert False
 
+def assertNoSuchObjectInPlay(g, name):
+    zone = g.get_in_play_zone()
+    for o in zone.objects:
+        assert o.get_state().title != name
 
 class ManaClashTest(unittest.TestCase):
 
@@ -349,6 +360,51 @@ class ManaClashTest(unittest.TestCase):
         a = playSpell(g, a, "Pacifism")
         a = selectTarget(g, a, "Raging Goblin")
         a = payCost(g, a)
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+
+        a = playSpell(g, a, "Aven Cloudchaser")
+        a = payCost(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = selectTarget(g, a, "Pacifism")
+
+        a = emptyStack(g, a)
+        assertNoSuchObjectInPlay(g, "Pacifism")
+        findObjectInPlay(g, "Aven Cloudchaser")
+       
+    def testAvenFisher (self):
+        g = createGameInMainPhase(["Island", "Island", "Island", "Island"], ["Aven Fisher"], ["Mountain"], ["Shock"])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = playSpell(g, a, "Aven Fisher")
+        a = payCost(g, a)
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        a = basicManaAbility(g, a, "Mountain", p2)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Aven Fisher")
+        a = payCost(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = answerQuestion(g, a, "Draw a card?", "Yes")
+
+        assert len(g.get_hand(g.obj(p1)).objects) == 1
        
          
 if __name__ == "__main__":

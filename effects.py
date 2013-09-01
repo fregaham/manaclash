@@ -1736,6 +1736,26 @@ class UntapUpToNX(OneShotEffect):
     def __str__ (self):
         return "UntapUpToNX(%s, %s)" % (self.number, self.selector)
   
+class PlayerMayDrawACardResolveProcess(Process):
+    def __init__ (self, player):
+        self.player_id = player.id
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        if action == None:
+            _yes = Action()
+            _yes.text = "Yes"
+
+            _no = Action()
+            _no.text = "No"
+
+            _as = ActionSet (game, player, ("Draw a card?"), [_yes, _no])
+            return _as
+        else:
+            game.process_returns_push(True)
+            if action.text == "Yes":
+                game.doDrawCard(player)
+        
 
 class XMayDrawACard(OneShotEffect):
     def __init__ (self, selector):
@@ -1743,19 +1763,7 @@ class XMayDrawACard(OneShotEffect):
 
     def resolve(self, game, obj):
         player = self.selector.only(game, obj)
-        _yes = Action()
-        _yes.text = "Yes"
-        
-        _no = Action()
-        _no.text = "No"
-
-        _as = ActionSet (game, player, ("Draw a card?"), [_yes, _no])
-        a = game.input.send(_as)
-
-        if a == _yes:
-            game.doDrawCard(player)
-     
-        return True
+        game.process_push(PlayerMayDrawACardResolveProcess(player))
 
     def __str__ (self):
         return "XMayDrawACard(%s)" % self.selector
