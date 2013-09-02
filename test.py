@@ -439,8 +439,23 @@ class ManaClashTest(unittest.TestCase):
         flock = findObjectInPlay(g, "Aven Flock")
         assert flock.get_state().power == 2
         assert flock.get_state().toughness == 3
-   
-         
+
+    def testBalanceOfPower(self):
+        g = createGameInMainPhase([], ["Balance of Power", "Island"], [], ["Plains", "Plains", "Plains"])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+  
+        g.obj(p1).manapool = "UUUUU"
+        a = playSpell(g, a, "Balance of Power")
+        a = selectTarget(g, a, "Player2")
+        a = payCost(g, a) 
+        a = emptyStack(g, a)
+
+        assert len(g.get_hand(g.obj(p1)).objects) == 3
+        assert len(g.get_hand(g.obj(p2)).objects) == 3
+
+
 if __name__ == "__main__":
     unittest.main()
 
