@@ -643,6 +643,30 @@ class ActivateAbilityProcess(AbstractPlayProcess):
         game.onPlay(self.getObject(game))
 
 
+# mana abilities don't use stack, resolve immediately
+class ActivateTappingManaAbilityProcess(SandwichProcess):
+    def __init__ (self, ability, player, obj, effect):
+        SandwichProcess.__init__(self)
+
+        self.ability = ability
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.effect = effect
+
+    def pre(self, game):
+        game.doTap(game.obj(self.obj_id))
+
+    def main(self, game):
+        from rules import manaEffect
+        effect = manaEffect(self.effect)
+        effect.resolve(game, game.obj(self.obj_id))
+
+    def post(self, game):
+        # eat the effect.resolve value
+        game.process_returns_pop()
+        game.raise_event("tapped_for_mana", game.obj(self.obj_id), game.obj(self.player_id), None)
+ 
+
 class PrioritySuccessionProcess(Process):
     def __init__ (self, player):
         self.player_id = player.id

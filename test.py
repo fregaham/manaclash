@@ -455,6 +455,25 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p1)).objects) == 3
         assert len(g.get_hand(g.obj(p2)).objects) == 3
 
+    def testBirdsOfParadise(self):
+        g = createGameInMainPhase(["Birds of Paradise"], [], [], [])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+
+        a = activateAbility(g, a, "Birds of Paradise", p1)
+        a = answerQuestion(g, a, "Choose a color", "White")
+        a = emptyStack(g, a)
+        assert g.obj(p1).manapool == "W"
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        a = activateAbility(g, a, "Birds of Paradise", p1)
+        a = answerQuestion(g, a, "Choose a color", "Black")
+        a = emptyStack(g, a)
+        assert g.obj(p1).manapool == "B"
+        
 
 if __name__ == "__main__":
     unittest.main()

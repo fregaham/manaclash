@@ -1976,30 +1976,39 @@ class XPowerIsN(ContinuousEffect):
     def getLayer(self):
         return "power_set"
 
+class XAddNManaOfAnyColorToYourManapoolResolveProcess(Process):
+    def __init__ (self, player):
+        self.player_id = player.id
+
+    def next(self, game, action):
+
+        player = game.obj(self.player_id)
+        colors = ["W","R","B","U","G"]
+        names = ["White", "Red", "Black", "Blue", "Green"] 
+
+        if action is None:
+            actions = []
+            for name in names:
+                a = Action()
+                a.text = name
+                actions.append(a)
+
+            _as = ActionSet (game, player, ("Choose a color"), actions)
+            return _as
+        else:
+            color = colors[names.index(action.text)]
+            player.manapool += color
+
 class XAddNManaOfAnyColorToYourManapool(OneShotEffect):
     def __init__ (self, selector, n):
         self.selector = selector
         self.n = n
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
         for player in self.selector.all(game, obj):
             for i in range(self.n):
-                colors = ["W","R","B","U","G"]
-                names = ["White", "Red", "Black", "Blue", "Green"] 
-
-                actions = []
-                for name in names:
-                    a = Action()
-                    a.text = name
-                    actions.append(a)
-
-                _as = ActionSet (game, player, ("Choose a color"), actions)
-                a = game.input.send(_as)
-
-                color = colors[actions.index(a)]
-                player.manapool += color
-
-        return True
+                game.process_push(XAddNManaOfAnyColorToYourManapoolResolveProcess(player))
 
     def __str__ (self):
         return "XAddNManaOfAnyColorToYourManapool(%s, %s)" % (self.selector, str(self.n))
