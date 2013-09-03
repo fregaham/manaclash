@@ -96,6 +96,14 @@ class PlayLandAbility(ActivatedAbility):
     def __str__ (self):
         return "PlayLandAbility()"
 
+class ManacostReplaceXProcess:
+    def __init__ (self, manacost):
+        self.manacost = manacost
+
+    def next(self, game, action):
+        xcost = game.process_returns_pop()
+        game.process_returns_push([ManaCost(self.manacost.replace("X", xcost))])
+
 class PlaySpell(ActivatedAbility):
     def canActivate(self, game, obj, player):
         return (player.id == obj.state.controller_id  and ("instant" in obj.state.types or (obj.state.controller_id == game.active_player_id and (game.current_phase == "precombat main" or game.current_phase == "postcombat main") and game.get_stack_length() == 0)) and obj.zone_id == game.objects[obj.state.controller_id].hand_id)
@@ -111,14 +119,12 @@ class PlaySpell(ActivatedAbility):
 
         manacost = obj.state.manacost
         if "X" in obj.state.manacost:
-            from process import process_ask_x
-            xcost = process_ask_x(game, obj, player)
-            manacost = manacost.replace("X", xcost)
-
-        c = ManaCost(manacost)
-        game.process_returns_push([c])
-
-#        return [c]
+            from process import AskXProcess
+            game.process_push(ManacostReplaceXProcess(manacost))
+            game.process_push(AskXProcess(obj, player))
+        else:
+            c = ManaCost(manacost)
+            game.process_returns_push([c])
 
     def __str__ (self):
         return "PlaySpell()"

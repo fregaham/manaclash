@@ -25,7 +25,7 @@ from game import Game
 from process import GameTurnProcess, TurnProcess, MainPhaseProcess, evaluate
 from oracle import getParseableCards, createCardObject, parseOracle
 from abilities import PlayLandAbility, PlaySpell, BasicManaAbility
-from actions import AbilityAction, PassAction, PayCostAction
+from actions import AbilityAction, PassAction, PayCostAction, QueryNumber
 
 import unittest
 
@@ -250,6 +250,11 @@ def answerQuestion(g, ax, question, answer):
         if a.text.startswith(answer):
             return g.next(a)
     assert False
+
+def chooseX(g, ax, answer):
+    assert isinstance(ax, QueryNumber)
+    assert ax.text.startswith("Choose X")
+    return g.next(answer)
 
 def findObjectInPlay(g, name):
     zone = g.get_in_play_zone()
@@ -499,7 +504,24 @@ class ManaClashTest(unittest.TestCase):
         assert goblin.get_state().power == 4
         assert goblin.get_state().toughness == 4
        
+    def testBlaze(self):
+        g = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain"], ["Blaze"], [], [])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
 
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+
+        a = playSpell(g, a, "Blaze")
+        a = selectTarget(g, a, "Player2")
+        a = chooseX(g, a, 3)
+        a = payCost(g, a)
+        a = emptyStack(g, a)
+
+        assert g.obj(p2).life == 17
 
 
 if __name__ == "__main__":

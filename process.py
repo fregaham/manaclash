@@ -2570,31 +2570,27 @@ class ValidateTargetProcess(Process):
 
         game.process_returns_push( _is_valid_target(game, source, self.target) )
 
-# DONE?
-def process_validate_target(game, source, selector, target):
-    assert isinstance(target, LastKnownInformation)
-    if target.is_moved():
-        return False
 
-    if not selector.contains(game, source, target):
-        return False
+class AskXProcess(Process):
+    def __init__ (self, obj, player):
+        self.obj_id = obj.id
+        self.player_id = player.id
 
-    return _is_valid_target(game, source, target)
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+        if action is None:
+            return QueryNumber(game, player, "Choose X")
+        else:
+            obj.x = action
+            # convert number to mana string
+            ret = ""
+            while action > 9:
+                ret += "9"
+                action -= 9
+            ret += str(action)
 
-def process_ask_x(game, obj, player):
-    _as = QueryNumber(game, player, "Choose X")
-    a = game.input.send(_as)
-
-    obj.x = a
-
-    # convert number to mana string
-    ret = ""
-    while a > 9:
-        ret += "9"
-        a -= 9
-    ret += str(a)
-
-    return ret
+            game.process_returns_push(ret)
 
 def process_ask_option(game, obj, player, question, options):
     opts = []
