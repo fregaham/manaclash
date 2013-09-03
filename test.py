@@ -523,6 +523,24 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 17
 
+    def testBlessedReversal(self):
+        g = createGameInMainPhase(["Raging Goblin", "Canyon Wildcat"], [], ["Plains", "Plains"], ["Blessed Reversal"])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin", "Canyon Wildcat"])
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = playSpell(g, a, "Blessed Reversal")
+        a = payCost(g, a)
+        a = emptyStack(g, a)
+        assert g.obj(p2).life == 26
+        a = postcombatMainPhase(g, a)
+        assert g.obj(p2).life == 23
 
 if __name__ == "__main__":
     unittest.main()
