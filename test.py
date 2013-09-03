@@ -201,7 +201,7 @@ def activateAbility(g, ax, name, player_id):
 
     for a in ax.actions:
         if isinstance(a, AbilityAction):
-            if a.text.startswith("Activate") and a.object.get_state().title == name:
+            if a.object.get_state().title == name:
                 return g.next(a)
 
     assert False
@@ -530,6 +530,11 @@ class ManaClashTest(unittest.TestCase):
         a = _pass(g, a)
         assert g.current_phase == "combat"
 
+    def testBloodMoon(self):
+        g, a, p1, p2 = createGameInMainPhase(["Blood Moon", "City of Brass"], [], [], [])
+        printState(g, a)    
+        a = activateAbility(g, a, "City of Brass", p1)
+        assert g.obj(p1).manapool == "R"        
 
 if __name__ == "__main__":
     unittest.main()
