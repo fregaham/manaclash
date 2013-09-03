@@ -473,7 +473,34 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Choose a color", "Black")
         a = emptyStack(g, a)
         assert g.obj(p1).manapool == "B"
-        
+
+    def testBlanchwoodArmor(self):
+        g = createGameInMainPhase(["Raging Goblin", "Forest", "Forest", "Forest"], ["Blanchwood Armor"], [], [])
+        p1 = g.players[0].id
+        p2 = g.players[1].id
+        a = g.next(None)
+
+        a = basicManaAbility(g, a, "Forest", p1)
+        a = basicManaAbility(g, a, "Forest", p1)
+        a = basicManaAbility(g, a, "Forest", p1)
+       
+        a = playSpell(g, a, "Blanchwood Armor")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCost(g, a)
+        a = emptyStack(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+
+        a = postcombatMainPhase(g, a)
+
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        assert g.obj(p2).life == 16
+        assert goblin.get_state().power == 4
+        assert goblin.get_state().toughness == 4
+       
+
+
 
 if __name__ == "__main__":
     unittest.main()
