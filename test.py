@@ -99,8 +99,11 @@ def createGameInMainPhase(inPlay1, cards1, inPlay2, cards2):
     g.process_push(MainPhaseProcess("precombat main"))
 
     evaluate(g)
+    p1 = g.players[0].id
+    p2 = g.players[1].id
+    a = g.next(None)
 
-    return g
+    return g, a, p1, p2
 
 def _pass(g, ax):
     printState(g, ax)
@@ -272,10 +275,7 @@ def assertNoSuchObjectInPlay(g, name):
 class ManaClashTest(unittest.TestCase):
 
     def testAbyssalSpecter(self):
-        g = createGameInMainPhase(["Abyssal Specter"], [], [], ["Plains", "Mountain"])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Abyssal Specter"], [], [], ["Plains", "Mountain"])
 
         a = declareAttackersStep(g, a)
         a = declareAttackers(g, a, ["Abyssal Specter"])
@@ -289,11 +289,8 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
     def testAngelicPage(self):
-        g = createGameInMainPhase(["Plains", "Plains"], ["Angelic Page"], [], ["Mountain", "Raging Goblin"])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains"], ["Angelic Page"], [], ["Mountain", "Raging Goblin"])
 
-        a = g.next(None)
         a = basicManaAbility(g, a, "Plains", p1)
         a = basicManaAbility(g, a, "Plains", p1)
         a = playSpell(g, a, "Angelic Page")
@@ -327,10 +324,8 @@ class ManaClashTest(unittest.TestCase):
         assert len(a.actions) == 1
 
     def testArchivist(self):
-        g = createGameInMainPhase(["Archivist"], [], [], [])
-        p1 = g.players[0].id
+        g, a, p1, p2 = createGameInMainPhase(["Archivist"], [], [], [])
 
-        a = g.next(None)
         a = precombatMainPhase(g, a)
 
         assert len(g.get_hand(g.obj(p1)).objects) == 0
@@ -339,9 +334,7 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p1)).objects) == 1
 
     def testAvatarOfHope(self):
-        g = createGameInMainPhase(["Plains", "Plains"], ["Avatar of Hope"], [], [])
-        p1 = g.players[0].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains"], ["Avatar of Hope"], [], [])
 
         g.obj(p1).life = 3
 
@@ -355,10 +348,7 @@ class ManaClashTest(unittest.TestCase):
         findObjectInPlay(g, "Avatar of Hope")
 
     def testAvenCloudchaser(self):
-        g = createGameInMainPhase(["Plains", "Plains"], ["Pacifism"], ["Plains", "Plains", "Plains", "Plains", "Raging Goblin"], ["Aven Cloudchaser"])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains"], ["Pacifism"], ["Plains", "Plains", "Plains", "Plains", "Raging Goblin"], ["Aven Cloudchaser"])
 
         a = basicManaAbility(g, a, "Plains", p1)
         a = basicManaAbility(g, a, "Plains", p1)
@@ -384,10 +374,7 @@ class ManaClashTest(unittest.TestCase):
         findObjectInPlay(g, "Aven Cloudchaser")
        
     def testAvenFisher (self):
-        g = createGameInMainPhase(["Island", "Island", "Island", "Island"], ["Aven Fisher"], ["Mountain"], ["Shock"])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Island", "Island", "Island", "Island"], ["Aven Fisher"], ["Mountain"], ["Shock"])
 
         a = basicManaAbility(g, a, "Island", p1)
         a = basicManaAbility(g, a, "Island", p1)
@@ -412,10 +399,7 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p1)).objects) == 1
        
     def testAvenFlock (self):
-        g = createGameInMainPhase(["Plains", "Plains", "Plains", "Aven Flock"], [], [], [])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains", "Plains", "Aven Flock"], [], [], [])
 
         flock = findObjectInPlay(g, "Aven Flock")
         assert flock.get_state().power == 2
@@ -446,10 +430,7 @@ class ManaClashTest(unittest.TestCase):
         assert flock.get_state().toughness == 3
 
     def testBalanceOfPower(self):
-        g = createGameInMainPhase([], ["Balance of Power", "Island"], [], ["Plains", "Plains", "Plains"])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase([], ["Balance of Power", "Island"], [], ["Plains", "Plains", "Plains"])
   
         g.obj(p1).manapool = "UUUUU"
         a = playSpell(g, a, "Balance of Power")
@@ -461,10 +442,7 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p2)).objects) == 3
 
     def testBirdsOfParadise(self):
-        g = createGameInMainPhase(["Birds of Paradise"], [], [], [])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Birds of Paradise"], [], [], [])
 
         a = activateAbility(g, a, "Birds of Paradise", p1)
         a = answerQuestion(g, a, "Choose a color", "White")
@@ -480,10 +458,7 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p1).manapool == "B"
 
     def testBlanchwoodArmor(self):
-        g = createGameInMainPhase(["Raging Goblin", "Forest", "Forest", "Forest"], ["Blanchwood Armor"], [], [])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Forest", "Forest", "Forest"], ["Blanchwood Armor"], [], [])
 
         a = basicManaAbility(g, a, "Forest", p1)
         a = basicManaAbility(g, a, "Forest", p1)
@@ -505,10 +480,7 @@ class ManaClashTest(unittest.TestCase):
         assert goblin.get_state().toughness == 4
        
     def testBlaze(self):
-        g = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain"], ["Blaze"], [], [])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain"], ["Blaze"], [], [])
 
         a = basicManaAbility(g, a, "Mountain", p1)
         a = basicManaAbility(g, a, "Mountain", p1)
@@ -524,10 +496,7 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 17
 
     def testBlessedReversal(self):
-        g = createGameInMainPhase(["Raging Goblin", "Canyon Wildcat"], [], ["Plains", "Plains"], ["Blessed Reversal"])
-        p1 = g.players[0].id
-        p2 = g.players[1].id
-        a = g.next(None)
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Canyon Wildcat"], [], ["Plains", "Plains"], ["Blessed Reversal"])
 
         a = declareAttackersStep(g, a)
         a = declareAttackers(g, a, ["Raging Goblin", "Canyon Wildcat"])
@@ -541,6 +510,26 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 26
         a = postcombatMainPhase(g, a)
         assert g.obj(p2).life == 23
+
+    def testBlindingAngel(self):
+        g, a, p1, p2 = createGameInMainPhase(["Blinding Angel"], [], [], [])
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Blinding Angel"])
+        a = postcombatMainPhase(g, a)
+        assert g.obj(p2).life == 18
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        assert g.current_phase == "postcombat main"
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        assert g.current_phase == "combat"
+
 
 if __name__ == "__main__":
     unittest.main()
