@@ -247,6 +247,38 @@ class SacrificeSelectorCost(Cost):
     def __str__ (self):
         return "sacrifice %s" % self.selector
 
+class DiscardXProcess:
+    def __init__ (self, selector, obj, effect, player):
+        self.selector = selector
+        self.obj_id = obj.id
+        self.effect_id = effect.id
+        self.player_id = player.id
+
+    def next(self, game, action):
+
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+        effect = game.obj(self.effect_id)
+
+        if action is None:
+            actions = []
+
+            hand = game.get_hand(player)
+            for o in hand.objects:
+                if self.selector.contains(game, obj, o):
+                    _p = Action ()
+                    _p.object = o
+                    _p.text = "Discard %s" % str(o)
+                    actions.append (_p)
+
+            if len(actions) > 0:
+                return ActionSet (game, player, "Discard %s" % self.selector, actions)
+            else:
+                game.process_returns_push(False)
+        else:
+            game.doDiscard(player, action.object, obj)
+            game.process_returns_push(True)
+
 class DiscardX(Cost):
     def __init__ (self, selector):
         Cost.__init__(self)
@@ -256,31 +288,7 @@ class DiscardX(Cost):
         return "Discard " + str(self.selector)
 
     def pay(self, game, obj, effect, player):
-
-        actions = []
-
-        _pass = PassAction (player)
-        _pass.text = "Cancel"
-
-        actions.append (_pass)
-
-        hand = game.get_hand(player)
-        for o in hand.objects:
-            if self.selector.contains(game, obj, o):
-                a = Action()
-                a.object = o
-                a.text = "Discard " + str(o)
-                actions.append (a)
-
-        _as = ActionSet (game, player, "Discard " + str(self.selector), actions)
-        a = game.input.send (_as)
-
-        if a == _pass:
-            return False 
-
-        game.doDiscard(player, a.object, obj)
-
-        return True
+        game.process_push(DiscardXProcess(self.selector, obj, effect, player))
 
     def __str__ (self):
         return "discard " + str(self.selector)

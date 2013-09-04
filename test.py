@@ -578,6 +578,17 @@ class ManaClashTest(unittest.TestCase):
         assertNoSuchObjectInPlay(g, "Bloodshot Cyclops")
 
 
+    def testSeismicAssault(self):
+        g, a, p1, p2 = createGameInMainPhase(["Seismic Assault"], ["Mountain"], [], [])
+        a = activateAbility(g, a, "Seismic Assault", p1)
+        a = selectTarget(g, a, "Player2")
+        a = payCost(g, a, "Discard")
+        a = selectObject(g, a, "Mountain")
+        a = emptyStack(g, a)
+
+        assert g.obj(p2).life == 18
+        
+
 if __name__ == "__main__":
     unittest.main()
 
