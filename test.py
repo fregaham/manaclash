@@ -214,7 +214,7 @@ def basicManaAbility(g, ax, name, player_id):
 
     assert False
 
-def payCost(g, ax):
+def payCosts(g, ax):
     while True:
         isCost = False
         for a in ax.actions:
@@ -228,6 +228,15 @@ def payCost(g, ax):
     assert not (len(ax.actions) == 1 and ax.actions[0].text == "Cancel" and ax.text == "Play Mana Abilities")
     return ax
 
+def payCost(g, ax, cost):
+    assert ax.text == "Play Mana Abilities"
+    for a in ax.actions:
+        if isinstance(a, PayCostAction):
+            if a.text.startswith(cost):
+                return g.next(a)
+
+    assert False
+
 def discardACard(g, ax, name):
     printState(g, ax)
     assert ax.text == "Discard a card"
@@ -240,6 +249,15 @@ def discardACard(g, ax, name):
 def selectTarget(g, ax, name):
     printState(g, ax)
     assert ax.text.startswith("Choose a target")
+    for a in ax.actions:
+        if a.object is not None:
+            if a.object.get_state().title == name:
+                return g.next(a)
+
+    assert False
+
+def selectObject(g, ax, name):
+    printState(g, ax)
     for a in ax.actions:
         if a.object is not None:
             if a.object.get_state().title == name:
@@ -294,14 +312,14 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Plains", p1)
         a = basicManaAbility(g, a, "Plains", p1)
         a = playSpell(g, a, "Angelic Page")
-        a = payCost(g, a)
+        a = payCosts(g, a)
 
         a = endOfTurn(g, a)
         a = precombatMainPhase(g, a)
         a = playLand(g, a, "Mountain")
         a = basicManaAbility(g, a, "Mountain", p2)
         a = playSpell(g, a, "Raging Goblin")
-        a = payCost(g, a)
+        a = payCosts(g, a)
 
         a = declareAttackersStep(g, a)
         a = declareAttackers(g, a, ["Raging Goblin"])
@@ -341,7 +359,7 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Plains", p1)
         a = basicManaAbility(g, a, "Plains", p1)
         a = playSpell(g, a, "Avatar of Hope")
-        a = payCost(g, a)
+        a = payCosts(g, a)
 
         a = emptyStack(g, a) 
 
@@ -354,7 +372,7 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Plains", p1)
         a = playSpell(g, a, "Pacifism")
         a = selectTarget(g, a, "Raging Goblin")
-        a = payCost(g, a)
+        a = payCosts(g, a)
 
         a = endOfTurn(g, a)
         a = precombatMainPhase(g, a)
@@ -364,7 +382,7 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Plains", p2)
 
         a = playSpell(g, a, "Aven Cloudchaser")
-        a = payCost(g, a)
+        a = payCosts(g, a)
         a = _pass(g, a)
         a = _pass(g, a)
         a = selectTarget(g, a, "Pacifism")
@@ -381,7 +399,7 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Island", p1)
         a = basicManaAbility(g, a, "Island", p1)
         a = playSpell(g, a, "Aven Fisher")
-        a = payCost(g, a)
+        a = payCosts(g, a)
 
         a = endOfTurn(g, a)
         a = precombatMainPhase(g, a)
@@ -389,7 +407,7 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Mountain", p2)
         a = playSpell(g, a, "Shock")
         a = selectTarget(g, a, "Aven Fisher")
-        a = payCost(g, a)
+        a = payCosts(g, a)
         a = _pass(g, a)
         a = _pass(g, a)
         a = _pass(g, a)
@@ -410,11 +428,11 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Plains", p1)
 
         a = activateAbility(g, a, "Aven Flock", p1)
-        a = payCost(g, a)
+        a = payCosts(g, a)
         a = activateAbility(g, a, "Aven Flock", p1)
-        a = payCost(g, a)
+        a = payCosts(g, a)
         a = activateAbility(g, a, "Aven Flock", p1)
-        a = payCost(g, a)
+        a = payCosts(g, a)
 
         a = emptyStack(g, a)
 
@@ -435,7 +453,7 @@ class ManaClashTest(unittest.TestCase):
         g.obj(p1).manapool = "UUUUU"
         a = playSpell(g, a, "Balance of Power")
         a = selectTarget(g, a, "Player2")
-        a = payCost(g, a) 
+        a = payCosts(g, a) 
         a = emptyStack(g, a)
 
         assert len(g.get_hand(g.obj(p1)).objects) == 3
@@ -466,7 +484,7 @@ class ManaClashTest(unittest.TestCase):
        
         a = playSpell(g, a, "Blanchwood Armor")
         a = selectTarget(g, a, "Raging Goblin")
-        a = payCost(g, a)
+        a = payCosts(g, a)
         a = emptyStack(g, a)
 
         a = declareAttackersStep(g, a)
@@ -490,7 +508,7 @@ class ManaClashTest(unittest.TestCase):
         a = playSpell(g, a, "Blaze")
         a = selectTarget(g, a, "Player2")
         a = chooseX(g, a, 3)
-        a = payCost(g, a)
+        a = payCosts(g, a)
         a = emptyStack(g, a)
 
         assert g.obj(p2).life == 17
@@ -505,7 +523,7 @@ class ManaClashTest(unittest.TestCase):
         a = basicManaAbility(g, a, "Plains", p2)
         a = basicManaAbility(g, a, "Plains", p2)
         a = playSpell(g, a, "Blessed Reversal")
-        a = payCost(g, a)
+        a = payCosts(g, a)
         a = emptyStack(g, a)
         assert g.obj(p2).life == 26
         a = postcombatMainPhase(g, a)
@@ -532,9 +550,33 @@ class ManaClashTest(unittest.TestCase):
 
     def testBloodMoon(self):
         g, a, p1, p2 = createGameInMainPhase(["Blood Moon", "City of Brass"], [], [], [])
-        printState(g, a)    
         a = activateAbility(g, a, "City of Brass", p1)
         assert g.obj(p1).manapool == "R"        
+
+    def testBloodshotCyclops(self):
+        g, a, p1, p2 = createGameInMainPhase(["Bloodshot Cyclops", "Raging Goblin"], [], [], [])
+        a = activateAbility(g, a, "Bloodshot Cyclops", p1) 
+        a = selectTarget(g, a, "Player2")
+        a = payCost(g, a, "Sacrifice")
+        a = selectObject(g, a, "Raging Goblin")        
+        a = emptyStack(g, a)
+
+        assert g.obj(p2).life == 19
+        assert findObjectInPlay(g, "Bloodshot Cyclops").tapped
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        a = activateAbility(g, a, "Bloodshot Cyclops", p1)
+        a = selectTarget(g, a, "Player2")
+        a = payCost(g, a, "Sacrifice")
+        a = selectObject(g, a, "Bloodshot Cyclops")
+        a = emptyStack(g, a)
+
+        assert g.obj(p2).life == 15
+        assertNoSuchObjectInPlay(g, "Bloodshot Cyclops")
+
 
 if __name__ == "__main__":
     unittest.main()

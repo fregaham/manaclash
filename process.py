@@ -398,7 +398,7 @@ class PayCostProcess(Process):
         self.obj_id = obj.id
         self.effect_id = effect.id
         self.notpaid = costs
-
+        self.cost = None
         self.state = 0
    
     def next(self, game, action):
@@ -440,15 +440,25 @@ class PayCostProcess(Process):
                 obj = game.obj(self.obj_id)
                 effect = game.obj(self.effect_id)
 
-                self.state = 0
                 game.process_push(self)
 
                 if isinstance(action, PayCostAction):
-                    if action.cost.pay(game, obj, effect, player):
-                        self.notpaid.remove(action.cost)
+                    self.state = 2
+                    self.cost = action.cost
+                    action.cost.pay(game, obj, effect, player)
 
-                if isinstance(action, AbilityAction):
+                elif isinstance(action, AbilityAction):
+                    self.state = 0
                     do_action (game, player, action) 
+
+        elif self.state == 2:
+
+            self.state = 0
+            game.process_push(self)
+
+            if game.process_returns_pop():
+                self.notpaid.remove(self.cost)
+            
         
 # DONE
 def process_pay_cost (game, player, obj, effect, costs):

@@ -28,7 +28,7 @@ class Cost:
         return "Pay Cost"
 
     def pay(self, game, obj, effect, player):
-        return False
+        game.process_returns_push(False)
 
     def canPay(self, game, obj, player):
         return True
@@ -135,7 +135,7 @@ class ManaCost(Cost):
         print("paying cost, manapool: %s, manacost: %s" % (player.manapool, self.manacost))
         player.manapool = mana_diff (player.manapool, self.manacost)
         print("after payed: manapool: %s" % (player.manapool))
-        return True
+        game.process_returns_push(True)
 
     def canPay(self, game, obj, player):
         return mana_greater_than(player.manapool, self.manacost)
@@ -150,6 +150,38 @@ class TapCost(Cost):
     def __str__ (self):
         return "T"
 
+class TapSelectorCostProcess:
+    def __init__ (self, selector, obj, player):
+        self.selector = selector
+        self.obj_id = obj.id
+        self.player_id = player.id
+
+    def next(self, game, action):
+
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+
+        if action is None:
+            actions = []
+            for o in self.selector.all(game, obj):
+
+                if o.tapped:
+                    continue
+
+                _p = Action ()
+                _p.object = o
+                _p.text = "Tap %s" % str(o)
+                actions.append (_p)
+
+            if len(actions) > 0:
+                return ActionSet (game, player, "Choose %s to tap" % self.selector, actions)
+            else:
+                game.process_returns_push(False)
+        else:
+            game.doTap(action.object)
+            game.process_returns_push(True)
+        
+
 class TapSelectorCost(Cost):
     def __init__ (self, selector):
         Cost.__init__ (self)
@@ -159,26 +191,7 @@ class TapSelectorCost(Cost):
         return "Tap %s" % self.selector
 
     def pay(self, game, obj, effect, player):
-        actions = []
-        for o in self.selector.all(game, obj):
-
-            if o.tapped:
-                continue
-
-            _p = Action ()
-            _p.object = o
-            _p.text = "Tap %s" % str(o)
-            actions.append (_p)
-
-        if len(actions) > 0:
-            _as = ActionSet (game, player, "Choose %s to tap" % self.selector, actions)
-            a = game.input.send (_as)
-
-            game.doTap(a.object)
-
-            return True
-        else:
-            return False
+        game.process_push(TapSelectorCostProcess(self.selector, obj, player))
 
     def canPay(self, game, obj, player):
         os = [x for x in self.selector.all(game, obj)]
@@ -187,6 +200,38 @@ class TapSelectorCost(Cost):
     def __str__ (self):
         return "tap %s" % self.selector
 
+class SacrificeSelectorCostProcess:
+    def __init__ (self, selector, obj, effect, player):
+        self.selector = selector
+        self.obj_id = obj.id
+        self.effect_id = effect.id
+        self.player_id = player.id
+
+    def next(self, game, action):
+
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+        effect = game.obj(self.effect_id)
+
+        if action is None:
+            actions = []
+            for o in self.selector.all(game, obj):
+                if o.get_controller_id() != player.get_id():
+                    continue
+
+                _p = Action ()
+                _p.object = o
+                _p.text = "Sacrifice %s" % str(o)
+                actions.append (_p)
+
+            if len(actions) > 0:
+                return ActionSet (game, player, "Choose %s to sacrifice" % self.selector, actions)
+            else:
+                game.process_returns_push(False)
+        else:
+            effect.slots["sacrificed"] = LastKnownInformation(game, action.object)
+            game.doSacrifice(action.object)
+            game.process_returns_push(True)
 
 class SacrificeSelectorCost(Cost):
     def __init__ (self, selector):
@@ -197,29 +242,7 @@ class SacrificeSelectorCost(Cost):
         return "Sacrifice %s" % self.selector
 
     def pay(self, game, obj, effect, player):
-        actions = []
-        for o in self.selector.all(game, obj):
-
-            # we can't sacrifice something we don't control
-            if o.get_controller_id() != player.get_id():
-                continue
-
-            _p = Action ()
-            _p.object = o
-            _p.text = "Sacrifice %s" % str(o)
-            actions.append (_p)
-
-        if len(actions) > 0:
-            _as = ActionSet (game, player, "Choose %s to sacrifice" % self.selector, actions)
-            a = game.input.send (_as)
-
-            effect.slots["sacrificed"] = LastKnownInformation(game, a.object)
-
-            game.doSacrifice(a.object)
-
-            return True
-        else:
-            return False
+        game.process_push(SacrificeSelectorCostProcess(self.selector, obj, effect, player))
 
     def __str__ (self):
         return "sacrifice %s" % self.selector
@@ -271,8 +294,8 @@ class PayLifeCost(Cost):
         return "Pay %d life" % self.n
 
     def pay(self, game, obj, effect, player):
+        game.process_returns_push(True)
         game.doPayLife(player, self.n)
-        return True
 
     def __str__ (self):
         return "pay %d life" % self.n
@@ -285,13 +308,13 @@ class PayHalfLifeRoundedUpCost(Cost):
         return "Pay half your life rounded up"
 
     def pay(self, game, obj, effect, player):
+        game.process_returns_push(True)
         if (player.life % 2) == 0:
             n = player.life / 2
         else:
             n = (player.life + 1) / 2
 
         game.doPayLife(player, n)
-        return True
 
     def __str__ (self):
         return "pay half your life rounded up"
