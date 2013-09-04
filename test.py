@@ -578,6 +578,20 @@ class ManaClashTest(unittest.TestCase):
         assertNoSuchObjectInPlay(g, "Bloodshot Cyclops")
 
 
+    def testMindRot(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Mind Rot"], [], ["Plains", "Plains", "Plains"])
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = playSpell(g, a, "Mind Rot")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = selectObject(g, a, "Plains")
+        a = selectObject(g, a, "Plains")
+        assert len(g.get_hand(g.obj(p2)).objects) == 1
+
     def testSeismicAssault(self):
         g, a, p1, p2 = createGameInMainPhase(["Seismic Assault"], ["Mountain"], [], [])
         a = activateAbility(g, a, "Seismic Assault", p1)
@@ -587,7 +601,7 @@ class ManaClashTest(unittest.TestCase):
         a = emptyStack(g, a)
 
         assert g.obj(p2).life == 18
-        
+       
 
 if __name__ == "__main__":
     unittest.main()

@@ -739,10 +739,11 @@ class TargetXDiscardsACard(SingleTargetOneShotEffect):
         self.count = count
     
     def doResolve(self, game, obj, target):
-        from process import process_discard_a_card
+        game.process_returns_push(True)
+        from process import DiscardACardProcess
         n = self.count.evaluate(game, obj)
         for i in range(n):
-            process_discard_a_card(game, target.get_object(), obj)
+            game.process_push(DiscardACardProcess(target.get_object(), obj))
 
     def __str__ (self):
         return "TargetXDiscardsACard(%s, %s)" % (self.targetSelector, self.count)
