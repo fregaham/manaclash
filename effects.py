@@ -760,37 +760,62 @@ class TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(SingleTargetOne
     def __str__ (self):
         return "TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(%s, %s)" % (self.targetSelector, self.cardSelector)
 
-class ChooseColorTargetXDiscardsCardsOfThatColor(SingleTargetOneShotEffect):
-    def __init__ (self, targetSelector):
-        SingleTargetOneShotEffect.__init__(self, targetSelector)
-    
-    def doResolve(self, game, obj, target):
-        from process import process_reveal_cards
+class ChooseColorTargetXDiscardsCardsOfThatColorResolveProcess(SandwichProcess):
+    def __init__ (self, player, obj):
+        SandwichProcess.__init__ (self)
+        self.player_id = player.id
+        self.obj_id = obj.id
 
-        player = target.get_object()
+    def pre(self, game):
+        player = game.obj(self.player_id)
         cards = game.get_hand(player).objects[:]
-        process_reveal_cards(game, player, cards)
+        from process import RevealCardsProcess
+        game.process_push(RevealCardsProcess(player, cards))
+
+    def main(self, game):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+        cards = game.get_hand(player).objects[:]
 
         for card in cards:
             if obj.modal in card.get_state().tags:
                 game.doDiscard(player, card, obj)
 
+class ChooseColorTargetXDiscardsCardsOfThatColorDoModalProcess:
+    def __init__ (self, player, obj):
+        self.player_id = player.id
+        self.obj_id = obj.id
+
+    def next(self, game, action):
+
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        if action is None:
+            colors = ["black", "blue", "green", "red", "white"]
+
+            actions = []
+            for name in colors:
+                a = Action()
+                a.text = name
+                actions.append(a)
+
+            return ActionSet (game, player, ("Choose a color"), actions)
+        else:
+            obj.modal = action.text.lower()
+            game.process_returns_push(True)
+
+
+class ChooseColorTargetXDiscardsCardsOfThatColor(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
+    
+    def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
+        game.process_push(ChooseColorTargetXDiscardsCardsOfThatColorResolveProcess(target.get_object(), obj))
+
     def doModal(self, game, player, obj):
-
-        colors = ["black", "blue", "green", "red", "white"]
-
-        actions = []
-        for name in colors:
-            a = Action()
-            a.text = name
-            actions.append(a)
-
-        _as = ActionSet (game, player, ("Choose a color"), actions)
-        a = game.input.send(_as)
-
-        obj.modal = a.text.lower()
-
-        return True
+        game.process_push(ChooseColorTargetXDiscardsCardsOfThatColorDoModalProcess(player, obj))
 
     def __str__ (self):
         return "ChooseColorTargetXDiscardsCardsOfThatColor(%s)" % (self.targetSelector)

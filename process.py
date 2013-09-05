@@ -2159,6 +2159,48 @@ def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, 
     game.revealed = oldrevealed
     evaluate(game)
 
+class RevealCardsProcess(Process):
+    def __init__ (self, player, cards):
+        self.player_id = player.id
+        self.card_ids = map(lambda x:x.id, cards)
+        self.state = 0
+        self.p_id = None
+ 
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        if self.state == 0:
+            self.oldrevealed = game.revealed
+            game.revealed = game.revealed[:]
+
+            for card_id in self.card_ids:
+                game.revealed.append(card_id)
+
+            evaluate(game)
+
+            self.p_id = self.player_id
+            
+            self.state = 1
+            game.process_push(self)
+
+        elif self.state == 1:
+
+            p = game.obj(self.p_id)
+
+            if action is None:
+                _ok = PassAction(p)
+                _ok.text = "OK"
+
+                return ActionSet(game, p, "Player %s reveals cards" % player.name, [_ok])
+            else:
+                self.p_id = game.get_next_player(p).id
+                if self.p_id == self.player_id:
+                    self.state = 2
+                game.process_push(self)
+
+        elif self.state == 2:
+            game.revealed = self.oldrevealed
+            
+# DONE? 
 def process_reveal_cards(game, player, cards):
     oldrevealed = game.revealed
     game.revealed = game.revealed[:]
