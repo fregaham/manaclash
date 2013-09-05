@@ -821,6 +821,38 @@ class ChooseColorTargetXDiscardsCardsOfThatColor(SingleTargetOneShotEffect):
     def __str__ (self):
         return "ChooseColorTargetXDiscardsCardsOfThatColor(%s)" % (self.targetSelector)
 
+class XMayPutYFromHandIntoPlayResolveProcess:
+    def __init__ (self, obj, player, selector, tapped):
+        self.obj_id = obj.id
+        self.player_id = player.id
+        self.selector = selector
+        self.tapped = tapped
+
+    def next(self, game, action):
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+        
+        if action is None:
+            actions = []
+            for card in game.get_hand(player).objects:
+                if self.selector.contains(game, obj, card):
+                    _p = Action ()
+                    _p.object = card
+                    _p.text = "Put " + str(card) + " into play"
+                    actions.append (_p)
+
+            if len(actions) > 0:
+                _pass = PassAction (player)
+                _pass.text = "Pass"
+
+                actions = [_pass] + actions
+
+                return ActionSet (game, player, "Choose a card to put into play", actions)
+        else:
+            action.object.tapped = self.tapped
+            game.doZoneTransfer (action.object, game.get_in_play_zone(), obj)
+            
+
 class XMayPutYFromHandIntoPlay(OneShotEffect):
     def __init__ (self, x_selector, y_selector, tapped = False):
         self.x_selector = x_selector
@@ -828,30 +860,9 @@ class XMayPutYFromHandIntoPlay(OneShotEffect):
         self.tapped = tapped
 
     def resolve(self, game, obj):
-
+        game.process_returns_push(True)
         for player in self.x_selector.all(game, obj):
-            actions = []
-            for card in game.get_hand(player).objects:
-                if self.y_selector.contains(game, obj, card):
-                    _p = Action ()
-                    _p.object = card
-                    _p.text = "Put " + str(card) + " into play"
-                    actions.append (_p)
-
-            if len(actions) > 0:
-
-                _pass = PassAction (player)
-                _pass.text = "Pass"
-
-                actions = [_pass] + actions
-
-                _as = ActionSet (game, player, "Choose a card to put into play", actions)
-                a = game.input.send (_as)
- 
-                a.object.tapped = self.tapped
-                game.doZoneTransfer (a.object, game.get_in_play_zone(), obj)
-
-        return True
+            game.process_push(XMayPutYFromHandIntoPlayResolveProcess(obj, player, self.y_selector, self.tapped))
 
     def __str__ (self):
         return "XMayPutYFromHandIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
