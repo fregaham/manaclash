@@ -2470,6 +2470,69 @@ def process_select_selector(game, player, source, selector, text, optional=False
 
     return a.object
 
+class SelectSourceOfDamageProcess(Process):
+    def __init__ (self, player, SELF, selector, text, optional=False):
+        self.player_id = player.id
+        self.self_id = SELF.id
+        self.selector = selector
+        self.text = text
+        self.optional = optional
+
+    def next(self, game, action):
+
+        player = game.obj(self.player_id)
+        SELF = game.obj(self.self_id)
+
+        if action is None:
+            actions = []
+            _pass = PassAction(player)
+            _pass.text = "Cancel"
+
+            sources = set([obj for obj in self.selector.all(game, SELF)])
+            valid_sources = set()
+
+            # permanents, spells on stack, card or permanent referred by an objecton stack,  creature assigning combat damage
+            for permanent in AllPermanentSelector().all(game, SELF):
+                if permanent in sources:
+                    valid_sources.add(permanent)
+
+            for obj in game.get_stack_zone().objects:
+                if "spell" in obj.get_state().tags and obj in sources and not isinstance(obj, EffectObject):
+                    valid_sources.add(obj)
+
+                if isinstance(obj, EffectObject):
+                    source = obj.get_source_lki().get_object()
+                    if (not isinstance(source, EffectObject)) and source in sources:
+                        valid_sources.add(obj)
+
+                elif isinstance(obj, DamageAssignment):
+                    for a, b, n in obj.damage_assignment_list:
+                        if a.get_object() in sources:
+                            valid_sources.add(a.get_object())
+
+                for target in obj.targets.values():
+                    if target.get_object() in sources and not isinstance(target.get_object(), EffectObject):
+                        valid_sources.add(target.get_object())
+
+            for obj in valid_sources:
+                _p = Action()
+                _p.object = obj
+                _p.text = str(obj)
+                actions.append(_p)
+
+            if len(actions) == 0 or self.optional:
+                actions = [_pass] + actions
+
+            return ActionSet(game, player, self.text, actions)
+
+        else:
+
+            if isinstance(action, PassAction):
+                game.process_returns_push(None)
+            else:
+                game.process_returns_push(action.object.id)
+
+
 def process_select_source_of_damage(game, player, SELF, selector, text, optional=False):
     actions = []
     _pass = PassAction(player)

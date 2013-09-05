@@ -1024,17 +1024,34 @@ class TheNextTimeXWouldDealDamageToYPreventThatDamage(ContinuousEffect):
     def apply(self, game, obj):
         game.damage_preventions.append(TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(obj, self))
 
+class TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamageResolveProcess(SandwichProcess):
+    def __init__(self, obj, x_selector, y_selector):
+        SandwichProcess.__init__ (self)
+        self.obj_id = obj.id
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+
+    def pre(self, game):
+        obj = game.obj(self.obj_id)
+        from process import SelectSourceOfDamageProcess
+        game.process_push(SelectSourceOfDamageProcess(game.objects[obj.get_controller_id()], obj, self.x_selector, "Choose a damage source", True))
+
+    def main(self, game):
+        obj = game.obj(self.obj_id)
+        source = game.process_returns_pop()
+        if source is not None:
+            source = game.obj(source)
+            game.until_end_of_turn_effects.append ( (obj, TheNextTimeXWouldDealDamageToYPreventThatDamage(LKISelector(LastKnownInformation(game, source)), self.y_selector)))
+
+        game.process_returns_push(True)
+
 class TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamage(OneShotEffect):
     def __init__ (self, x_selector, y_selector):
         self.x_selector = x_selector
         self.y_selector = y_selector
 
     def resolve(self, game, obj):
-        from process import process_select_source_of_damage
-
-        source = process_select_source_of_damage(game, game.objects[obj.get_controller_id()], obj, self.x_selector, "Choose a damage source", True)
-        if source != None:
-            game.until_end_of_turn_effects.append ( (obj, TheNextTimeXWouldDealDamageToYPreventThatDamage(LKISelector(LastKnownInformation(game, source)), self.y_selector)))
+        game.process_push(TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamageResolveProcess(obj, self.x_selector, self.y_selector))
 
     def __str__(self):
         return "TheNextTimeXWouldDealDamageToYThisTurnPreventThatDamage(%s, %s)" % (self.x_selector, self.y_selector) 

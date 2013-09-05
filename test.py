@@ -586,6 +586,29 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 15
         assertNoSuchObjectInPlay(g, "Bloodshot Cyclops")
 
+    def testCircleOfProtectionRed(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Plains", "Circle of Protection: Red"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a) 
+
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = activateAbility(g, a, "Circle of Protection: Red", p2)
+        printState(g, a)
+        a = payCosts(g, a)
+        printState(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+
+        a = selectObject(g, a, "Shock")
+        a = emptyStack(g, a)
+
+        assert g.obj(p2).life == 20
+
     def testCoercion(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Coercion"], [], ["Raging Goblin", "Plains", "Seismic Assault"])
         a = basicManaAbility(g, a, "Swamp", p1)
