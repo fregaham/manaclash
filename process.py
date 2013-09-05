@@ -2131,6 +2131,47 @@ def process_discard_a_card(game, player, cause = None):
 
     game.doDiscard(player, a.object, cause)
 
+
+class RevealHandAndDiscardACardProcess(Process):
+    def __init__ (self, player, chooser, cardSelector, context):
+        self.player_id = player.id
+        self.chooser_id = chooser.id
+        self.cardSelector = cardSelector
+        self.context_id = None if context is None else context.id
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        chooser = game.obj(self.chooser_id)
+        context = None if self.context_id is None else game.obj(self.context_id)
+
+        if action is None:
+            if len(game.get_hand(player).objects) == 0:
+                return
+
+            self.oldrevealed = game.revealed
+            game.revealed = game.revealed[:]
+
+            actions = []
+            for card in game.get_hand(player).objects:
+                game.revealed.append(card.get_id())
+
+                if self.cardSelector.contains(game, context, card):
+                    _p = Action ()
+                    _p.object = card
+                    _p.text = "Choose " + str(card)
+                    actions.append (_p)
+
+            evaluate(game)
+
+            return ActionSet (game, chooser, "Choose a card", actions)
+        else:
+            game.doDiscard(player, action.object, context)
+
+            game.revealed = self.oldrevealed
+            evaluate(game)
+
+
+#DONE?
 def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, context):
     if len(game.get_hand(player).objects) == 0:
         return

@@ -285,6 +285,15 @@ def findObjectInPlay(g, name):
 
     assert False
 
+def findObjectInGraveyard(g, player_id, name):
+    player = g.obj(player_id)
+    zone = g.get_graveyard(player)
+    for o in zone.objects:
+        if o.get_state().title == name:
+            return o
+
+    assert False
+
 def assertNoSuchObjectInPlay(g, name):
     zone = g.get_in_play_zone()
     for o in zone.objects:
@@ -577,6 +586,19 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 15
         assertNoSuchObjectInPlay(g, "Bloodshot Cyclops")
 
+    def testCoercion(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Coercion"], [], ["Raging Goblin", "Plains", "Seismic Assault"])
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = playSpell(g, a, "Coercion")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = selectObject(g, a, "Plains")
+        assert len(g.get_hand(g.obj(p2)).objects) == 2
+        assert findObjectInGraveyard(g, p2, "Plains") is not None
 
     def testMindRot(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Mind Rot"], [], ["Plains", "Plains", "Plains"])

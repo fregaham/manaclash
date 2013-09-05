@@ -754,8 +754,9 @@ class TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(SingleTargetOne
         self.cardSelector = cardSelector
 
     def doResolve(self, game, obj, target):
-        from process import process_reveal_hand_and_discard_a_card
-        process_reveal_hand_and_discard_a_card(game, target.get_object(), game.objects[obj.get_state().controller_id], self.cardSelector, obj)
+        from process import RevealHandAndDiscardACardProcess
+        game.process_returns_push(True)
+        game.process_push(RevealHandAndDiscardACardProcess(target.get_object(), game.objects[obj.get_state().controller_id], self.cardSelector, obj))
 
     def __str__ (self):
         return "TargetXRevealsHandYouChooseYCardThatPlayerDiscardsThatCard(%s, %s)" % (self.targetSelector, self.cardSelector)
