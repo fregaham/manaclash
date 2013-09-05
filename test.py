@@ -614,7 +614,22 @@ class ManaClashTest(unittest.TestCase):
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
 
-#    def testMindRot(self):
+    def testIronStar(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Iron Star"], ["Raging Goblin"], [], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+        a = answerQuestion(g, a, "Pay 1 to", "Yes")
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        assert g.obj(p1).life == 21
+
+    def testMindRot(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Mind Rot"], [], ["Plains", "Plains", "Plains"])
         a = basicManaAbility(g, a, "Swamp", p1)
         a = basicManaAbility(g, a, "Swamp", p1)
@@ -628,7 +643,7 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
-#    def testPersecute(self):
+    def testPersecute(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Persecute"], [], ["Raging Goblin", "Seismic Assault", "Mind Rot"])
         a = basicManaAbility(g, a, "Swamp", p1)
         a = basicManaAbility(g, a, "Swamp", p1)
@@ -645,7 +660,7 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p2)).objects) == 1
         
 
-#    def testSeismicAssault(self):
+    def testSeismicAssault(self):
         g, a, p1, p2 = createGameInMainPhase(["Seismic Assault"], ["Mountain"], [], [])
         a = activateAbility(g, a, "Seismic Assault", p1)
         a = selectTarget(g, a, "Player2")

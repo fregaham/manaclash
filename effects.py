@@ -22,7 +22,7 @@ from objects import  *
 from selectors import *
 from actions import *
 from functools import partial
-from process import Process, SandwichProcess, SelectTargetProcess
+from process import Process, SandwichProcess, SelectTargetProcess, PayCostProcess, TriggerEffectProcess
 
 class Effect:
     def setText(self):
@@ -889,31 +889,52 @@ class TapTargetX(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TapTargetX(%s)" % self.targetSelector
 
+class YouMayPayCostIfYouDoResolveProcess:
+    def __init__ (self, player, obj, cost, effectText):
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.cost = cost
+        self.effectText = effectText
+        self.state = 0
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        if self.state == 0:
+            if action is None:
+                _pay = Action()
+                _pay.text = "Yes"
+
+                _notpay = Action()
+                _notpay.text = "No"
+
+                return ActionSet (game, player, ("Pay %s to %s?" % (", ".join(map(str, self.cost)), self.effectText)), [_pay, _notpay])
+
+            else:
+                if action.text == "Yes":
+                    self.state = 1
+                    game.process_push(self)
+                    game.process_push(PayCostProcess(player, obj, obj, self.cost))
+                else:
+                    game.process_returns_push(True)
+
+        elif self.state == 1:
+            if game.process_returns_pop():
+                game.process_returns_push(True)
+                game.process_push(TriggerEffectProcess(obj, self.effectText, {}))
+            else:
+                game.process_returns_push(False)
+            
+
 class YouMayPayCostIfYouDoY(OneShotEffect):
     def __init__ (self, cost, effectText):
         self.cost = cost
-
-        from rules import effectRules
-
         self.effectText = effectText
 
     def resolve(self, game, obj):
         controller = game.objects[obj.get_state().controller_id]
-        _pay = Action()
-        _pay.text = "Yes"
-        
-        _notpay = Action()
-        _notpay.text = "No"
-
-        _as = ActionSet (game, controller, ("Pay %s to %s?" % (", ".join(map(str, self.cost)), self.effectText)), [_pay, _notpay])
-        a = game.input.send(_as)
-
-        if a == _pay:
-            from process import process_pay_cost, process_trigger_effect
-            if process_pay_cost(game, controller, obj, obj, self.cost):
-                process_trigger_effect(game, obj, self.effectText, {})
-     
-        return True
+        game.process_push(YouMayPayCostIfYouDoResolveProcess(controller, obj, self.cost, self.effectText))
 
     def __str__ (self):
         return "YouMayPayCostIfYouDoY(%s, %s)" % (self.cost, self.effectText)
