@@ -1191,6 +1191,30 @@ class PutCardIntoPlayProcess:
             obj.tapped = self.tapped
             game.doZoneTransfer (obj, game.get_in_play_zone(), game.obj(self.cause_id))
 
+class PutCardIntoHandProcess:
+    def __init__ (self, player, cause, reveal):
+        self.player_id = player.id
+        self.cause_id = cause.id
+        self.reveal = reveal
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        card_id = game.process_returns_pop()
+        cause = game.obj(self.cause_id)
+
+        if card_id is not None:
+            card = game.obj(card_id)
+            if self.reveal:
+                from process import RevealCardsProcess
+
+                self.reveal = False
+                game.process_push(self)
+                game.process_returns_push(card_id)
+                game.process_push(RevealCardsProcess(player, [card]))
+            else:
+                game.doZoneTransfer (card, game.get_hand(player), cause)
+           
+
 class ShuffleLibraryProcess:
     def __init__ (self, player):
         self.player_id = player.id
@@ -1215,6 +1239,8 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
 
+    
+
 class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
     def __init__ (self, x_selector, y_selector, reveal = False):
         self.x_selector = x_selector
@@ -1222,49 +1248,11 @@ class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
         self.reveal = reveal
 
     def resolve(self, game, obj):
-
-        from process import evaluate, process_reveal_cards
-        
+        game.process_returns_push(True)
         for player in self.x_selector.all(game, obj):
-
-            old_looked_at = game.looked_at
-            game.looked_at = game.looked_at.copy()
-
-            actions = []
-            for card in game.get_library(player).objects:
-
-                game.looked_at[player.id].append (card.get_id())
-                
-                if self.y_selector.contains(game, obj, card):
-                    _p = Action ()
-                    _p.object = card
-                    _p.text = "Put " + str(card) + " into your hand"
-                    actions.append (_p)
-
-            if len(actions) > 0:
-
-                _pass = PassAction (player)
-                _pass.text = "Pass"
-
-                actions = [_pass] + actions
-
-                evaluate(game)
-
-                _as = ActionSet (game, player, "Choose a card to put into hand", actions)
-                a = game.input.send (_as)
-
-                if self.reveal:
-                    process_reveal_cards(game, player, [a.object])
- 
-                game.doZoneTransfer (a.object, game.get_hand(player), obj)
-
-                game.doShuffle(game.get_library(player))
-
-            game.looked_at = old_looked_at
-
-        evaluate(game)
-
-        return True
+            game.process_push(ShuffleLibraryProcess(player))
+            game.process_push(PutCardIntoHandProcess(player, obj, self.reveal))
+            game.process_push(SearchLibraryForXProcess(player, obj, self.y_selector, "Put %s into your hand", "Choose a card to put into hand"))
 
     def __str__ (self):
         return "XSearchLibraryForXAndPutItIntoHand(%s, %s)" % (self.x_selector, self.y_selector)

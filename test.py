@@ -294,6 +294,15 @@ def findObjectInGraveyard(g, player_id, name):
 
     assert False
 
+def findObjectInHand(g, player_id, name):
+    player = g.obj(player_id)
+    zone = g.get_hand(player)
+    for o in zone.objects:
+        if o.get_state().title == name:
+            return o
+
+    assert False
+
 def assertNoSuchObjectInPlay(g, name):
     zone = g.get_in_play_zone()
     for o in zone.objects:
@@ -622,6 +631,20 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 2
         assert findObjectInGraveyard(g, p2, "Plains") is not None
+
+    def testDiabolicTutor(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Diabolic Tutor"], [], [])
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = playSpell(g, a, "Diabolic Tutor")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = selectObject(g, a, "Plains") 
+        assert findObjectInHand(g, p1, "Plains") is not None
+
 
     def testElvishPioneer(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest"], ["Elvish Pioneer", "Plains"], [], [])
