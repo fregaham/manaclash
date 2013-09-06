@@ -1127,19 +1127,22 @@ class RegenerateX(OneShotEffect):
     def __str__ (self):
         return "RegenerateX(%s)" % self.selector
 
-class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
-    def __init__ (self, x_selector, y_selector, tapped = False):
-        self.x_selector = x_selector
-        self.y_selector = y_selector
-        self.tapped = tapped
+class SearchLibraryForXProcess:
+    def __init__ (self, player, obj, selector, selectCardText, actionSetText):
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.selector = selector
+        self.selectCardText = selectCardText
+        self.actionSetText = actionSetText
 
-    def resolve(self, game, obj):
-
+    def next(self, game, action):
         from process import evaluate
-        
-        for player in self.x_selector.all(game, obj):
 
-            old_looked_at = game.looked_at
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        if action is None:
+            self.old_looked_at = game.looked_at
             game.looked_at = game.looked_at.copy()
 
             actions = []
@@ -1147,14 +1150,13 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
 
                 game.looked_at[player.id].append (card.get_id())
                 
-                if self.y_selector.contains(game, obj, card):
+                if self.selector.contains(game, obj, card):
                     _p = Action ()
                     _p.object = card
-                    _p.text = "Put " + str(card) + " into play"
+                    _p.text = self.selectCardText % str(card)
                     actions.append (_p)
 
             if len(actions) > 0:
-
                 _pass = PassAction (player)
                 _pass.text = "Pass"
 
@@ -1162,19 +1164,53 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
 
                 evaluate(game)
 
-                _as = ActionSet (game, player, "Choose a card to put into play", actions)
-                a = game.input.send (_as)
- 
-                a.object.tapped = self.tapped
-                game.doZoneTransfer (a.object, game.get_in_play_zone(), obj)
+                return ActionSet (game, player, self.actionSetText, actions)
+               
+            else:
+                game.looked_at = self.old_looked_at
+                game.process_returns_push(None)
 
-                game.doShuffle(game.get_library(player))
+        else:
+            game.looked_at = self.old_looked_at
+            evaluate(game)
 
-            game.looked_at = old_looked_at
+            if isinstance(action, PassAction):
+                game.process_returns_push(None)
+            else:
+                game.process_returns_push(action.object.id)
+           
+class PutCardIntoPlayProcess:
+    def __init__ (self, tapped, cause):
+        self.tapped = tapped
+        self.cause_id = cause.id
 
-        evaluate(game)
+    def next(self, game, action):
+        card_id = game.process_returns_pop()
+        if card_id is not None:
+            obj = game.obj(card_id)
+            obj.tapped = self.tapped
+            game.doZoneTransfer (obj, game.get_in_play_zone(), game.obj(self.cause_id))
 
-        return True
+class ShuffleLibraryProcess:
+    def __init__ (self, player):
+        self.player_id = player.id
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        game.doShuffle(game.get_library(player))
+
+class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
+    def __init__ (self, x_selector, y_selector, tapped = False):
+        self.x_selector = x_selector
+        self.y_selector = y_selector
+        self.tapped = tapped
+
+    def resolve(self, game, obj):
+        game.process_returns_push(True)
+        for player in self.x_selector.all(game, obj):
+            game.process_push(ShuffleLibraryProcess(player))
+            game.process_push(PutCardIntoPlayProcess(self.tapped, obj))
+            game.process_push(SearchLibraryForXProcess(player, obj, self.y_selector, "Put %s into play", "Choose a card to put into play"))
 
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)

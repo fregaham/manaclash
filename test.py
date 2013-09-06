@@ -681,7 +681,18 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
         a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
-        
+
+    def testRampantGrowth(self):
+        g, a, p1, p2 = createGameInMainPhase(["Forest", "Forest"], ["Rampant Growth"], [], [])
+        a = basicManaAbility(g, a, "Forest", p1)
+        a = basicManaAbility(g, a, "Forest", p1)
+        a = playSpell(g, a, "Rampant Growth")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = selectObject(g, a, "Plains")
+        plains = findObjectInPlay(g, "Plains")
+        assert plains.tapped
 
     def testSeismicAssault(self):
         g, a, p1, p2 = createGameInMainPhase(["Seismic Assault"], ["Mountain"], [], [])
