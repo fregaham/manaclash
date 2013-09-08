@@ -763,9 +763,16 @@ class ManaClashTest(unittest.TestCase):
         a = _pass(g, a)
         a = _pass(g, a)
         printState(g, a)
-        #a = _pass(g, a)
-        #a = _pass(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+        a = _pass(g, a)
+        printState(g, a)
 
+        a = selectObject(g, a, "Elvish Pioneer")
+        a = postcombatMainPhase(g, a)
+
+        findObjectInGraveyard(g, p2, "Elvish Pioneer")
+        findObjectInPlay(g, "Air Elemental")
 
     def testIronStar(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Iron Star"], ["Raging Goblin"], [], [])
