@@ -59,6 +59,14 @@ def createCardToPlay(g, name, player):
     cardObject.controller_id = player.id
     zone.objects.append (cardObject)
 
+def createCardToLibrary(g, name, player):
+    cardObject = createCard(g, name)
+    zone = g.get_library(player)
+    cardObject.zone_id = zone.id
+    cardObject.owner_id = player.id
+    cardObject.controller_id = player.id
+    zone.objects.append (cardObject)
+
 def createGameInMainPhase(inPlay1, cards1, inPlay2, cards2):
 
     output = Output()
@@ -179,11 +187,17 @@ def combatDamageStep(g, ax):
     return ax
 
 def declareAttackers(g, ax, lst):
+
     for attacker in lst:
+        found = False
         assert ax.text == "Select attackers"
         for a in ax.actions:
             if a.object != None and a.object.get_state().title == attacker:
+                found = True
                 ax = g.next(a)
+                break
+
+        assert found
 
     assert ax.text == "Select attackers"
     return _pass(g, ax)
@@ -594,6 +608,32 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 15
         assertNoSuchObjectInPlay(g, "Bloodshot Cyclops")
+
+    def testBribery(self):
+        g, a, p1, p2 = createGameInMainPhase(["Island", "Island", "Island", "Island", "Island"], ["Bribery"], [], [])
+        createCardToLibrary(g, "Raging Goblin", g.obj(p2))
+
+        for _ in range(5):
+           a = basicManaAbility(g, a, "Island", p1)
+        
+        a = playSpell(g, a, "Bribery")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        assert a.player.id == p1
+        printState(g, a)
+
+        a = selectObject(g, a, "Raging Goblin")
+       
+        a = declareAttackersStep(g, a)
+        printState(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        printState(g, a)
+        a = postcombatMainPhase(g, a)
+        printState(g, a)
+        assert g.obj(p2).life == 19
+
 
     def testCircleOfProtectionRed(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Plains", "Circle of Protection: Red"], [])

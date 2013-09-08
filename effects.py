@@ -1128,7 +1128,8 @@ class RegenerateX(OneShotEffect):
         return "RegenerateX(%s)" % self.selector
 
 class SearchLibraryForXProcess:
-    def __init__ (self, player, obj, selector, selectCardText, actionSetText):
+    def __init__ (self, player, owner, obj, selector, selectCardText, actionSetText):
+        self.owner_id = owner.id
         self.player_id = player.id
         self.obj_id = obj.id
         self.selector = selector
@@ -1138,6 +1139,7 @@ class SearchLibraryForXProcess:
     def next(self, game, action):
         from process import evaluate
 
+        owner = game.obj(self.owner_id)
         player = game.obj(self.player_id)
         obj = game.obj(self.obj_id)
 
@@ -1146,7 +1148,7 @@ class SearchLibraryForXProcess:
             game.looked_at = game.looked_at.copy()
 
             actions = []
-            for card in game.get_library(player).objects:
+            for card in game.get_library(owner).objects:
 
                 game.looked_at[player.id].append (card.get_id())
                 
@@ -1188,6 +1190,20 @@ class PutCardIntoPlayProcess:
         card_id = game.process_returns_pop()
         if card_id is not None:
             obj = game.obj(card_id)
+            obj.tapped = self.tapped
+            game.doZoneTransfer (obj, game.get_in_play_zone(), game.obj(self.cause_id))
+
+class PutCardIntoPlayUnderPlayersControlProcess:
+    def __init__ (self, controller, tapped, cause):
+        self.tapped = tapped
+        self.cause_id = cause.id
+        self.controller_id = controller.id
+
+    def next(self, game, action):
+        card_id = game.process_returns_pop()
+        if card_id is not None:
+            obj = game.obj(card_id)
+            obj.controller_id = self.controller_id
             obj.tapped = self.tapped
             game.doZoneTransfer (obj, game.get_in_play_zone(), game.obj(self.cause_id))
 
@@ -1234,7 +1250,7 @@ class XSearchLibraryForXAndPutThatCardIntoPlay(OneShotEffect):
         for player in self.x_selector.all(game, obj):
             game.process_push(ShuffleLibraryProcess(player))
             game.process_push(PutCardIntoPlayProcess(self.tapped, obj))
-            game.process_push(SearchLibraryForXProcess(player, obj, self.y_selector, "Put %s into play", "Choose a card to put into play"))
+            game.process_push(SearchLibraryForXProcess(player, player, obj, self.y_selector, "Put %s into play", "Choose a card to put into play"))
 
     def __str__ (self):
         return "XSearchLibraryForXAndPutThatCardIntoPlay(%s, %s)" % (self.x_selector, self.y_selector)
@@ -1252,7 +1268,7 @@ class XSearchLibraryForXAndPutItIntoHand(OneShotEffect):
         for player in self.x_selector.all(game, obj):
             game.process_push(ShuffleLibraryProcess(player))
             game.process_push(PutCardIntoHandProcess(player, obj, self.reveal))
-            game.process_push(SearchLibraryForXProcess(player, obj, self.y_selector, "Put %s into your hand", "Choose a card to put into hand"))
+            game.process_push(SearchLibraryForXProcess(player, player, obj, self.y_selector, "Put %s into your hand", "Choose a card to put into hand"))
 
     def __str__ (self):
         return "XSearchLibraryForXAndPutItIntoHand(%s, %s)" % (self.x_selector, self.y_selector)
@@ -1290,46 +1306,14 @@ class SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(SingleTarget
         self.cardSelector = cardSelector
 
     def doResolve(self, game, obj, target):
-        from process import evaluate
 
-        player = target.get_object()
+        player = game.obj(obj.get_controller_id())
+        libraryOwner = target.get_object()
 
-        old_revealed = game.revealed
-        game.revealed = game.revealed[:]
-
-        actions = []
-        for card in game.get_library(player).objects:
-
-            game.revealed.append (card.get_id())
-            
-            if self.cardSelector.contains(game, obj, card):
-                _p = Action ()
-                _p.object = card
-                _p.text = "Put " + str(card) + " into play"
-                actions.append (_p)
-
-        if len(actions) > 0:
-
-            _pass = PassAction (player)
-            _pass.text = "Pass"
-
-            actions = [_pass] + actions
-
-            evaluate(game)
-
-            _as = ActionSet (game, player, "Choose a card to put into play under your control", actions)
-            a = game.input.send (_as)
-
-            a.object.controller_id = obj.get_controller_id()
-            game.doZoneTransfer (a.object, game.get_in_play_zone(), obj)
-
-            game.doShuffle(game.get_library(player))
-
-        game.revealed = old_revealed
-
-        evaluate(game)
-
-        return True
+        game.process_returns_push(True)
+        game.process_push(ShuffleLibraryProcess(libraryOwner))
+        game.process_push(PutCardIntoPlayUnderPlayersControlProcess(player, False, obj))
+        game.process_push(SearchLibraryForXProcess(player, libraryOwner, obj, self.cardSelector, "Put %s into play", "Choose a card to put into play under your control"))
 
     def __str__ (self):
         return "SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(%s,%s)" % (self.targetSelector, self.cardSelector)
