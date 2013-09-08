@@ -634,6 +634,19 @@ class ManaClashTest(unittest.TestCase):
         printState(g, a)
         assert g.obj(p2).life == 19
 
+    def testCallOfTheWild(self):
+        g, a, p1, p2 = createGameInMainPhase(["Forest", "Forest", "Forest", "Forest", "Call of the Wild"], [], [], [])
+        createCardToLibrary(g, "Raging Goblin", g.obj(p1))
+
+        for _ in range(4):
+           a = basicManaAbility(g, a, "Forest", p1)
+
+        a = activateAbility(g, a, "Call of the Wild", p1)
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        assert findObjectInPlay(g, "Raging Goblin") is not None
+
 
     def testCircleOfProtectionRed(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Plains", "Circle of Protection: Red"], [])
@@ -744,6 +757,42 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
         a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
+
+    def testPrimevalForce(self):
+        g, a, p1, p2 = createGameInMainPhase(["Forest", "Forest", "Forest", "Plains", "Plains"], ["Primeval Force", "Primeval Force"], [], [])
+        a = basicManaAbility(g, a, "Forest", p1)
+        a = basicManaAbility(g, a, "Forest", p1)
+        a = basicManaAbility(g, a, "Forest", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+
+        a = playSpell(g, a, "Primeval Force")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = answerQuestion(g, a, "Choose", "Pay")
+        printState(g, a)
+
+        for _ in range(3):
+            a = answerQuestion(g, a, "Play Mana Abilities", "Sacrifice forest")
+            a = selectObject(g, a, "Forest")
+
+        printState(g, a)
+        firstPrimevalForce = findObjectInPlay(g, "Primeval Force").id
+
+        g.obj(p1).manapool = "GGGGG"
+        a = playSpell(g, a, "Primeval Force")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = answerQuestion(g, a, "Choose", "Sacrifice")
+        secondPrimevalForce = findObjectInGraveyard(g, p1, "Primeval Force").id
+        assert firstPrimevalForce != secondPrimevalForce
+        
 
     def testRampantGrowth(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest", "Forest"], ["Rampant Growth"], [], [])

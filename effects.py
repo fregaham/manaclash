@@ -1319,6 +1319,54 @@ class SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(SingleTarget
         return "SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(%s,%s)" % (self.targetSelector, self.cardSelector)
 
 
+class SacrificeAllXUnlessYouCostProcess:
+    def __init__ (self, controller, selector, obj, costs):
+        self.controller_id = controller.id
+        self.selector = selector
+        self.obj_id = obj.id
+        self.costs = costs
+
+        self.state = 0
+
+    def next(self, game, action):
+
+        controller = game.obj(self.controller_id)
+        obj = game.obj(self.obj_id)
+
+        if self.state == 0:
+            if action is None:
+                _pay = Action()
+                _pay.text = "Pay %s" % str(map(str, self.costs))
+
+                _notpay = Action()
+                _notpay.text = "Sacrifice %s" % self.selector
+
+                return ActionSet (game, controller, "Choose", [_pay, _notpay])
+            else:
+                if action.text.startswith("Sacrifice"):
+                    self.state = 2
+                    game.process_push(self)
+                else:
+                    self.state = 1
+                    game.process_push(self)
+                    game.process_push(PayCostProcess(controller, obj, obj, self.costs))
+
+        elif self.state == 1:
+            if not game.process_returns_pop():
+                # costs not paid, sacrificing...
+                self.state = 2
+                game.process_push(self)
+            else:
+                # costs paid, exit
+                pass
+
+        elif self.state == 2:
+            for o in self.selector.all(game, obj):
+                if o.get_state().controller_id == controller.id:
+                    # only controlled objects can be sacrificed
+                    game.doSacrifice(o, obj)
+        
+
 class SacrificeAllXUnlessYouCost(OneShotEffect):
     def __init__ (self, selector, costs):
         self.selector = selector
@@ -1326,25 +1374,8 @@ class SacrificeAllXUnlessYouCost(OneShotEffect):
 
     def resolve(self, game, obj):
         controller = game.objects[obj.get_state().controller_id]
-        _pay = Action()
-        _pay.text = "Pay %s" % str(map(str, self.costs))
-        
-        _notpay = Action()
-        _notpay.text = "Sacrifice %s" % self.selector
-
-        _as = ActionSet (game, controller, "Choose", [_pay, _notpay])
-        a = game.input.send(_as)
-
-        if a == _pay:
-            from process import process_pay_cost
-            if process_pay_cost(game, controller, obj, obj, self.costs):
-                return
-            # else, sacrifice...
-             
-        for o in self.selector.all(game, obj):
-            game.doSacrifice(o, obj)
-
-        return True
+        game.process_returns_push(True)
+        game.process_push(SacrificeAllXUnlessYouCostProcess(controller, self.selector, obj, self.costs))
         
     def __str__ (self):
         return "SacrificeXUnlessYouCost(%s, %s)" % (self.selector, str(map(str,self.costs)))
