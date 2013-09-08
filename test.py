@@ -181,6 +181,11 @@ def declareAttackersStep(g, ax):
         ax = _pass(g, ax)
     return ax
 
+def declareBlockersStep(g, ax):
+    while g.current_phase != "combat" or g.current_step != "declare blockers":
+        ax = _pass(g, ax)
+    return ax
+
 def combatDamageStep(g, ax):
     while g.current_phase != "combat" or g.current_step != "combat damage":
         ax = _pass(g, ax)
@@ -201,6 +206,39 @@ def declareAttackers(g, ax, lst):
 
     assert ax.text == "Select attackers"
     return _pass(g, ax)
+
+def declareBlockers(g, ax, blockers, attackers):
+
+    assert len(blockers) == len(attackers)
+    for i in range(len(blockers)):
+        blocker = blockers[i]
+        attacker = attackers[i]
+        foundBlocker = False
+        assert ax.text == "Select blockers"
+        for b in ax.actions:
+            if b.object != None and b.object.get_state().title == blocker:
+                foundBlocker = True
+                ax = g.next(b)
+
+                printState(g, ax)
+
+                foundAttacker = False
+                assert ax.text.startswith("Block which")
+                for a in ax.actions:
+                    if a.object != None and a.object.get_state().title == attacker:
+                        foundAttacker = True
+                        ax = g.next(a)
+                        break
+
+                assert foundAttacker
+                break
+
+        assert foundBlocker
+
+    printState(g, ax)
+    assert ax.text == "Select blockers"
+    return _pass(g, ax)
+
 
 def emptyStack(g, ax):
     # passes until everything on stack resolves
@@ -712,6 +750,22 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
+
+    def testGravePact(self):
+        g, a, p1, p2 = createGameInMainPhase(["Grave Pact", "Raging Goblin"], [], ["Elvish Pioneer", "Air Elemental"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Air Elemental"], ["Raging Goblin"])
+        
+        printState(g, a)
+        a = combatDamageStep(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+        #a = _pass(g, a)
+        #a = _pass(g, a)
+
 
     def testIronStar(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Iron Star"], ["Raging Goblin"], [], [])

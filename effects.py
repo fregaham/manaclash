@@ -1362,7 +1362,7 @@ class SacrificeAllXUnlessYouCostProcess:
 
         elif self.state == 2:
             for o in self.selector.all(game, obj):
-                if o.get_state().controller_id == controller.id:
+                if o.get_controller_id() == controller.id:
                     # only controlled objects can be sacrificed
                     game.doSacrifice(o, obj)
         
@@ -1388,10 +1388,38 @@ class SacrificeAllX(OneShotEffect):
         game.process_returns_push(True)
 
         for o in self.selector.all(game, obj):
-            game.doSacrifice(o, obj)
+            if obj.get_controller_id() == o.get_controller_id():
+                game.doSacrifice(o, obj)
         
     def __str__ (self):
         return "SacrificeX(%s)" % (self.selector)
+
+class SacrificeYProcess:
+    def __init__ (self, player, obj, selector):
+        self.obj_id = obj.id
+        self.player_id = player.id
+        self.selector = selector
+
+    def next(self, game, action):
+
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        if action is None:
+            _as = []
+            for o in self.selector.all(game, obj):
+                if o.get_controller_id() == player.get_id():
+                    a = Action()
+                    a.object = o
+                    a.text = "Sacrifice %s" % str(o)
+                    _as.append (a)
+
+            if len(_as) > 0:
+                return ActionSet (game, player, "Sacrifice %s" % self.selector, _as)
+
+        else:
+            game.doSacrifice(action.object, obj)
+
 
 class XSacrificeY(OneShotEffect):
     def __init__ (self, x_selector, y_selector):
@@ -1399,22 +1427,9 @@ class XSacrificeY(OneShotEffect):
         self.y_selector = y_selector
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
         for player in self.x_selector.all(game, obj):
-
-            _as = []
-            for o in self.y_selector.all(game, obj):
-                if o.get_controller_id() == player.get_id():
-                    a = Action()
-                    a.object = o
-                    a.text = "Sacrifice %s" % str(o)
-                    _as.append (a)
-            if len(_as) > 0:
-                _aset = ActionSet (game, player, "Sacrifice %s" % self.y_selector, _as)
-                a = game.input.send(_aset)
-
-                game.doSacrifice(a.object, obj)
-
-        return True
+            game.process_push(SacrificeYProcess(player, obj, self.y_selector))
         
     def __str__ (self):
         return "XSacrificeY(%s)" % (self.x_selector, self.y_selector)

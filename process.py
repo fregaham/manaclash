@@ -1341,7 +1341,7 @@ class DeclareBlockersStepProcess(Process):
                 _as = self.blockers_map.get(self.blocker_id, [])
                 self.blockers_map[self.blocker_id] = _as + [action.object.id]
 
-                self.state = 6
+                self.state = 3
                 game.process_push(self)
 
         elif self.state == 6:
@@ -2444,9 +2444,12 @@ class TriggerEffectProcess(SandwichProcess):
 
     def main(self, game):
         if not game.process_returns_pop():
+            print "XXX: TriggerEffectProcess failed to select targets"
             e = game.obj(self.effect_object_id)
             game.delete(e)
             game.triggered_abilities.remove(e)
+        else:
+            print "XXX: TriggerEffectProcess selectTargets OK"
         
 def process_select_selector(game, player, source, selector, text, optional=False):
     actions = []
