@@ -1434,6 +1434,39 @@ class XSacrificeY(OneShotEffect):
     def __str__ (self):
         return "XSacrificeY(%s)" % (self.x_selector, self.y_selector)
 
+class ChooseEffectSelectProcess:
+    def __init__ (self, player, obj, effect1, effect1text, effect2, effect2text):
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.effect1 = effect1
+        self.effect1text = effect1text
+        self.effect2 = effect2
+        self.effect2text = effect2text
+
+    def next(self, game, action):
+
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        if action is None:
+            _option1 = Action()
+            _option1.text = str(self.effect1text)
+
+            _option2 = Action()
+            _option2.text = str(self.effect2text)
+
+            return ActionSet (game, player, "Choose", [_option1, _option2])
+
+        else:
+            if action.text == str(self.effect1text):
+                obj.modal = 1
+                effect = self.effect1
+            else:
+                obj.modal = 2
+                effect = self.effect2
+
+            effect.selectTargets(game, player, obj)
+
 class ChooseEffect(Effect):
 
     def __init__ (self, effect1text, effect2text):
@@ -1446,37 +1479,20 @@ class ChooseEffect(Effect):
 
     def resolve(self, game, obj):
         if obj.modal == 1:
-            return self.effect1.resolve(game, obj)
+            self.effect1.resolve(game, obj)
         elif obj.modal == 2:
-            return self.effect2.resolve(game, obj)
+            self.effect2.resolve(game, obj)
         else:
             raise Exception("Not modal")
 
     def selectTargets(self, game, player, obj):
-
-        _option1 = Action()
-        _option1.text = str(self.effect1text)
-        
-        _option2 = Action()
-        _option2.text = str(self.effect2text)
-
-        _as = ActionSet (game, player, "Choose", [_option1, _option2])
-        a = game.input.send(_as)
-
-        if a == _option1:
-            obj.modal = 1
-            effect = self.effect1
-        else:
-            obj.modal = 2
-            effect = self.effect2
-
-        return effect.selectTargets(game, player, obj)
+        game.process_push(ChooseEffectSelectProcess(player, obj, self.effect1, self.effect1text, self.effect2, self.effect2text))
 
     def validateTargets(self, game, obj):
         if obj.modal == 1:
-            return self.effect1.validateTargets(game, obj)
+            self.effect1.validateTargets(game, obj)
         elif obj.modal == 2:
-            return self.effect2.validateTargets(game, obj)
+            self.effect2.validateTargets(game, obj)
         else:
             raise Exception("Not modal")
 

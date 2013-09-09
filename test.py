@@ -774,6 +774,34 @@ class ManaClashTest(unittest.TestCase):
         findObjectInGraveyard(g, p2, "Elvish Pioneer")
         findObjectInPlay(g, "Air Elemental")
 
+    def testHealingSalve(self):
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Raging Goblin"], ["Healing Salve"], ["Plains", "Elvish Pioneer"], ["Healing Salve"])
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = playSpell(g, a, "Healing Salve")
+        a = answerQuestion(g, a, "Choose", "target player gains 3 life")
+        a = selectTarget(g, a, "Player1")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+        assert g.obj(p1).life == 23
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Elvish Pioneer"], ["Raging Goblin"])
+        a = _pass(g, a)
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = playSpell(g, a, "Healing Salve")
+        a = answerQuestion(g, a, "Choose", "prevent the next 3 damage that would be dealt to target creature or player this turn")
+        a = selectTarget(g, a, "Elvish Pioneer")
+        a = payCosts(g, a)
+
+        a = postcombatMainPhase(g, a)
+        findObjectInPlay(g, "Elvish Pioneer")
+        findObjectInGraveyard(g, p1, "Raging Goblin")
+        assert g.obj(p2).life == 20
+
+
+
     def testIronStar(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Iron Star"], ["Raging Goblin"], [], [])
         a = basicManaAbility(g, a, "Mountain", p1)
