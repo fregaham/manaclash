@@ -1527,6 +1527,55 @@ class TargetXLoseLife(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXLoseLife(%s, %s)" % (self.targetSelector, str(self.count))
 
+class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess:
+    def __init__ (self, player, card_ids):
+        self.player_id = player.id
+        self.card_ids = card_ids
+
+    def next(self, game, action):
+        from process import evaluate
+
+        player = game.obj(self.player_id)
+        library = game.get_library(player) 
+
+        if len(self.card_ids) > 0:
+            if action is None:
+                self.old_looked_at = game.looked_at
+                game.looked_at = game.looked_at.copy()
+
+                options = []
+                for card_id in self.card_ids:
+                    card = game.obj(card_id)
+                    _option = Action()
+                    _option.text = str(card)
+                    _option.object = card
+                    options.append (_option)
+
+                    game.looked_at[player.id].append(card.get_id())
+        
+                evaluate(game)
+
+                return ActionSet (game, player, "Put card on top of your library", options)
+            else:
+                card = action.object
+                self.card_ids.remove (card.id)
+                library.objects.remove(card)
+                library.objects.append(card)
+
+                # put the other cards we are looking at on top of the library
+                for card_id in self.card_ids:
+                    card = game.obj(card_id)
+                    library.objects.remove(card)
+                    library.objects.append(card)
+
+                game.looked_at = self.old_looked_at
+
+                game.process_push(self) 
+               
+        else:
+            evaluate(game)
+        
+
 class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
     def __init__ (self, n):
         self.n = n
@@ -1544,42 +1593,13 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
 
         n = int(n)
 
-        cards = []
+        card_ids = []
         for i in range(n):
            if i < len(library.objects):
-                cards.append(library.objects[-i-1])
+                card_ids.append(library.objects[-i-1].id)
 
-        while len(cards) > 0:
-
-            old_looked_at = game.looked_at
-            game.looked_at = game.looked_at.copy()
-
-            options = []
-            for card in cards:
-                _option = Action()
-                _option.text = str(card)
-                _option.object = card
-                options.append (_option)
-
-                game.looked_at[player.id].append(card.get_id())
-        
-            evaluate(game)
-
-            _as = ActionSet (game, player, "Put card on top of your library", options)
-            a = game.input.send(_as)
-
-            cards.remove (a.object)
-            library.objects.remove(a.object)
-            library.objects.append(a.object)
-
-            # put the other cards we are looking at on top of the library
-            for card in cards:
-                library.objects.remove(card)
-                library.objects.append(card)
-
-            game.looked_at = old_looked_at
-
-        evaluate(game)
+        game.process_returns_push(True)
+        game.process_push(LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(player, card_ids))
 
     def __str__ (self):
         return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n

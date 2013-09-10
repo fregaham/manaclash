@@ -360,6 +360,14 @@ def assertNoSuchObjectInPlay(g, name):
     for o in zone.objects:
         assert o.get_state().title != name
 
+def assertCardInOptions(g, ax, name):
+    for a in ax.actions:
+        if a.object is not None:
+            if a.object.get_state().title == name:
+                return True
+
+    assert False
+
 class ManaClashTest(unittest.TestCase):
 
     def testAbyssalSpecter(self):
@@ -800,7 +808,39 @@ class ManaClashTest(unittest.TestCase):
         findObjectInGraveyard(g, p1, "Raging Goblin")
         assert g.obj(p2).life == 20
 
+    def testIndex(self):
+        g, a, p1, p2 = createGameInMainPhase(["Island"], ["Index"], [], [])
+        createCardToLibrary(g, "Raging Goblin", g.obj(p1))
+        createCardToLibrary(g, "Iron Star", g.obj(p1))
+        createCardToLibrary(g, "Elvish Pioneer", g.obj(p1))
+        createCardToLibrary(g, "Air Elemental", g.obj(p1))
+        createCardToLibrary(g, "Island", g.obj(p1))
 
+        a = basicManaAbility(g, a, "Island", p1)
+        a = playSpell(g, a, "Index")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        assert a.text == "Put card on top of your library"
+        assert len(a.actions) == 5
+        assertCardInOptions(g, a, "Raging Goblin")
+        assertCardInOptions(g, a, "Iron Star")
+        assertCardInOptions(g, a, "Elvish Pioneer")
+        assertCardInOptions(g, a, "Air Elemental")
+        assertCardInOptions(g, a, "Island")
+
+        a = selectObject(g, a, "Raging Goblin")
+        a = selectObject(g, a, "Elvish Pioneer")
+        a = selectObject(g, a, "Iron Star")
+        a = selectObject(g, a, "Island")
+        a = selectObject(g, a, "Air Elemental")
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        assert findObjectInHand(g, p1, "Air Elemental")
 
     def testIronStar(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Iron Star"], ["Raging Goblin"], [], [])
