@@ -25,7 +25,7 @@ from game import Game
 from process import GameTurnProcess, TurnProcess, MainPhaseProcess, evaluate
 from oracle import getParseableCards, createCardObject, parseOracle
 from abilities import PlayLandAbility, PlaySpell, BasicManaAbility
-from actions import AbilityAction, PassAction, PayCostAction, QueryNumber
+from actions import AbilityAction, PassAction, PayCostAction, QueryNumber, QueryString, ActionSet
 
 import unittest
 
@@ -115,6 +115,8 @@ def createGameInMainPhase(inPlay1, cards1, inPlay2, cards2):
 
 def _pass(g, ax):
     printState(g, ax)
+
+
     for a in ax.actions:
         if isinstance(a, PassAction):
             return g.next(a)
@@ -152,8 +154,12 @@ def printState(g, a):
     print ("manapool: %s" % (a.player.manapool))
     print ("life: %d" % (a.player.life))
 
-    for _ in a.actions:
-        print `_` + " " + _.text
+    if isinstance(a, ActionSet):
+        for _ in a.actions:
+            print `_` + " " + _.text
+
+    else:
+        print `a`
 
 def endOfTurn(g, ax):
     turn_id = g.get_active_player().id
@@ -323,6 +329,11 @@ def answerQuestion(g, ax, question, answer):
         if a.text.startswith(answer):
             return g.next(a)
     assert False
+
+def answerStringQuery(g, ax, question, answer):
+    assert isinstance(ax, QueryString)
+    assert ax.text.startswith(question)
+    return g.next(answer)
 
 def chooseX(g, ax, answer):
     assert isinstance(ax, QueryNumber)
@@ -654,6 +665,48 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 15
         assertNoSuchObjectInPlay(g, "Bloodshot Cyclops")
+
+    def testBrassHerald(self):
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains", "Plains", "Plains", "Plains", "Plains", "Mountain"], ["Brass Herald"], [], [])
+        createCardToLibrary(g, "Raging Goblin", g.obj(p1))
+        createCardToLibrary(g, "Goblin Chariot", g.obj(p1))
+        createCardToLibrary(g, "Bloodshot Cyclops", g.obj(p1))
+        createCardToLibrary(g, "Plains", g.obj(p1))
+
+        for _ in range(6):
+           a = basicManaAbility(g, a, "Plains", p1)
+
+        a = playSpell(g, a, "Brass Herald")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+       
+        printState(g, a) 
+        a = answerStringQuery(g, a, "Choose Creature Type", "goblin")
+        a = _pass(g, a)
+        a = _pass(g, a)
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+        
+        assert a.text == "Put card to the bottom of your library"
+        assert len(a.actions) == 2
+        assertCardInOptions(g, a, "Plains")
+        assertCardInOptions(g, a, "Bloodshot Cyclops")
+        a = selectObject(g, a, "Plains")
+        a = selectObject(g, a, "Bloodshot Cyclops")
+
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Raging Goblin")
+        a = payCosts(g, a)       
+ 
+        a = declareAttackersStep(g, a)
+        printState(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 18
+        findObjectInHand(g, p1, "Goblin Chariot")
+
 
     def testBribery(self):
         g, a, p1, p2 = createGameInMainPhase(["Island", "Island", "Island", "Island", "Island"], ["Bribery"], [], [])

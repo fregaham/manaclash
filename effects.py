@@ -1527,10 +1527,11 @@ class TargetXLoseLife(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXLoseLife(%s, %s)" % (self.targetSelector, str(self.count))
 
-class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess:
+class AbstractLookAtTopNCardsOfYourLibraryPutThemBack:
     def __init__ (self, player, card_ids):
         self.player_id = player.id
         self.card_ids = card_ids
+        self.message = None
 
     def next(self, game, action):
         from process import evaluate
@@ -1555,18 +1556,12 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess:
         
                 evaluate(game)
 
-                return ActionSet (game, player, "Put card on top of your library", options)
+                return ActionSet (game, player, self.message, options)
             else:
                 card = action.object
                 self.card_ids.remove (card.id)
-                library.objects.remove(card)
-                library.objects.append(card)
-
-                # put the other cards we are looking at on top of the library
-                for card_id in self.card_ids:
-                    card = game.obj(card_id)
-                    library.objects.remove(card)
-                    library.objects.append(card)
+                
+                self.putSelectedCard(game, library, card)
 
                 game.looked_at = self.old_looked_at
 
@@ -1574,7 +1569,25 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess:
                
         else:
             evaluate(game)
-        
+
+    def putSelectedCard(self, library, card):
+        pass
+
+class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(AbstractLookAtTopNCardsOfYourLibraryPutThemBack):
+    def __init__ (self, player, card_ids):
+        AbstractLookAtTopNCardsOfYourLibraryPutThemBack.__init__ (self, player, card_ids)
+        self.message = "Put card on top of your library"
+
+    def putSelectedCard(self, game, library, card):
+        library.objects.remove(card)
+        library.objects.append(card)
+
+        # put the other cards we are looking at on top of the library
+        for card_id in self.card_ids:
+            card = game.obj(card_id)
+            library.objects.remove(card)
+            library.objects.append(card)
+
 
 class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
     def __init__ (self, n):
@@ -1604,13 +1617,41 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
     def __str__ (self):
         return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n
 
+
+class PutCardsIntoHandProcess:
+    def __init__ (self, player, obj, card_ids):
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.card_ids = card_ids
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+        hand = game.get_hand(player)
+
+        for card_id in self.card_ids:
+            card = game.obj(card_id)
+            game.doZoneTransfer(card, hand, obj)
+
+class LookAtTopNCardsOfYourLibraryPutThemToTheBottomOfYourLibraryResolveProcess(AbstractLookAtTopNCardsOfYourLibraryPutThemBack):
+    def __init__ (self, player, card_ids):
+        AbstractLookAtTopNCardsOfYourLibraryPutThemBack.__init__ (self, player, card_ids)
+        self.message = "Put card to the bottom of your library"
+
+    def putSelectedCard(self, game, library, card):
+        
+        library.objects.remove(card)
+        library.objects.insert(0, card)
+
+
 class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYourLibraryInAnyOrder(OneShotEffect):
     def __init__ (self, n, selector):
         self.n = n
         self.selector = selector
 
     def resolve(self, game, obj):
-        from process import evaluate
+
+        from process import RevealCardsProcess
 
         player = game.objects[obj.get_controller_id()]
         library = game.get_library(player)
@@ -1623,48 +1664,23 @@ class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYour
         n = int(n)
 
         cards = []
+        card_ids = []
         for i in range(n):
            if i < len(library.objects):
-                cards.append(library.objects[-i-1])
+                card = library.objects[-i-1]
+                cards.append(card)
+                card_ids.append(card.id)
 
-        old_revealed = game.revealed
-        revealed = old_revealed[:]
-        for card in cards:
-            game.revealed.append(card.get_id())
-
-        hand = game.get_hand(player)
-
+        card_ids_to_hand = []
         for card in cards[:]:
             if self.selector.contains(game, obj, card):
-                game.doZoneTransfer(card, hand, obj)
-                cards.remove(card)
+                card_ids_to_hand.append(card.id)
+                card_ids.remove(card.id)
 
-        while len(cards) > 0:
-
-            old_looked_at = game.looked_at
-            game.looked_at = game.looked_at.copy()
-
-            options = []
-            for card in cards:
-                _option = Action()
-                _option.text = str(card)
-                _option.object = card
-                options.append (_option)
-
-                game.looked_at[player.id].append(card.get_id())
-        
-            evaluate(game)
-
-            _as = ActionSet (game, player, "Put card to the bottom of your library", options)
-            a = game.input.send(_as)
-
-            cards.remove (a.object)
-            library.objects.remove(a.object)
-            library.objects.insert(0, a.object)
-
-            game.looked_at = old_looked_at
-
-        evaluate(game)
+        game.process_returns_push(True)
+        game.process_push(LookAtTopNCardsOfYourLibraryPutThemToTheBottomOfYourLibraryResolveProcess(player, card_ids))
+        game.process_push(PutCardsIntoHandProcess(player, obj, card_ids_to_hand))
+        game.process_push(RevealCardsProcess(player, cards))
 
     def __str__ (self):
         return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n

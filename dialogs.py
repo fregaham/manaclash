@@ -27,31 +27,47 @@ class Dialog:
     def __str__(self):
         return "dialog"
 
+class ChooseCreatureTypeProcess:
+    def __init__ (self, context):
+        self.context_id = context.get_id()
+
+    def next(self, game, action):
+        context = game.obj(self.context_id)
+        player = game.objects[context.get_controller_id()]
+        if action is None:
+            return QueryString(game, player, "Choose Creature Type")
+        else:
+            context.modal = action.lower()
+
 class ChooseCreatureType(Dialog):
 
     def doModal(self, game, context):
-        player = game.objects[context.get_controller_id()]
-        _as = QueryString(game, player, "Choose Creature Type")
-        a = game.input.send(_as)
-        context.get_object().modal = a.lower()
+        game.process_push(ChooseCreatureTypeProcess(context))
 
     def __str__ (self):
         return "ChooseCreatureType()"
 
+class ChooseColorProcess:
+    def __init__ (self, context):
+        self.context_id = context.get_id()
+
+    def next(self, game, action):
+        context = game.obj(self.context_id)
+        player = game.objects[context.get_controller_id()]
+        if action is None:
+            colors = ["black", "blue", "green", "red", "white"]
+
+            actions = []
+            for name in colors:
+                a = Action()
+                a.text = name
+                actions.append(a)
+
+            return ActionSet (game, player, ("Choose a color"), actions)
+        else:
+            context.modal = action.text.lower()
+
 class ChooseColor(Dialog):
     def doModal(self, game, context):
-        player = game.objects[context.get_controller_id()]
-
-        colors = ["black", "blue", "green", "red", "white"]
-
-        actions = []
-        for name in colors:
-            a = Action()
-            a.text = name
-            actions.append(a)
-
-        _as = ActionSet (game, player, ("Choose a color"), actions)
-        a = game.input.send(_as)
-
-        context.get_object().modal = a.text.lower()
+        game.process_push(ChooseColorProcess(context))
 
