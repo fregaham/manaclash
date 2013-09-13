@@ -998,6 +998,37 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 18
 
+    def testTeferisPuzzleBox(self):
+        g, a, p1, p2 = createGameInMainPhase(["Teferi's Puzzle Box"], ["Mountain", "Raging Goblin"], [], ["Forest", "Rampant Growth", "Primeval Force"])
+        a = endOfTurn(g, a)
+        printState(g, a)
+        # upkeep
+        a = _pass(g, a)
+        a = _pass(g, a)
+        # puzzle box effect in stack
+        printState(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        # puzzle box effect resolves
+        printState(g, a)
+
+        assert len(a.actions) == 4
+        assert a.text == "Put card to the bottom of your library"
+        a = selectObject(g, a, "Plains")
+        a = selectObject(g, a, "Forest")
+        a = selectObject(g, a, "Rampant Growth")
+        a = selectObject(g, a, "Primeval Force")
+
+        assert len(g.get_hand(g.obj(p2)).objects) == 4
+
+        a = precombatMainPhase(g, a)
+
+        printState(g, a)
+
+        # should have four plains in hand
+        for obj in g.get_hand(g.obj(p2)).objects:
+            assert obj.get_state().title == "Plains"
+
 
 if __name__ == "__main__":
     unittest.main()

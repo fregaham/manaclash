@@ -751,10 +751,6 @@ class UntapProcess(Process):
     def next(self, game, action):
         game.doUntap(game.obj(self.permanent_id))
 
-class DrawCardProcess(Process):
-    def next(self, game, action):
-        game.doDrawCard(player)
-
 class PrePhaseProcess(Process):
     def next(self, game, action):
         game.current_step = ""

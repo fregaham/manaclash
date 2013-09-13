@@ -1527,7 +1527,7 @@ class TargetXLoseLife(SingleTargetOneShotEffect):
     def __str__ (self):
         return "TargetXLoseLife(%s, %s)" % (self.targetSelector, str(self.count))
 
-class AbstractLookAtTopNCardsOfYourLibraryPutThemBack:
+class AbstractPutCardsIntoLibraryProcess:
     def __init__ (self, player, card_ids):
         self.player_id = player.id
         self.card_ids = card_ids
@@ -1573,9 +1573,9 @@ class AbstractLookAtTopNCardsOfYourLibraryPutThemBack:
     def putSelectedCard(self, library, card):
         pass
 
-class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(AbstractLookAtTopNCardsOfYourLibraryPutThemBack):
+class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(AbstractPutCardsIntoLibraryProcess):
     def __init__ (self, player, card_ids):
-        AbstractLookAtTopNCardsOfYourLibraryPutThemBack.__init__ (self, player, card_ids)
+        AbstractPutCardsIntoLibraryProcess.__init__ (self, player, card_ids)
         self.message = "Put card on top of your library"
 
     def putSelectedCard(self, game, library, card):
@@ -1633,15 +1633,23 @@ class PutCardsIntoHandProcess:
             card = game.obj(card_id)
             game.doZoneTransfer(card, hand, obj)
 
-class LookAtTopNCardsOfYourLibraryPutThemToTheBottomOfYourLibraryResolveProcess(AbstractLookAtTopNCardsOfYourLibraryPutThemBack):
+# Process of moving cards from library or own hand to the bottom of the library
+class PutCardsToTheBottomOfYourLibraryProcess(AbstractPutCardsIntoLibraryProcess):
     def __init__ (self, player, card_ids):
-        AbstractLookAtTopNCardsOfYourLibraryPutThemBack.__init__ (self, player, card_ids)
+        AbstractPutCardsIntoLibraryProcess.__init__ (self, player, card_ids)
         self.message = "Put card to the bottom of your library"
 
     def putSelectedCard(self, game, library, card):
-        
-        library.objects.remove(card)
-        library.objects.insert(0, card)
+        zone = game.obj(card.zone_id)
+        if zone.id == library.id:
+            library.objects.remove(card)
+            library.objects.insert(0, card)
+        else:
+            # moving objects from in play is more difficult
+            assert zone.type != "in play"
+            card.zone_id = library.id
+            zone.objects.remove(card)
+            library.objects.insert(0, card)
 
 
 class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYourLibraryInAnyOrder(OneShotEffect):
@@ -1678,7 +1686,7 @@ class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYour
                 card_ids.remove(card.id)
 
         game.process_returns_push(True)
-        game.process_push(LookAtTopNCardsOfYourLibraryPutThemToTheBottomOfYourLibraryResolveProcess(player, card_ids))
+        game.process_push(PutCardsToTheBottomOfYourLibraryProcess(player, card_ids))
         game.process_push(PutCardsIntoHandProcess(player, obj, card_ids_to_hand))
         game.process_push(RevealCardsProcess(player, cards))
 
@@ -1690,39 +1698,23 @@ class XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(On
         self.selector = selector
 
     def resolve(self, game, obj):
-        from process import evaluate
+        from process import DrawCardProcess
 
         player = self.selector.only(game, obj)
         hand = game.get_hand(player)
         library = game.get_library(player)
 
-        n = 0
+        n = len(hand.objects)
+        card_ids = []
+        for card in hand.objects:
+            card_ids.append(card.id)
 
-        while len(hand.objects) > 0:
-            options = []
-            for card in hand.objects:
-                _option = Action()
-                _option.text = str(card)
-                _option.object = card
-                options.append (_option)
-
-            evaluate(game)
-     
-            _as = ActionSet (game, player, "Put card to the bottom of your library", options)
-            a = game.input.send(_as)
-            
-            card = a.object
-
-            game.doZoneTransfer(card, library, obj)
-
-            # move to the bottom:
-            library.objects.remove(card)
-            library.objects.insert(0, card)
-
-            n += 1
+        game.process_returns_push(True)
 
         for i in range(n):
-            game.doDrawCard(player)
+            game.process_push(DrawCardProcess(player))
+
+        game.process_push(PutCardsToTheBottomOfYourLibraryProcess(player, card_ids))
 
     def __str__ (self):
         return "XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(%s)" % self.selector
