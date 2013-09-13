@@ -910,6 +910,61 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 21
 
+    def testManaLeak(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain", "Mountain"], ["Raging Goblin", "Shock"], ["Island", "Island", "Island", "Island"], ["Mana Leak", "Mana Leak"])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Island", p2)
+        a = basicManaAbility(g, a, "Island", p2)
+        a = playSpell(g, a, "Mana Leak")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Choose", "Pay")
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = payCosts(g, a)
+
+        printState(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        findObjectInPlay(g, "Raging Goblin")
+
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        
+        a = basicManaAbility(g, a, "Island", p2)
+        a = basicManaAbility(g, a, "Island", p2)
+        a = playSpell(g, a, "Mana Leak")
+        a = selectTarget(g, a, "Shock")
+        a = payCosts(g, a)
+        
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+        a = answerQuestion(g, a, "Choose", "Counter")
+
+        a = emptyStack(g, a)
+
+        assert g.obj(p1).life == 20
+        assert g.obj(p2).life == 20
+
+
     def testMindRot(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Mind Rot"], [], ["Plains", "Plains", "Plains"])
         a = basicManaAbility(g, a, "Swamp", p1)

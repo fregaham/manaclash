@@ -1319,17 +1319,15 @@ class SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(SingleTarget
         return "SearchTargetXsLibraryForYAndPutThatCardInPlayUnderYourControl(%s,%s)" % (self.targetSelector, self.cardSelector)
 
 
-class SacrificeAllXUnlessYouCostProcess:
-    def __init__ (self, controller, selector, obj, costs):
+class AbstractDoXUnlessYouCostProcess:
+    def __init__ (self, controller, obj, costs, alternative_text):
         self.controller_id = controller.id
-        self.selector = selector
         self.obj_id = obj.id
         self.costs = costs
-
+        self.alternative_text = alternative_text
         self.state = 0
 
     def next(self, game, action):
-
         controller = game.obj(self.controller_id)
         obj = game.obj(self.obj_id)
 
@@ -1339,11 +1337,11 @@ class SacrificeAllXUnlessYouCostProcess:
                 _pay.text = "Pay %s" % str(map(str, self.costs))
 
                 _notpay = Action()
-                _notpay.text = "Sacrifice %s" % self.selector
+                _notpay.text = self.alternative_text
 
                 return ActionSet (game, controller, "Choose", [_pay, _notpay])
             else:
-                if action.text.startswith("Sacrifice"):
+                if action.text == self.alternative_text:
                     self.state = 2
                     game.process_push(self)
                 else:
@@ -1353,7 +1351,7 @@ class SacrificeAllXUnlessYouCostProcess:
 
         elif self.state == 1:
             if not game.process_returns_pop():
-                # costs not paid, sacrificing...
+                # costs not paid, doing the alternative
                 self.state = 2
                 game.process_push(self)
             else:
@@ -1361,10 +1359,21 @@ class SacrificeAllXUnlessYouCostProcess:
                 pass
 
         elif self.state == 2:
-            for o in self.selector.all(game, obj):
-                if o.get_controller_id() == controller.id:
-                    # only controlled objects can be sacrificed
-                    game.doSacrifice(o, obj)
+            self.doAlternative(game, controller, obj)
+
+    def doAlternative(self, game, controller, obj):
+        pass
+
+class SacrificeAllXUnlessYouCostProcess(AbstractDoXUnlessYouCostProcess):
+    def __init__ (self, controller, selector, obj, costs):
+        AbstractDoXUnlessYouCostProcess.__init__(self, controller, obj, costs, "Sacrifice %s" % selector)
+        self.selector = selector
+
+    def doAlternative(self, game, controller, obj):
+        for o in self.selector.all(game, obj):
+            if o.get_controller_id() == controller.id:
+                # only controlled objects can be sacrificed
+                game.doSacrifice(o, obj)
         
 
 class SacrificeAllXUnlessYouCost(OneShotEffect):
@@ -1719,29 +1728,24 @@ class XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(On
     def __str__ (self):
         return "XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(%s)" % self.selector
 
+class CounterXUnlessYouCostProcess(AbstractDoXUnlessYouCostProcess):
+    def __init__ (self, controller, target, obj, costs):
+        AbstractDoXUnlessYouCostProcess.__init__(self, controller, obj, costs, "Counter %s" % target)
+        self.target_id = target.get_id()
+
+    def doAlternative(self, game, controller, obj):
+        target = game.obj(self.target_id)
+        game.doCounter(target)
+
 class CounterTargetXUnlessItsControllerPaysCost(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, costs):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
         self.costs = costs
     
     def doResolve(self, game, obj, target):
-
+        game.process_returns_push(True)
         controller = game.objects[target.get_state().controller_id]
-        _pay = Action()
-        _pay.text = "Pay %s" % str(map(str, self.costs))
-        
-        _notpay = Action()
-        _notpay.text = "Counter %s" % target
-
-        _as = ActionSet (game, controller, "Choose", [_pay, _notpay])
-        a = game.input.send(_as)
-
-        if a == _pay:
-            from process import process_pay_cost
-            if process_pay_cost(game, controller, obj, obj, self.costs):
-                return
-            # else, counter.
-        return game.doCounter(target)
+        game.process_push(CounterXUnlessYouCostProcess(controller, target, obj, self.costs))
 
     def __str__ (self):
         return "CounterTargetXUnlessItsControllerPaysCost(%s, %s)" % (self.targetSelector, str(map(str,self.costs)))
