@@ -1820,36 +1820,41 @@ class ReturnTargetXToPlay(SingleTargetOneShotEffect):
     def __str__ (self):
         return "ReturnTargetXToPlay(%s)" % self.targetSelector
 
+class YouMayTapOrUntapTargetXResolveProcess:
+    def __init__ (self, player_id, obj, target):
+        self.player_id = player_id
+        self.obj_id = obj.id
+        # TODO: LKI
+        self.target = target
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+        if action is None:
+            _pass = PassAction(player)
+
+            _tap = Action()
+            _tap.text = "Tap"
+
+            _untap = Action()
+            _untap.text = "Untap"
+
+            return ActionSet (game, player, "You may tap or untap target", [_pass, _tap, _untap])
+        else:
+            game.process_returns_push(True)
+            if action.text == "Tap":
+                game.doTap(self.target)
+            elif action.text == "Untap":
+                game.doUntap(self.target)
+
+
 class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
-        if obj.modal == "tap":
-            game.doTap(target)
-        elif obj.modal == "untap":
-            game.doUntap(target)
-
-    def doModal(self, game, player, obj):
-        _pass = PassAction(player)
-
-        _tap = Action()
-        _tap.text = "Tap"
-
-        _untap = Action()
-        _untap.text = "Untap"
-        
-        _as = ActionSet (game, player, "You may tap or untap target", [_pass, _tap, _untap])
-        a = game.input.send(_as)
-
-        if a.text == "Tap":
-            obj.modal = "tap"
-        elif a.text == "Untap":
-            obj.modal = "untap"
-        else:
-            return False
-
-        return True
+        controller_id = obj.get_controller_id()
+        game.process_push(YouMayTapOrUntapTargetXResolveProcess(controller_id, obj, target))
 
     def __str__ (self):
         return "YouMayTapOrUntapTargetX(%s)" % (self.targetSelector)

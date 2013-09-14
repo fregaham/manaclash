@@ -1084,6 +1084,38 @@ class ManaClashTest(unittest.TestCase):
         for obj in g.get_hand(g.obj(p2)).objects:
             assert obj.get_state().title == "Plains"
 
+    def testTwiddle(self):
+        g, a, p1, p2 = createGameInMainPhase(["Island", "Island"], ["Twiddle", "Twiddle"], ["Raging Goblin"], [])
+
+        a = basicManaAbility(g, a, "Island", p1)
+        a = playSpell(g, a, "Twiddle")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "You may", "Tap")
+
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        assert goblin.tapped
+
+        a = basicManaAbility(g, a, "Island", p1)
+        a = playSpell(g, a, "Twiddle")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "You may", "Untap")
+
+        assert not goblin.tapped
+        
 
 if __name__ == "__main__":
     unittest.main()
