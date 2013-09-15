@@ -1885,6 +1885,37 @@ class TapAllX(OneShotEffect):
     def __str__ (self):
         return "TapAllX(%s)" % (self.selector)
 
+class UntapUpToNXProcess:
+    def __init__ (self, player, obj, number, selector):
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.number = number
+        self.selector = selector
+        self.i = 0
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        if self.i < self.number:
+            if action is None:
+                actions = []
+                _pass = PassAction(player)
+                actions.append (_pass)
+                for o in self.selector.all(game, obj):
+                    if o.tapped:
+                        a = Action()
+                        a.text = "Untap %s" % (str(o))
+                        a.object = o
+                        actions.append (a)
+
+                return ActionSet(game, player, "Untap up to %d %s" % (self.number - self.i, str(self.selector)), actions)
+            else:
+                if not isinstance(action, PassAction):
+                    self.i += 1
+                    game.process_push(self)
+                    game.doUntap(action.object)
+
 class UntapUpToNX(OneShotEffect):
     def __init__ (self, number, selector):
         self.number = number
@@ -1894,27 +1925,9 @@ class UntapUpToNX(OneShotEffect):
         n = self.number.evaluate(game, obj)
 
         player = game.objects[obj.get_controller_id()]
-
-        for i in range(n):
-            actions = []
-            _pass = PassAction(player)
-            actions.append (_pass)
-            for o in self.selector.all(game, obj):
-                if o.tapped:
-                    a = Action()
-                    a.text = "Untap %s" % (str(o))
-                    a.object = o
-                    actions.append (a)
-
-            _as = ActionSet(game, player, "Untap up to %d %s" % (n - i, str(self.selector)), actions)
-            a = game.input.send(_as)
-
-            if a == _pass:
-                break
-
-            game.doUntap(a.object)
-
-        return True
+        
+        game.process_returns_push(True)
+        game.process_push(UntapUpToNXProcess(player, obj, n, self.selector))
 
     def __str__ (self):
         return "UntapUpToNX(%s, %s)" % (self.number, self.selector)

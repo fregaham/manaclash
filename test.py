@@ -1043,6 +1043,36 @@ class ManaClashTest(unittest.TestCase):
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
 
+    def testRewind(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"],["Island", "Island", "Island", "Island"], ["Rewind"])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Island", p2) 
+        a = basicManaAbility(g, a, "Island", p2) 
+        a = basicManaAbility(g, a, "Island", p2) 
+        a = basicManaAbility(g, a, "Island", p2) 
+        
+        a = playSpell(g, a, "Rewind")
+        a = selectTarget(g, a, "Shock")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = selectObject(g, a, "Island")
+        a = selectObject(g, a, "Island")
+        a = selectObject(g, a, "Island")
+        a = selectObject(g, a, "Island")
+
+        printState(g, a)
+
+        assert g.get_stack_length() == 0
+        assert g.obj(p2).life == 20
+        assert not findObjectInPlay(g, "Island").tapped
+
     def testSeismicAssault(self):
         g, a, p1, p2 = createGameInMainPhase(["Seismic Assault"], ["Mountain"], [], [])
         a = activateAbility(g, a, "Seismic Assault", p1)
