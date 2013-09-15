@@ -2248,39 +2248,25 @@ class AddNManaOfAnyColorBasicLandControlsCouldProduceToYourManapool(OneShotEffec
         self.n = n
 
     def resolve(self, game, obj):
+        game.process_returns_push(True)
+
         for player in YouSelector().all(game, obj):
-            producable = set()            
+            producable = []
             for land in BasicLandYouControlSelector().all(game, obj):
                 if "mountain" in land.get_state().subtypes:
-                    producable.add ("R")
+                    producable.append ("R")
                 if "island" in land.get_state().subtypes:
-                    producable.add ("U")
+                    producable.append ("U")
                 if "plains" in land.get_state().subtypes:
-                    producable.add ("W")
+                    producable.append ("W")
                 if "forest" in land.get_state().subtypes:
-                    producable.add ("G")
+                    producable.append ("G")
                 if "swamp" in land.get_state().subtypes:
-                    producable.add ("B")
+                    producable.append ("B")
 
             if len(producable) > 0:
                 for i in range(self.n):
-                    colors = ["W","R","B","U","G"]
-                    names = ["White", "Red", "Black", "Blue", "Green"] 
-
-                    actions = []
-                    for i in range(len(colors)):
-                        a = Action()
-                        a.text = names[i]
-                        if colors[i] in producable:
-                            actions.append(a)
-
-                    _as = ActionSet (game, player, ("Choose a color"), actions)
-                    a = game.input.send(_as)
-
-                    color = colors[names.index(a.text)]
-                    player.manapool += color
-
-        return True
+                    game.process_push(XAddOneOfTheseManaToYourManaPoolProcess(player, producable))
 
     def __str__ (self):
         return "AddNManaOfAnyColorBasicLandControlsCouldProduceToYourManapool(%s)" % (str(self.n))

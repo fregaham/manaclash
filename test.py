@@ -1089,6 +1089,16 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 18
 
+    def testStarCompass(self):
+        g, a, p1, p2 = createGameInMainPhase(["Forest", "Swamp", "Mountain", "Star Compass"], [], [], [])
+        a = activateAbility(g, a, "Star Compass", p1)
+
+        assert len(a.actions) == 3
+
+        a = answerQuestion(g, a, "Choose mana", "R")
+        assert g.obj(p1).manapool == "R"
+ 
+
     def testTeferisPuzzleBox(self):
         g, a, p1, p2 = createGameInMainPhase(["Teferi's Puzzle Box"], ["Mountain", "Raging Goblin"], [], ["Forest", "Rampant Growth", "Primeval Force"])
         a = endOfTurn(g, a)
