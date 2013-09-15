@@ -2209,6 +2209,25 @@ class XAddNManaOfAnyColorToYourManapool(OneShotEffect):
     def __str__ (self):
         return "XAddNManaOfAnyColorToYourManapool(%s, %s)" % (self.selector, str(self.n))
 
+class XAddOneOfTheseManaToYourManaPoolProcess:
+    def __init__ (self, player, options):
+        self.player_id = player.id
+        self.options = options
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        if action is None:
+            actions = []
+            for o in self.options:
+                a = Action()
+                a.text = o
+                actions.append(a)
+
+            return ActionSet (game, player, ("Choose mana"), actions)
+        else:
+            mana = action.text
+            player.manapool += mana
+
 class XAddOneOfTheseManaToYourManaPool(OneShotEffect):
     def __init__ (self, selector, options):
         self.options = options
@@ -2216,20 +2235,10 @@ class XAddOneOfTheseManaToYourManaPool(OneShotEffect):
 
     def resolve(self, game, obj):
 
+        game.process_returns_push(True)
+
         for player in self.selector.all(game, obj):
-            actions = []
-            for o in self.options:
-                a = Action()
-                a.text = o
-                actions.append(a)
-
-            _as = ActionSet (game, player, ("Choose mana"), actions)
-            a = game.input.send(_as)
-
-            mana = a.text
-            player.manapool += mana
-
-        return True
+            game.process_push(XAddOneOfTheseManaToYourManaPoolProcess(player, self.options))
 
     def __str__ (self):
         return "XAddOneOfTheseManaToYourManaPool(%s, %s)" % (self.selector, str(self.options))

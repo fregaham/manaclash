@@ -770,6 +770,12 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 20
 
+    def testCoastalTower(self):
+        g, a, p1, p2 = createGameInMainPhase(["Coastal Tower"], [], [], [])
+        a = activateAbility(g, a, "Coastal Tower", p1)
+        a = answerQuestion(g, a, "Choose mana", "W")
+        assert g.obj(p1).manapool == "W"
+
     def testCoercion(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Coercion"], [], ["Raging Goblin", "Plains", "Seismic Assault"])
         a = basicManaAbility(g, a, "Swamp", p1)
