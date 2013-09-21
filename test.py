@@ -803,6 +803,27 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains") 
         assert findObjectInHand(g, p1, "Plains") is not None
 
+    def testDistortingLens(self):
+        g, a, p1, p2 = createGameInMainPhase(["Distorting Lens", "Island", "Island", "Island"], ["Hibernation"], ["Raging Goblin"], [])
+        a = activateAbility(g, a, "Distorting Lens", p1)
+        a = selectTarget(g, a, "Raging Goblin")
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+        a = answerQuestion(g, a, "Choose", "Green")
+        
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = playSpell(g, a, "Hibernation")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        assertNoSuchObjectInPlay(g, "Raging Goblin")
+        goblin = findObjectInHand(g, p2, "Raging Goblin")
+        assert "red" in goblin.get_state().tags
+        assert "green" not in goblin.get_state().tags
 
     def testElvishPioneer(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest"], ["Elvish Pioneer", "Plains"], [], [])

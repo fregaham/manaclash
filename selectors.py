@@ -256,7 +256,7 @@ class LKISelector(Selector):
         self.lki = lki
     def all(self, game, context):
         if self.lki.is_valid():
-            yield self.lki.get_object()
+            yield self.lki
         return    
     def __str__ (self):
         return str(self.lki)

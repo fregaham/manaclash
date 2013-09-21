@@ -2335,28 +2335,36 @@ class ChangeTargetOfTargetX(SingleTargetOneShotEffect):
     def __str__ (self):
         return "ChangeTargetOfTargetX(%s)" % (self.targetSelector)
 
+class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurnProcess:
+    def __init__(self, player, obj, target):
+        self.obj_id = obj.id
+        self.player_id = player.id
+        self.target = target
+
+    def next(self, game, action):
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+        if action is None:
+            actions = []
+            for name in ["White", "Red", "Black", "Blue", "Green"] :
+                a = Action()
+                a.text = name
+                actions.append(a)
+
+            return ActionSet (game, player, ("Choose a color"), actions)
+        else:
+            color = action.text.lower()
+            game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(self.target), color)))
+
 class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
 
     def doResolve(self, game, obj, target):
-
-        # choose color
         controller = game.objects[obj.get_controller_id()]
-        names = ["White", "Red", "Black", "Blue", "Green"] 
 
-        actions = []
-        for name in names:
-            a = Action()
-            a.text = name
-            actions.append(a)
-
-        _as = ActionSet (game, controller, ("Choose a color"), actions)
-        a = game.input.send(_as)
-
-        color = a.text.lower()
-
-        game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target), color)))
+        game.process_returns_push(True)
+        game.process_push(TargetXBecomesTheColorOfYourChoiceUntilEndOfTurnProcess(controller, obj, target))
 
     def __str__ (self):
         return "TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(%s)" % (self.targetSelector)
