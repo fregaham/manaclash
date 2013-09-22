@@ -2261,6 +2261,32 @@ def process_reveal_cards(game, player, cards):
 
     game.revealed = oldrevealed 
 
+class LookAtCardsProcess(Process):
+    def __init__(self, player, card_ids):
+        self.player_id = player.id
+        self.card_ids = card_ids
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        
+        if action is None:
+            self.oldlooked_at = game.looked_at
+            game.looked_at = game.looked_at.copy()
+
+            for card_id in self.card_ids:
+                game.looked_at[player.id].append (card_id)
+
+            evaluate(game)
+            
+            _ok = PassAction(player)
+            _ok.text = "OK" 
+
+            return ActionSet(game, player, "Look at cards", [_ok])
+
+        else:
+            game.looked_at = self.oldlooked_at
+
+# DONE?
 def process_look_at_cards(game, player, cards):
     oldlooked_at = game.looked_at
     game.looked_at = game.looked_at.copy()

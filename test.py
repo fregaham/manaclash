@@ -1006,6 +1006,16 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
+    def testOrcishSpy(self):
+        g, a, p1, p2 = createGameInMainPhase(["Orcish Spy"], [], [], [])
+        a = activateAbility(g, a, "Orcish Spy", p1)
+        a = selectTarget(g, a, "Player2")
+        a = _pass(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+        a = answerQuestion(g, a, "Look at", "OK")
+
+
     def testPersecute(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Persecute"], [], ["Raging Goblin", "Seismic Assault", "Mind Rot"])
         a = basicManaAbility(g, a, "Swamp", p1)

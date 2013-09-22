@@ -2659,14 +2659,15 @@ class LookAtTheTopNCardsOfTargetPlayersLibrary(SingleTargetOneShotEffect):
         you = YouSelector().only(game, obj)
         library = game.get_library(target.get_object())
 
-        cards = []
+        card_ids = []
 
         for i in range(n):
             if len(library.objects) > i:
-                cards.append (library.objects[-i - 1])
+                card_ids.append (library.objects[-i - 1].id)
 
-        from process import process_look_at_cards
-        process_look_at_cards(game, you, cards)
+        from process import LookAtCardsProcess
+        game.process_returns_push(True)
+        game.process_push(LookAtCardsProcess(you, card_ids))
 
     def __str__ (self):
         return "LookAtTheTopNCardsOfTargetPlayersLibrary(%s, %s)" % (self.targetSelector, self.number)
