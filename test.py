@@ -1006,6 +1006,28 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
+    def testOraclesAttendants(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Oracle's Attendants", "Raging Goblin"], [])
+
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+
+        a = activateAbility(g, a, "Oracle's Attendants", p2)
+        printState(g, a)
+        a = selectTarget(g, a, "Raging Goblin")
+        printState(g, a)
+        a = selectObject(g, a, "Shock")
+        
+        a = emptyStack(g, a)
+
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        attendants = findObjectInPlay(g, "Oracle's Attendants")
+        assert attendants.damage == 2
+        
+
     def testOrcishSpy(self):
         g, a, p1, p2 = createGameInMainPhase(["Orcish Spy"], [], [], [])
         a = activateAbility(g, a, "Orcish Spy", p1)

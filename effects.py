@@ -2626,7 +2626,20 @@ class AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(ContinuousEffect):
                 list.append ( (a,b,n) )
 
         dr.list = list
- 
+
+class SetReturnedObjectAsModalLKIProcess:
+    def __init__ (self, obj):
+        self.obj_id = obj.id
+
+    def next(self, game, action):
+        obj = game.obj(self.obj_id)
+        s_id = game.process_returns_pop()
+        if s_id is not None:
+            s_lki = LastKnownInformation(game, game.obj(s_id))
+            obj.modal = s_lki
+            game.process_returns_push(True)
+        else:
+            game.process_returns_push(False)
 
 class AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstead(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, y_selector, z_selector):
@@ -2635,12 +2648,14 @@ class AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstea
         self.z_selector = z_selector
 
     def doModal(self, game, player, obj):
-        from process import process_select_source_of_damage
-        obj.modal = LastKnownInformation(game, process_select_source_of_damage(game, player, obj, self.y_selector, "Choose a source of damage", False))
-
-        return obj.modal is not None
+        from process import SelectSourceOfDamageProcess
+        game.process_push(SetReturnedObjectAsModalLKIProcess(obj))
+        game.process_push(SelectSourceOfDamageProcess(player, obj, self.y_selector, "Choose a source of damage", False))
 
     def doResolve(self, game, obj, target):
+
+        game.process_returns_push(True)
+
         z_lki = LastKnownInformation(game, self.z_selector.only(game, obj))
         if obj.modal is not None:
             game.until_end_of_turn_effects.append ( (obj, AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(LKISelector(target), LKISelector(obj.modal), LKISelector(z_lki)) ) )
