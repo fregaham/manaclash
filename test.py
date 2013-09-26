@@ -991,6 +991,30 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p1).life == 20
         assert g.obj(p2).life == 20
 
+    def testMindBend(self):
+        g, a, p1, p2 = createGameInMainPhase(["Eastern Paladin", "Island", "Swamp", "Swamp"], ["Mind Bend"], ["Raging Goblin"], [])
+        a = basicManaAbility(g, a, "Island", p1)
+        a = playSpell(g, a, "Mind Bend")
+        a = selectTarget(g, a, "Eastern Paladin")
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Choose a color or a basic land type", "green")
+        printState(g, a)
+        a = answerQuestion(g, a, "Change 'green' to...", "red")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        printState(g, a) 
+        
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = activateAbility(g, a, "Eastern Paladin", p1)
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        assertNoSuchObjectInPlay(g, "Raging Goblin")
+
 
     def testMindRot(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Mind Rot"], [], ["Plains", "Plains", "Plains"])

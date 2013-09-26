@@ -2529,50 +2529,61 @@ class ChangeTheTextOfXByReplacingAllInstancesOfAWithB(ContinuousEffect):
     def getLayer(self):
         return "text"
 
-class ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnother(SingleTargetOneShotEffect):
-    def __init__ (self, targetSelector):
-        SingleTargetOneShotEffect.__init__(self, targetSelector)
+class ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnotherProcess:
+    def __init__(self, player, obj):
+        self.player_id = player.id
+        self.obj_id = obj.id
 
-    def doModal(self, game, player, obj):
+        self.what = None
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
         colors = ["black", "blue", "green", "red", "white"]
         lands = ["forest", "island", "mountain", "plains", "swamp"]
 
         options = colors + lands
 
-        actions = []
-        for name in options:
-            a = Action()
-            a.text = name
-            actions.append(a)
+        if self.what is None:
+            if action is None:
+                actions = []
+                for name in options:
+                    a = Action()
+                    a.text = name
+                    actions.append(a)
 
-        _as = ActionSet (game, player, ("Choose a color or a basic land type"), actions)
-        a = game.input.send(_as)
+                return ActionSet (game, player, ("Choose a color or a basic land type"), actions)
+            else:
+                self.what = action.text.lower()
+                if self.what in colors:
+                    subset = colors
+                else:
+                    subset = lands
 
-        what = a.text.lower()
+                actions = []
+                for name in subset:
+                    if name != self.what:
+                        a = Action()
+                        a.text = name
+                        actions.append(a)
 
-        actions = []
-
-        if what in colors:
-            subset = colors
+                return ActionSet (game, player, ("Change '%s' to..." % self.what), actions)
         else:
-            subset = lands
+            to = action.text.lower()
+            obj.modal = (self.what, to)
+            
 
-        for name in subset:
-            if name != what:
-                a = Action()
-                a.text = name
-                actions.append(a)
+class ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnother(SingleTargetOneShotEffect):
+    def __init__ (self, targetSelector):
+        SingleTargetOneShotEffect.__init__(self, targetSelector)
 
-        _as = ActionSet (game, player, ("Change '%s' to..." % what), actions)
-        a = game.input.send(_as)
-        
-        to = a.text.lower()
-
-        obj.modal = (what, to)
-
-        return True
+    def doModal(self, game, player, obj):
+        game.process_returns_push(True)
+        game.process_push(ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnotherProcess(player, obj))
 
     def doResolve(self, game, obj, target):
+        game.process_returns_push(True)
         game.indefinite_effects.append ( (obj, target, ChangeTheTextOfXByReplacingAllInstancesOfAWithB(LKISelector(target), obj.modal[0], obj.modal[1])))
 
     def __str__ (self):
