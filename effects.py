@@ -3041,6 +3041,52 @@ class ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBat
     def __str__ (self):
         return "ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(%s, %s)" % (self.x_selector, self.y_selector)
 
+class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHerProcess:
+    def __init__ (self, player, obj, n):
+        self.player_id = player.id
+        self.obj_id = obj.id
+        self.n = n
+        self.state = 0
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        library = game.get_library(player)
+        hand = game.get_hand(player)
+        graveyard = game.get_graveyard(player)
+
+        if self.state == 0:
+            self.state = 1
+            return QueryString(game, player, "Name a Card")
+        elif self.state == 1:
+            self.title = action.lower().strip()
+
+            if len(library.objects) == 0:
+                game.doLoseGame(player)
+            else:
+                top_card = library.objects[-1]
+                from process import RevealCardsProcess
+
+                self.state = 2
+                game.process_push(self)
+                game.process_push(RevealCardsProcess(player, [top_card]))
+
+        elif self.state == 2:
+            top_card = library.objects[-1]
+            if self.title == top_card.get_state().title.lower():
+                game.doZoneTransfer(top_card, hand, obj)
+            else:
+                count = self.n.evaluate(game, obj)
+
+                damage = []
+                damage.append ( (obj, player, count) )
+                game.doDealDamage(damage)
+
+                game.doZoneTransfer(top_card, graveyard, obj)
+                
+    
+
 class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, n):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -3048,31 +3094,10 @@ class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayer
            
     def doResolve(self, game, obj, target):
 
-        from process import process_reveal_cards
-
         player = target.get_object()
 
-        _as = QueryString(game, player, "Name a Card")
-        a = game.input.send(_as)
-
-        library = game.get_library(player)
-        hand = game.get_hand(player)
-        graveyard = game.get_graveyard(player)
-
-        if len(library.objects) == 0:
-            self.doLoseGame(player)
-        else:
-            top_card = library.objects[-1]
-            process_reveal_cards(game, player, [top_card])
-
-            if top_card.get_state().title.lower() == a.lower().strip():
-                game.doZoneTransfer(top_card, hand, obj)
-            else:
-                game.doZoneTransfer(top_card, graveyard, obj)
-                count = self.n.evaluate(game, obj)
-                damage = []
-                damage.append ( (obj, player, count) )
-                game.doDealDamage(damage)
+        game.process_returns_push(True)
+        game.process_push(TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHerProcess(player, obj, self.n))
 
     def __str__ (self):
         return "TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(%s, %s)" % (self.targetSelector, self.n)

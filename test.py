@@ -1238,7 +1238,58 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "You may", "Untap")
 
         assert not goblin.tapped
-        
+
+    def testVexingArcanix(self):
+        g, a, p1, p2 = createGameInMainPhase(["Island", "Island", "Island", "Vexing Arcanix"], [], [], [])
+        createCardToLibrary(g, "Iron Star", g.obj(p1))
+        createCardToLibrary(g, "Plains", g.obj(p1))
+        createCardToLibrary(g, "Raging Goblin", g.obj(p1))
+      
+        a = basicManaAbility(g, a, "Island", p1) 
+        a = basicManaAbility(g, a, "Island", p1) 
+        a = basicManaAbility(g, a, "Island", p1) 
+
+        a = activateAbility(g, a, "Vexing Arcanix", p1)
+        a = selectTarget(g, a, "Player1")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerStringQuery(g, a, "Name a Card", "Raging Goblin")
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+
+        goblin = findObjectInHand(g, p1, "Raging Goblin")
+        assert g.obj(p1).life == 20
+
+        a = endOfTurn(g, a)        
+        a = endOfTurn(g, a)        
+        a = precombatMainPhase(g, a)
+
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+
+        a = activateAbility(g, a, "Vexing Arcanix", p1)
+        a = selectTarget(g, a, "Player1")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = answerStringQuery(g, a, "Name a Card", "Plains")
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+
+        star = findObjectInGraveyard(g, p1, "Iron Star")
+        assert g.obj(p1).life == 18
+
 
 if __name__ == "__main__":
     unittest.main()
