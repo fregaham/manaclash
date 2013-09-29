@@ -937,6 +937,17 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 21
 
+    def testManaClash(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Mana Clash"], [], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Mana Clash")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
     def testManaLeak(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain", "Mountain"], ["Raging Goblin", "Shock"], ["Island", "Island", "Island", "Island"], ["Mana Leak", "Mana Leak"])
         a = basicManaAbility(g, a, "Mountain", p1)

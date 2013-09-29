@@ -581,7 +581,7 @@ class Game:
     def doCoinFlip(self, player):
         result = random.choice(["heads", "tails"])
         self.output.coinFlip(player.get_object(), result)
-        return result
+        self.process_returns_push(result)
 
     def delete(self, obj):
         if obj.zone_id is not None:

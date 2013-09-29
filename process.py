@@ -2825,3 +2825,11 @@ def process_ask_option(game, obj, player, question, options):
     a = game.input.send (_as)
     return a.text
 
+
+class CoinFlipProcess(Process):
+    def __init__ (self, player):
+        self.player_id = player.id
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        game.doCoinFlip(player)

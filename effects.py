@@ -2463,6 +2463,47 @@ class AllXBecomeNNCreaturesUntilEndOfTurn(OneShotEffect):
     def __str__ (self):
         return "AllXBecomeNNCreaturesUntilEndOfTurn(%s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber)
 
+class YouAndXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlipProcess:
+    def __init__ (self, obj, player, target, n):
+        self.obj_id = obj.id
+        self.player_id = player.id
+        self.target_id = target.get_id()
+        self.state = 0
+        self.n = n
+
+    def next(self, game, action):
+
+        from process import CoinFlipProcess
+
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+        target = game.obj(self.target_id)
+
+        if self.state == 0:
+            self.state = 1
+            game.process_push(self) 
+
+            game.process_push(CoinFlipProcess(target))
+            game.process_push(CoinFlipProcess(player))
+
+        elif self.state == 1:
+            targetflip = game.process_returns_pop()
+            playerflip = game.process_returns_pop()
+
+            damage = []
+            if playerflip == "tails":
+                damage.append ( (obj.get_source_lki(), player, self.n) )
+            if targetflip == "tails":
+                damage.append ( (obj.get_source_lki(), target, self.n) )
+
+            if playerflip == "heads" and targetflip == "heads":
+                pass
+            else:
+                self.state = 0
+                game.process_push(self)
+                game.doDealDamage(damage)
+
+
 class YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector, n):
         SingleTargetOneShotEffect.__init__(self, targetSelector)
@@ -2473,20 +2514,8 @@ class YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTails
 
         n = self.n.evaluate(game, obj)
 
-        while True:
-            youflip = game.doCoinFlip(you)
-            targetflip = game.doCoinFlip(target)
-
-            damage = []
-            if youflip == "tails":
-                damage.append ( (obj.get_source_lki(), you, n) )
-            if targetflip == "tails":
-                damage.append ( (obj.get_source_lki(), target, n) )
-
-            game.doDealDamage(damage)
-
-            if youflip == "heads" and targetflip == "heads":
-                break
+        game.process_returns_push(True)
+        game.process_push(YouAndXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlipProcess(obj, you, target, n))
 
     def __str__ (self):
         return "YouAndTargetXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeatThisProcessUntilBothPlayersCoinsComeUpHeadsOnTheSameFlip(%s, %s)" % (self.targetSelector, self.n)
