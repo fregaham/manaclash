@@ -2705,6 +2705,46 @@ def process_select_targets(game, player, source, selector, n, optional=False):
 
     return targets
 
+
+class PutCardIntoPlayProcess(Process):
+    def __init__ (self, card, controller, cause, tapped=False):
+        self.card_id = card.id
+        self.controller_id = controller.id
+        self.cause_id = cause.id
+        self.tapped = tapped
+
+        self.state = 0
+
+    def next(self, game, action):
+        card = game.obj(self.card_id)
+        controller = game.obj(self.controller_id)
+        cause = game.obj(self.cause_id)
+        in_play_zone = game.get_in_play_zone()
+
+        if self.state == 0:
+            # we need to choose enchantments' targets
+            if "aura" in card.get_state().subtypes: 
+                self.state = 1
+                game.process_push(self)
+
+                card.rules.selectTargets(game, controller, card)
+            else:
+                # else, just add it into play
+                game.process_returns_push(True)
+                card.controller_id = controller.get_id()
+                card.tapped = self.tapped
+                game.doZoneTransfer(card, in_play_zone, cause)
+
+        elif self.state == 1:
+            # success of this process is depends on the success of selecting targets, keep the return in the stack
+            if game.process_returns_top():
+                assert card.targets["target"] is not None
+                card.enchanted_id = card.targets["target"].get_id()
+                card.controller_id = controller.get_id()
+                card.tapped = self.tapped
+                game.doZoneTransfer(card, in_play_zone, cause)
+               
+
 # Special effect which causes something to be put into play under a player's control
 def process_put_card_into_play(game, card, controller, cause, tapped=False):
 

@@ -1207,6 +1207,44 @@ class ManaClashTest(unittest.TestCase):
         for obj in g.get_hand(g.obj(p2)).objects:
             assert obj.get_state().title == "Plains"
 
+    def testThievesAuction(self):
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains", "Raging Goblin"], ["Pacifism", "Thieves' Auction"], ["Eastern Paladin"], [])
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = playSpell(g, a, "Pacifism")
+        a = selectTarget(g, a, "Eastern Paladin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        g.obj(p1).manapool = "RRRRRRR"
+        a = playSpell(g, a, "Thieves' Auction")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        assert a.player.name == "Player1"
+        a = selectObject(g, a, "Raging Goblin")
+        assert a.player.name == "Player2"
+        a = selectObject(g, a, "Pacifism")
+        printState(g, a)
+        # choosing a target to enchant
+        assert a.player.name == "Player2"
+        a = selectObject(g, a, "Raging Goblin")
+        assert a.player.name == "Player1"
+        a = selectObject(g, a, "Eastern Paladin")
+        assert a.player.name == "Player2"
+        a = selectObject(g, a, "Plains")
+        assert a.player.name == "Player1"
+        a = selectObject(g, a, "Plains")
+        printState(g, a)
+
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        assert "can't attack or block" in goblin.get_state().tags
+
     def testTwiddle(self):
         g, a, p1, p2 = createGameInMainPhase(["Island", "Island"], ["Twiddle", "Twiddle"], ["Raging Goblin"], [])
 

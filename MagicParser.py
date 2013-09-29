@@ -432,7 +432,7 @@ r = [
 
     R("effect", [selector, " play with their hands revealed."], lambda t, x: XPlayWithHandRevealed(x)),
 
-    R("effect", ["exile all ", selector, ". starting with you, each ", selector, " chooses one of the exiled cards and puts it onto the battlefield tapped under his or her control. repeat this process until all cards exiled this way have been chosen."], lambda t, x, y: ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(x, y)),
+    R("effect", ["exile all ", selector, ". starting with you, each player chooses one of the exiled cards and puts it onto the battlefield tapped under his or her control. repeat this process until all cards exiled this way have been chosen."], lambda t, x: ExileAllXStartingWithYouEachPlayerChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(x)),
 
     R("effect", ["target ", selector, " names a card, then reveals the top card of his or her library. if it's the named card, the player puts it into his or her hand. otherwise, the player puts it into his or her graveyard and SELF deals ", Number, " damage to him or her."], lambda t, x, n: TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(x, n)),
 

@@ -2994,52 +2994,75 @@ class XPlayWithHandRevealed(ContinuousEffect):
     def __str__ (self):
         return "XPlayWithHandRevealed(%s)" % (self.x_selector)
 
-class ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(OneShotEffect):
-    def __init__ (self, x_selector, y_selector):
-        self.x_selector = x_selector
-        self.y_selector = y_selector
+class ExileAllXStartingWithYouEachPlayerChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosenProcess:
+    def __init__ (self, selector, obj):
+        self.obj_id = obj.id
+        self.state = 0
+        self.selector = selector
 
-    def resolve(self, game, obj):
+    def next(self, game, action):
+        from process import PutCardIntoPlayProcess
 
-        from process import process_put_card_into_play
-
+        obj = game.obj(self.obj_id)
         removed_zone = game.get_removed_zone()
 
-        cards = []
-        for card in self.x_selector.all(game, obj):
-            cards.append (card)
-            game.doZoneTransfer(card, removed_zone, obj)
+        if self.state == 0:
 
-        player = game.objects[obj.get_controller_id()]
+            self.state = 1
+            game.process_push(self)
 
-        while(len(cards) > 0):
-            options = []
-            for card in cards:
-                _p = Action ()
-                _p.object = card
-                _p.text = "Choose " + str(card)
-                options.append (_p)
+            self.card_ids = []
+            self.player_id = game.obj(obj.get_controller_id()).id
 
-            _as = ActionSet (game, player, "Choose a card to return to the battlefield.", options)
-            a = game.input.send (_as)
+            for card in self.selector.all(game, obj):
+                self.card_ids.append (card.id)
+                game.doZoneTransfer(card, removed_zone, obj)
 
-            card = a.object
-
-            if process_put_card_into_play(game, card, player, obj, True):
-                pass
+        elif self.state == 1:
+            if len(self.card_ids) == 0:
+                game.process_returns_push(True)
             else:
-                # card cannot be placed into play, we remove it
-                # TODO: other players should get the chance to do something with this card... 
-                pass
+                player = game.obj(self.player_id)
+                if action is None:
+                    options = []
+                    for card_id in self.card_ids:
+                        card = game.obj(card_id)
+                        _p = Action ()
+                        _p.object = card
+                        _p.text = "Choose " + str(card)
+                        options.append (_p)
 
-            cards.remove(card)
-              
-            player = game.get_next_player(player)
+                    return ActionSet (game, player, "Choose a card to return to the battlefield.", options)
 
-        return True
+                else:
+                    card = action.object
+                    self.card_id = card.id
+
+                    self.state = 2
+                    game.process_push(self)
+
+                    game.process_push(PutCardIntoPlayProcess(card, player, obj, True))
+
+        elif self.state == 2:
+            cardPut = game.process_returns_pop()
+            # TODO: if card cannot be put into play, other players should get a chance, until all players fail to put this card
+
+            self.card_ids.remove(self.card_id)
+            self.player_id = game.get_next_player(game.obj(self.player_id)).id
+
+            self.state = 1
+            game.process_push(self)
+
+
+class ExileAllXStartingWithYouEachPlayerChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(OneShotEffect):
+    def __init__ (self, selector):
+        self.selector = selector
+
+    def resolve(self, game, obj):
+        game.process_push(ExileAllXStartingWithYouEachPlayerChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosenProcess(self.selector, obj))
 
     def __str__ (self):
-        return "ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(%s, %s)" % (self.x_selector, self.y_selector)
+        return "ExileAllXStartingWithYouEachYChoosesOneOfTheExiledCardsAndPutsItOntoTheBattlefieldTappedUnderHisOrHerControlRepeatThisProcessUntilAllCardsExiledThisWayHaveBeenChosen(%s)" % (self.selector)
 
 class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHerProcess:
     def __init__ (self, player, obj, n):
