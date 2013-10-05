@@ -1286,6 +1286,9 @@ class DeclareBlockersStepProcess(Process):
                         else:
                             continue
 
+                if "can't block" in permanent.state.tags:
+                    continue
+
                 _p = Action ()
                 _p.object = permanent
                 _p.player = game.get_defending_player()
@@ -2659,6 +2662,63 @@ class SelectTargetProcess(Process):
                 game.process_returns_push(action.object)
 
 
+class SelectTargetsProcess(Process):
+    def __init__ (self, player, source, selector, n, optional=False):
+        self.player_id = player.id
+        self.source_id = source.id
+        self.selector = selector
+        self.n = n
+        self.optional = optional
+        
+        self.targets = []
+        self.i = 0
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        source = game.obj(self.source_id)
+
+        if self.i < self.n:
+            if action is None:
+                actions = []
+
+                _pass = PassAction (player)
+                _pass.text = "Cancel"
+
+                _enough = PassAction(player)
+                _enough.text = "Enough targets"
+
+                for obj in self.selector.all(game, source):
+                    if obj.id not in self.targets and _is_valid_target(game, source, obj):
+                        _p = Action ()
+                        _p.object = obj
+                        _p.text = "Target " + str(obj)
+                        actions.append (_p)
+
+                if len(actions) == 0 and not self.optional:
+                    actions = [_pass] + actions
+
+                if self.optional:
+                    actions = [_enough] + actions
+   
+                numberals = ["first", "second", "third", "fourth", "fifth", "sixth", "sevetnh", "eighth", "ninth"]
+                if self.i <= 8:
+                    query = ("Choose the %s target for " % (numberals[self.i]))  + str(source)
+                else:
+                    query = ("Choose the %dth target for " % self.i) + str(source)
+
+                return ActionSet (game, player, query, actions)
+
+            else:
+                if action.text == "Cancel":
+                    game.process_returns_push(None)
+                elif action.text == "Enough targets":
+                    game.process_returns_push(self.targets)
+                else:
+                    self.targets.append(action.object.id)
+                    self.i += 1
+                    game.process_push(self)
+
+# DONE?
 def process_select_targets(game, player, source, selector, n, optional=False):
 
     _pass = PassAction (player)

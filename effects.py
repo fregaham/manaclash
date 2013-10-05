@@ -256,6 +256,88 @@ class SingleTargetOneShotEffect(OneShotEffect):
     def __str__ (self):
         return "SingleTargetOneShotEffect(%s)" % self.targetSelector
 
+class MutlipleTargetsOneShotEffectResolveProcess(SandwichProcess):
+    def __init__ (self, effect, obj):
+        SandwichProcess.__init__ (self)
+        self.effect = effect
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        self.effect.validateTargets(game, game.obj(self.obj_id))
+
+    def main(self, game):
+        if game.process_returns_pop():
+            obj = game.obj(self.obj_id)
+            targets = obj.targets
+            self.effect.doResolve(game, obj, targets)
+        else:
+            game.process_returns_push(False)
+
+class MutlipleTargetsOneShotEffectValidateTargetsProcess(SandwichProcess):
+    def __init__ (self, effect, obj):
+        SandwichProcess.__init__ (self)
+        self.effect = effect
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        from process import ValidateTargetProcess
+        obj = game.obj(self.obj_id)
+        for target in obj.targets.values():
+            game.process_push(ValidateTargetProcess(obj, self.effect.targetSelector, target))
+
+    def main(self, game):
+        obj = game.obj(self.obj_id)
+
+        valid = True
+
+        # we only care about the number of targets, returns are in the opposite order
+        for target in obj.targets.values():
+            if not game.process_returns_pop():
+                valid = False
+
+        game.process_returns_push(valid)
+
+class MultipleTargetOneShotEffectSelectTargetsProcess(SandwichProcess):
+    def __init__ (self, effect, player, obj):
+        SandwichProcess.__init__ (self)
+        self.effect = effect
+        self.player_id = player.id
+        self.obj_id = obj.id
+
+    def pre(self, game):
+        from process import SelectTargetsProcess
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+
+        self.n = self.effect.number.evaluate(game, obj)
+
+        game.process_push(SelectTargetsProcess(player, obj, self.effect.targetSelector, self.n, self.effect.optional))
+
+    def main(self, game):
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+        targets = game.process_returns_pop()
+
+        self.cancelled = False
+
+        if targets is None or len(targets) == 0:
+            self.cancelled = True
+            game.process_returns_push(False)
+        elif not self.effect.optional and len(targets) != self.n:
+            self.cancelled = True
+            game.process_returns_push(False)
+        else:
+            for i in range(len(targets)):
+                obj.targets[i] = LastKnownInformation(game, game.obj(targets[i]))
+                game.raise_event ("target", obj, targets[i])
+
+    def post(self, game):
+        obj = game.obj(self.obj_id)
+        player = game.obj(self.player_id)
+
+        if not self.cancelled:
+            self.effect.doModal(game, player, obj)
+
 class MultipleTargetOneShotEffect(OneShotEffect):
 
     def __init__ (self, targetSelector, number, optional = False):
@@ -264,47 +346,19 @@ class MultipleTargetOneShotEffect(OneShotEffect):
         self.number = number
 
     def resolve(self, game, obj):
-        if self.validateTargets(game, obj):
-            targets = obj.targets
-            self.doResolve(game, obj, targets)
-
-            return True
-
-        return False
+        game.process_push(MutlipleTargetsOneShotEffectResolveProcess(self, obj))
 
     def validateTargets(self, game, obj):
-        from process import process_validate_target
-
-        for target in obj.targets.values():
-            if not process_validate_target(game, obj, self.targetSelector, target):
-                return False
-
-        return True
+        game.process_push(MutlipleTargetsOneShotEffectValidateTargetsProcess(self, obj))
 
     def selectTargets(self, game, player, obj):
-        from process import process_select_targets
-
-        n = self.number.evaluate(game, obj)
-
-        targets = process_select_targets(game, player, obj, self.targetSelector, n, self.optional)
-
-        if targets is None or len(targets) == 0:
-            return False
-
-        if not self.optional and len(targets) != n:
-            return False
-
-        for i in range(len(targets)):
-            obj.targets[i] = LastKnownInformation(game, targets[i])
-            game.raise_event ("target", obj, targets[i])
-
-        return self.doModal(game, player, obj)
+        game.process_push(MultipleTargetOneShotEffectSelectTargetsProcess(self, player, obj))
     
     def doModal(self, game, player, obj):
-        return True
+        game.process_returns_push(True)
 
     def doResolve(self, game, obj, target):
-        pass
+        game.process_returns_push(True)
 
     def __str__ (self):
         return "MultipleTargetOneShotEffect(%s, %s)" % (self.targetSelector, self.number)

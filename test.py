@@ -1072,6 +1072,40 @@ class ManaClashTest(unittest.TestCase):
         printState(g, a)
         a = answerQuestion(g, a, "Look at", "OK")
 
+    def testPanicAttack(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Raging Goblin"], ["Panic Attack"], ["Abyssal Specter", "Angel of Mercy", "Elvish Pioneer"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+
+        a = playSpell(g, a, "Panic Attack")
+
+        assert a.text.startswith("Choose the first target")
+        a = selectObject(g, a, "Abyssal Specter")
+
+        assert a.text.startswith("Choose the second target")
+        a = selectObject(g, a, "Angel of Mercy")
+      
+        a = answerQuestion(g, a, "Choose the third", "Enough")  
+
+        a = payCosts(g, a)
+
+        a = emptyStack(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = declareBlockersStep(g, a)
+
+        printState(g, a)
+
+        assert len(a.actions) == 2  # pass and pioneer
+        a = declareBlockers(g, a, ["Elvish Pioneer"], ["Raging Goblin"])
+       
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Raging Goblin")
+        assertNoSuchObjectInPlay(g, "Elvish Pioneer")
+
 
     def testPersecute(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Persecute"], [], ["Raging Goblin", "Seismic Assault", "Mind Rot"])
