@@ -502,6 +502,9 @@ class AbstractPlayProcess(Process):
         self.player_id = player.id
         self.state = 0
 
+        self.zone_from_id = None
+        self.zone_from_index = None
+
     def getSelfObject(self, game):
         # e.g. object with an activated ability, same as object for ordinary spells
         pass
@@ -509,6 +512,20 @@ class AbstractPlayProcess(Process):
     def getObject(self, game):
         # e.g. an effect object representing an activated ability on the stack.  same as selfObject for ordinary spells
         pass
+
+    def cancel(self, game):
+        stack = game.get_stack_zone()
+        obj = self.getObject(game)
+
+        if self.zone_from_id is not None:
+            zone_from = game.objects[self.zone_from_id]
+            obj.zone_id = self.zone_from_id
+
+            stack.objects.remove(obj)
+            zone_from.objects.insert(self.zone_from_index, obj)
+
+        else:
+            game.delete(obj)
 
     def onPlay(self, game):
         game.onPlay(self.getObject(game))
@@ -522,6 +539,9 @@ class AbstractPlayProcess(Process):
                 # move to stack
                 obj = game.objects[self.obj_id]
                 zone_from = game.objects[obj.zone_id]
+
+                self.zone_from_id = zone_from.id
+                self.zone_from_index = zone_from.objects.index(obj)
 
                 stack = game.get_stack_zone()
                 obj.zone_id = stack.id
@@ -548,6 +568,7 @@ class AbstractPlayProcess(Process):
         elif self.state == 2:
             if not game.process_returns_pop():
                 # TODO: return state to the before playing spell if target selection failed
+                self.cancel(game)
                 return
 
             self.state = 3
@@ -593,7 +614,7 @@ class AbstractPlayProcess(Process):
 
             if not payed:
                 # TODO: return to the previus game state
-                pass
+                self.cancel(game)
             else:
                 self.onPlay(game)
 
