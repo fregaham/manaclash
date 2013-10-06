@@ -2796,6 +2796,52 @@ class PutNTargetXOnTopOfOwnersLibraries(MultipleTargetOneShotEffect):
     def __str__ (self):
         return "PutNTargetXOnTopOfOwnersLibraries(%s, %s)" % (self.number, self.targetSelector)
 
+class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetXSelectTargetsProcess(SandwichProcess):
+    def __init__ (self, effect, player, obj):
+        SandwichProcess.__init__ (self)
+        self.effect = effect
+        self.player_id = player.id
+        self.obj_id = obj.id
+
+    def pre(self, game):
+
+        from process import SelectTargetsProcess
+
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        n = self.effect.number.evaluate(game, obj)
+
+        game.process_push(SelectTargetsProcess(player, obj, self.effect.targetSelector, n, True, True))
+
+    def main(self, game):
+
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        targets = game.process_returns_pop()
+        if targets is None or len(targets) == 0:
+            game.process_returns_push(False)
+        else:
+
+            game.process_returns_push(True)
+
+            target_damage_map = {}
+            for target_id in targets:
+                d = target_damage_map.get(target_id, 0)
+                target_damage_map[target_id] = d + 1
+
+            obj.targets = {}
+            i = 0
+            obj.modal = []
+            for target_id, damage in target_damage_map.items():
+                target = game.obj(target_id)
+                obj.targets[i] = LastKnownInformation(game, target)
+                obj.modal.append (damage)
+                i += 1
+                game.raise_event ("target", obj, target)
+        
+
 class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(OneShotEffect):
 
     def __init__ (self, targetSelector, number):
@@ -2803,7 +2849,10 @@ class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(OneShotEffect):
         self.number = number
 
     def resolve(self, game, obj):
-        if self.validateTargets(game, obj):
+        if self._validateTargets(game, obj):
+
+            game.process_returns_push(True)
+
             targets = obj.targets
             modal = obj.modal
 
@@ -2817,71 +2866,24 @@ class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(OneShotEffect):
                     damage_list.append ( (obj.get_source_lki(), target, damage) )
 
             game.doDealDamage(damage_list)
-            return True
 
-        return False
+        else:
+            game.process_returns_push(False)
 
-    def validateTargets(self, game, obj):
-        from process import process_validate_target
+    def _validateTargets(self, game, obj):
+        from process import validate_target
 
         for target in obj.targets.values():
-            if not process_validate_target(game, obj, self.targetSelector, target):
+            if not validate_target(game, obj, self.targetSelector, target):
                 return False
 
         return True
+
+    def validateTargets(self, game, obj):
+        game.process_returns_push(self._validateTargets(game, obj))
 
     def selectTargets(self, game, player, obj):
-        from process import process_select_target, is_valid_target
-#        target = process_select_target(game, player, obj, self.targetSelector, self.optional)
-
-        n = self.number.evaluate(game, obj)
-
-        targets = []
-
-        for i in range(n):
-            actions = []
-            _pass = PassAction (player)
-            _pass.text = "Cancel"
-
-            for o in self.targetSelector.all(game, obj):
-                if is_valid_target(game, obj, o):
-                    _p = Action ()
-                    _p.object = o
-                    _p.text = "Target " + str(o)
-                    actions.append (_p)
-
-            if len(actions) == 0:
-                actions = [_pass] + actions
-
-            numberals = ["first", "second", "third", "fourth", "fifth", "sixth", "sevetnh", "eighth", "ninth"]
-            if i <= 8:
-                query = ("Choose the %s target for " % (numberals[i]))  + str(obj)
-            else:
-                query = ("Choose the %dth target for " % i) + str(obj)
-
-            _as = ActionSet (game, player, query, actions)
-            a = game.input.send (_as)
-
-            if a == _pass:
-                return False
-
-            targets.append (a.object)
-
-        target_damage_map = {}
-        for target in targets:
-            d = target_damage_map.get(target, 0)
-            target_damage_map[target] = d + 1
-
-        obj.targets = {}
-        i = 0
-        obj.modal = []
-        for target, damage in target_damage_map.items():
-            obj.targets[i] = LastKnownInformation(game, target)
-            obj.modal.append (damage)
-            i += 1
-            game.raise_event ("target", obj, target)
-
-        return True
+        game.process_push(DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetXSelectTargetsProcess(self, player, obj))
     
     def __str__ (self):
         return "DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(%s, %s)" % (self.targetSelector, self.number)

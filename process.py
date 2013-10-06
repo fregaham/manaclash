@@ -2663,12 +2663,13 @@ class SelectTargetProcess(Process):
 
 
 class SelectTargetsProcess(Process):
-    def __init__ (self, player, source, selector, n, optional=False):
+    def __init__ (self, player, source, selector, n, optional=False, multi=False):
         self.player_id = player.id
         self.source_id = source.id
         self.selector = selector
         self.n = n
         self.optional = optional
+        self.multi = multi
         
         self.targets = []
         self.i = 0
@@ -2688,7 +2689,7 @@ class SelectTargetsProcess(Process):
                 _enough.text = "Enough targets"
 
                 for obj in self.selector.all(game, source):
-                    if obj.id not in self.targets and _is_valid_target(game, source, obj):
+                    if (obj.id not in self.targets or self.multi) and _is_valid_target(game, source, obj):
                         _p = Action ()
                         _p.object = obj
                         _p.text = "Target " + str(obj)
@@ -2717,6 +2718,9 @@ class SelectTargetsProcess(Process):
                     self.targets.append(action.object.id)
                     self.i += 1
                     game.process_push(self)
+
+        else:
+            game.process_returns_push(self.targets)
 
 # DONE?
 def process_select_targets(game, player, source, selector, n, optional=False):
@@ -2830,6 +2834,16 @@ def process_put_card_into_play(game, card, controller, cause, tapped=False):
 
     return True
 
+def validate_target(game, obj, selector, target):
+    assert isinstance(target, LastKnownInformation)
+    if target.is_moved():
+        return False
+
+    if not selector.contains(game, obj, target):
+        return False
+
+    return _is_valid_target(game, obj, target)
+
 class ValidateTargetProcess(Process):
     def __init__ (self, source, selector, target):
         assert isinstance(target, LastKnownInformation)
@@ -2838,18 +2852,8 @@ class ValidateTargetProcess(Process):
         self.target = target
 
     def next(self, game, action):
-
         source = game.obj(self.source_id)
-
-        if self.target.is_moved():
-            game.process_returns_push(False)
-            return
-
-        if not self.selector.contains(game, source, self.target):
-            game.process_returns_push(False)
-            return
-
-        game.process_returns_push( _is_valid_target(game, source, self.target) )
+        game.process_returns_push(validate_target(game, source, self.selector, self.target))
 
 
 class AskXProcess(Process):

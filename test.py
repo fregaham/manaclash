@@ -1157,7 +1157,27 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Choose", "Sacrifice")
         secondPrimevalForce = findObjectInGraveyard(g, p1, "Primeval Force").id
         assert firstPrimevalForce != secondPrimevalForce
+
+    def testPyrotechnics(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain", "Mountain"], ["Pyrotechnics"], ["Aven Cloudchaser", "Elvish Pioneer"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
         
+        a = playSpell(g, a, "Pyrotechnics")
+        a = selectObject(g, a, "Aven Cloudchaser")
+        a = selectObject(g, a, "Aven Cloudchaser")
+        a = selectObject(g, a, "Elvish Pioneer")
+        a = selectObject(g, a, "Player2")
+
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        assertNoSuchObjectInPlay(g, "Aven Cloudchaser")
+        assertNoSuchObjectInPlay(g, "Elvish Pioneer")
+        assert g.obj(p2).life == 19
 
     def testRampantGrowth(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest", "Forest"], ["Rampant Growth"], [], [])
