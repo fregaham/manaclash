@@ -41,11 +41,15 @@ class InterceptableMethod:
         assert self.pos >= 0
         assert self.pos < len(self.interceptors)
 
-        ret = self.interceptors[self.pos](self, *args, **kargs)
+        last = self.pos == (len(self.interceptors) - 1)
 
-        self.pos -= 1
+        self.interceptors[self.pos](self, *args, **kargs)
 
-        return ret
+        if last:
+            self.pos = -1
+
+    def cancel(self):
+        self.pos = -1
 
     def __call__(self, *args, **kargs):
         return self.proceed(*args, **kargs)

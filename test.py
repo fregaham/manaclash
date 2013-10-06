@@ -1393,6 +1393,90 @@ class ManaClashTest(unittest.TestCase):
         star = findObjectInGraveyard(g, p1, "Iron Star")
         assert g.obj(p1).life == 18
 
+    def testZursWeirding(self):
+        g, a, p1, p2 = createGameInMainPhase(["Zur's Weirding"], [], [], [])
+        a = endOfTurn(g, a)        
+        a = _pass(g, a)
+        a = _pass(g, a) 
+
+        a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
+
+        printState(g, a)      
+
+        a = answerQuestion(g, a, "Pay pay 2 life", "Yes")
+        a = answerQuestion(g, a, "Play", "Pay 2 life") 
+
+        printState(g, a)
+        a = precombatMainPhase(g, a)
+
+        assert g.obj(p1).life == 18
+        assert len(g.get_hand(g.obj(p2)).objects) == 0
+
+        a = endOfTurn(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Pay pay 2 life", "No")
+        printState(g, a)
+
+        a = precombatMainPhase(g, a)
+
+        assert g.obj(p1).life == 18
+        assert g.obj(p2).life == 20
+
+        assert len(g.get_hand(g.obj(p1)).objects) == 1
+
+    def testZursWeirding2(self):
+        g, a, p1, p2 = createGameInMainPhase(["Zur's Weirding"], [], ["Zur's Weirding"], [])
+        a = endOfTurn(g, a)        
+        a = _pass(g, a)
+        a = _pass(g, a) 
+
+        a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
+
+        printState(g, a)      
+
+        a = answerQuestion(g, a, "Pay pay 2 life", "Yes")
+        a = answerQuestion(g, a, "Play", "Pay 2 life") 
+
+        a = precombatMainPhase(g, a)
+
+        assert g.obj(p1).life == 18
+        assert len(g.get_hand(g.obj(p2)).objects) == 0
+
+        a = endOfTurn(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Pay pay 2 life", "No")
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+        a = answerQuestion(g, a, "Player Player1 reveals cards", "OK")
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Pay pay 2 life", "No")
+
+        a = precombatMainPhase(g, a)
+
+        assert g.obj(p1).life == 18
+        assert g.obj(p2).life == 20
+
+        assert len(g.get_hand(g.obj(p1)).objects) == 1
+
 
 if __name__ == "__main__":
     unittest.main()

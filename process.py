@@ -397,7 +397,7 @@ class PayCostProcess(Process):
         self.player_id = player.id
         self.obj_id = obj.id
         self.effect_id = effect.id
-        self.notpaid = costs
+        self.notpaid = costs[:]
         self.cost = None
         self.state = 0
    

@@ -3210,6 +3210,68 @@ class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayer
     def __str__ (self):
         return "TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayerPutsItIntoHisHandOtherwiseThePlayerPutsItIntoGraveyardAndXDealsNDamageToHimOrHer(%s, %s)" % (self.targetSelector, self.n)
 
+class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfAPlayerDoesPutThatCardIntoItsOwnersGraveyardOtherwiseThatPlayerDrawsACardProcess:
+    def __init__ (self, interceptable, player, SELF, cost):
+        self.interceptable = interceptable
+        self.player_id = player.id
+        self.next_player_id = None
+        self.SELF_id = SELF.id
+        self.cost = cost
+
+        self.state = 0
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+
+        if self.next_player_id is None:
+            self.next_player_id = game.get_next_player(player).id
+
+        next_player = game.obj(self.next_player_id)
+
+        SELF = game.obj(self.SELF_id)
+        library = game.get_library(player)
+        hand = game.get_hand(player)
+        graveyard = game.get_graveyard(player)
+
+        top_card = library.objects[-1]
+
+        if self.state == 0:
+            if self.next_player_id != self.player_id:
+                if action is None:
+                    _pay = Action()
+                    _pay.text = "Yes"
+        
+                    _notpay = Action()
+                    _notpay.text = "No"
+
+                    return ActionSet (game, next_player, ("Pay %s to put %s into its owner's graveyard?" % (", ".join(map(str, self.cost)), top_card.get_state().title)), [_pay, _notpay])
+                else:
+                    if action.text == "Yes":
+                        self.state = 1
+                        game.process_push(self)
+
+                        from process import PayCostProcess
+                        game.process_push(PayCostProcess(next_player, SELF, SELF, self.cost))
+
+                    else:
+                        self.next_player_id = game.get_next_player(next_player).id
+                        game.process_push(self)
+
+            else:
+                self.interceptable.proceed(player)
+
+        elif self.state == 1:
+            # payed cost?
+            if game.process_returns_pop():
+                # move the card to graveyard and end
+                self.interceptable.cancel()
+                game.doZoneTransfer(top_card, graveyard, SELF)
+            else:
+                self.state = 0
+                self.next_player_id = game.get_next_player(next_player).id
+                game.process_push(self)
+
+
 
 class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfAPlayerDoesPutThatCardIntoItsOwnersGraveyardOtherwiseThatPlayerDrawsACard(ContinuousEffect):
     def __init__ (self, x_selector, cost):
@@ -3220,7 +3282,7 @@ class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfA
         game.interceptable_draw.add(partial(self.interceptDraw, game, obj))
 
     def interceptDraw(self, game, SELF, interceptable, player):
-        from process import process_reveal_cards
+        from process import RevealCardsProcess
 
         if self.x_selector.contains(game, SELF, player):
             library = game.get_library(player)
@@ -3231,29 +3293,9 @@ class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfA
                 self.doLoseGame(player)
             else:
                 top_card = library.objects[-1]
-                process_reveal_cards(game, player, [top_card])
 
-                next_player = game.get_next_player(player)
-                while next_player.get_id() != player.get_id():
-
-                    _pay = Action()
-                    _pay.text = "Yes"
-        
-                    _notpay = Action()
-                    _notpay.text = "No"
-
-                    _as = ActionSet (game, next_player, ("Pay %s to put %s into its owner's graveyard?" % (", ".join(map(str, self.cost)), top_card.get_state().title)), [_pay, _notpay])
-                    a = game.input.send(_as)
-
-                    if a == _pay:
-                        from process import process_pay_cost
-                        if process_pay_cost(game, next_player, SELF, SELF, self.cost):
-                            game.doZoneTransfer(top_card, graveyard, SELF)
-                            return None
-                      
-                    next_player = game.get_next_player(next_player)
-
-                return interceptable.proceed(player)
+                game.process_push(IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfAPlayerDoesPutThatCardIntoItsOwnersGraveyardOtherwiseThatPlayerDrawsACardProcess(interceptable, player, SELF, self.cost))
+                game.process_push(RevealCardsProcess(player, [top_card]))
 
         else:
             return interceptable.proceed(player)
