@@ -108,7 +108,6 @@ class EffectRules(ObjectRules):
         game.process_push(EffectRulesProcess(self.effect, obj))
 
     def selectTargets(self, game, player, obj):
-        print "XXX: EffectRules: " + `self.effect`
         self.effect.selectTargets(game, player, obj)
 
     def __str__(self):
@@ -121,7 +120,6 @@ class BasicNonPermanentRulesResolveProcess(SandwichProcess):
         self.obj_id = obj.id
 
     def pre(self, game):
-        print "XXX BasicNonPermanentRulesResolveProcess " + str(self.effect)
         self.effect.resolve(game, game.obj(self.obj_id))
 
     def main(self, game):
@@ -203,20 +201,9 @@ class EnchantPermanentRules(ObjectRules):
 
     def getAbilities(self):
         return [PlaySpell()] + self.abilities
-#        if game.isInPlay(obj):
-#            obj.state.abilities.append(self.ability)
 
     def resolve(self, game, obj):
         game.process_push(EnchantPermanentRulesResolveProcess(self.selector, obj))
-#        from process import process_validate_target
-#        if process_validate_target(game, obj, self.selector, obj.targets["target"]):
-#            obj.enchanted_id = obj.targets["target"].get_id()
-#            game.onResolve(obj)
-#            game.doZoneTransfer(obj, game.get_in_play_zone())
-#            return True
-#        else:
-#            game.doZoneTransfer(obj, game.get_graveyard(game.objects[obj.state.owner_id]))
-#            return False
 
     def selectTargets(self, game, player, obj):
         game.process_push(EnchantPermanentRulesSelectTargets(player, self.selector, obj))

@@ -79,8 +79,6 @@ def do_action (game, player, a):
 def resolve (game, resolvable):
     evaluate(game)
 
-    print "XXX: " + `resolvable.rules`
-
     resolvable.rules.resolve(game, resolvable)
 
 def sort_effects(effects):
@@ -283,9 +281,6 @@ def evaluate (game):
     # reparse changed effects
     for object in _as.all(game, None):
         if original_texts_map[object.id] != object.state.text:
-
-            print "XXX: reparsing changed text '%s'" % object.state.text
-
             object.rules = parse(object)
             # we can safely replace, as no abilities can be added/removed in copy, control or text layers
             object.state.abilities = object.rules.getAbilities()
@@ -2484,19 +2479,15 @@ class TriggerEffectProcess(SandwichProcess):
         game.triggered_abilities.append (e)
         evaluate(game)
 
-        print "XXX: TriggerEffectProcess: " + `e.rules.selectTargets`
-
         e.rules.selectTargets(game, game.objects[e.get_state().controller_id], e)
 
     def main(self, game):
         if not game.process_returns_pop():
-            print "XXX: TriggerEffectProcess failed to select targets"
             e = game.obj(self.effect_object_id)
             game.delete(e)
             game.triggered_abilities.remove(e)
-        else:
-            print "XXX: TriggerEffectProcess selectTargets OK"
-        
+
+ 
 def process_select_selector(game, player, source, selector, text, optional=False):
     actions = []
     _pass = PassAction(player)
