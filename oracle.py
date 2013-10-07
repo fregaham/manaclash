@@ -137,10 +137,10 @@ def parseOracle(f):
                 card.sets = card.sets.union(set(map(lambda x:x.strip(), line.split(","))))
 
 def getParseableCards(f):
-    ig = test_input_generator([])
-    n = ig.next()
+#    ig = test_input_generator([])
+#    n = ig.next()
     o = NullOutput()
-    g = Game(ig, o)
+    g = Game(o)
     g.create()
 
     for card in parseOracle(f):
@@ -187,9 +187,9 @@ def createCardObject(game, card):
 
 if __name__ == "__main__":
     ig = test_input_generator([])
-    n = ig.next()
+#    n = ig.next()
     o = NullOutput()
-    g = Game(ig, o)
+    g = Game(o)
     g.create()
 
     parsed = 0
