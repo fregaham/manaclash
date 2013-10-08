@@ -1477,6 +1477,26 @@ class ManaClashTest(unittest.TestCase):
 
         assert len(g.get_hand(g.obj(p1)).objects) == 1
 
+    def testCombat(self):
+        g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Severed Legion", "Maggot Carrier"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Goblin Chariot"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Severed Legion", "Maggot Carrier"], ["Goblin Chariot", "Goblin Chariot"])
+      
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = selectObject(g, a, "Severed Legion")
+        a = selectObject(g, a, "Severed Legion")
+
+        printState(g, a) 
+
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Severed Legion")
+        assertNoSuchObjectInPlay(g, "Goblin Chariot")
+       
 
 if __name__ == "__main__":
     unittest.main()

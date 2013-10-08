@@ -1663,7 +1663,7 @@ class CombatDamageStepProcess(Process):
 
         elif self.state == 5:
             a_id, b_ids = self.a_id2b_ids[self.i]
-            a_lki = id2lki[a_id]
+            a_lki = self. id2lki[a_id]
             a_obj = self.id2lki[a_id].get_object()
             a_state = self.id2lki[a_id].get_state()
 
@@ -1681,7 +1681,7 @@ class CombatDamageStepProcess(Process):
                     _as = ActionSet (game, game.get_attacking_player(), "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
                     return _as
                 else:
-                    b_lki = self.id2lki[a.object.id]
+                    b_lki = self.id2lki[action.object.id]
                     self.damage.append ( (a_lki, b_lki, 1) )
 
                     self.damageToAssign -= 1
