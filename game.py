@@ -371,8 +371,8 @@ class Game:
                 self.doWinGame(p)
 
     def doWinGame(self, player):
-        from process import GameEndException
-        raise GameEndException(player.get_object())
+        self.output.gameEnds(player.get_object())
+        self.end = True
 
     def get_active_player(self):
         return self.objects[self.active_player_id]

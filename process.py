@@ -54,10 +54,6 @@ from cost import *
 from objects import *
 from game import AttackerValidator, BlockerValidator
 
-class GameEndException(Exception):
-    def __init__ (self, player):
-        self.player = player
-
 def get_possible_actions (game, player):
     ret = []
     _al = AllSelector()

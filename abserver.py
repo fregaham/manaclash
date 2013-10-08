@@ -32,6 +32,8 @@ import os.path
 import time
 import random
 import threading
+import traceback
+
 from Queue import Queue
 from twisted.python import log
 from twisted.internet import reactor
@@ -445,24 +447,18 @@ class ABGame:
 
         g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/state", self.current_state)
 
-        # process_game(self.game)
-#        finally:
+    def end(self):
+        g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/state", self.current_state)
+        players = self.players[:]
+        for player in players:
+            self.remove(player)
+        self.game = None
+        self.current_state = None
+        self.current_player = None
 
-            # send the final game state
-#            state = game_state(self.game)
-#            g_factory.dispatch("http://manaclash.org/game/" + str(self.id) + "/state", state)
+        dispatchGames()
+        reactor.callLater(1, startDuels)
 
-#            players = self.players[:]
-#            for player in players:
-#                self.remove(player)
-#            self.game = None
-#            self.current_state = None
-#            self.current_player = None
-#            self.queue = Queue()
-
-#        dispatchGames()
-#        print "game " + str(self.id) + " ending"
-#        reactor.callLater(1, startDuels)
         
 
 class ABPlayer:
@@ -642,10 +638,7 @@ class MyServerProtocol(WampServerProtocol):
                     n += 1
 
             if n == 0:
-                pass
-                # we terminate the game
-                # TODO:
-                # game.queue.put(None)
+                game.end()
 
         client.setPlayer(None)
 
@@ -776,7 +769,7 @@ class MyServerProtocol(WampServerProtocol):
             game = game_map.get(game_id)
             if game is not None and client != None and client.player != None and client.player.game == game:
                 if foo.endswith("/endgame"):
-                    # game.queue.put(None)
+                    game.end()
                     return client.user.login
                 else:
                     # some game sub-message, such as a player-to-player message
@@ -801,7 +794,7 @@ class MyServerProtocol(WampServerProtocol):
                         try:
                             ab_game_action(game, game.current_player, message)
                         except Exception, x:
-                            print `x`
+                            traceback.print_exc()
 
                         return message
 
