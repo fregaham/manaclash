@@ -1496,7 +1496,41 @@ class ManaClashTest(unittest.TestCase):
 
         assertNoSuchObjectInPlay(g, "Severed Legion")
         assertNoSuchObjectInPlay(g, "Goblin Chariot")
-       
+
+    def testCombatFirstStrike(self):
+        g, a, p1, p2 = createGameInMainPhase(["Tundra Wolves"], [], ["Wood Elves"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Tundra Wolves"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Wood Elves"], ["Tundra Wolves"])
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Wood Elves")
+        findObjectInPlay(g, "Tundra Wolves")
+      
+    def testCombatFirstStrike2(self):
+        g, a, p1, p2 = createGameInMainPhase(["Tundra Wolves"], [], ["Elvish Pioneer", "Wood Elves"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Tundra Wolves"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Elvish Pioneer", "Wood Elves"], ["Tundra Wolves", "Tundra Wolves"])
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = selectObject(g, a, "Wood Elves")
+
+        printState(g, a)
+
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Wood Elves")
+        assertNoSuchObjectInPlay(g, "Tundra Wolves")
+        findObjectInPlay(g, "Elvish Pioneer" )
 
 if __name__ == "__main__":
     unittest.main()

@@ -1722,6 +1722,10 @@ class CombatDamageStepProcess(Process):
                         self.state = 7
                         game.process_push(self)
 
+                else:
+                    self.i += 1
+                    game.process_push(self)
+
         elif self.state == 7:
              b_id, a_ids = self.b_id2a_ids[self.i]
              b_lki = self.id2lki[b_id]
@@ -1753,6 +1757,7 @@ class CombatDamageStepProcess(Process):
                 game.process_push(self)
 
         elif self.state == 8:
+
             merged = {}
             for a, b, n in self.damage:
 
