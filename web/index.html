@@ -28,6 +28,8 @@
 
         // Is autopass cancelled?
         var g_autopass_cancel = false;
+        var g_pass_on_next_priority = false;
+        var g_pass_on_next_priority_step = null;
 
         // map object id -> zone (e.g. "player_hand", "opponent_graveyard", etc.)
         var g_zone_map = {};
@@ -83,6 +85,8 @@
             $("#autopass").click(function(event) {
                 stopTimer();
                 g_autopass_cancel = true;
+                g_pass_on_next_priority = false;
+                g_pass_on_next_priority_step = null;
                 $("#autopass").hide();
             });
             $("#autopass").hide();
@@ -1028,6 +1032,8 @@
                 appendLog("" + getPlayerName(state["player"]) + ", " + state["text"]);
             }
 
+            console.log("onState " + getPlayerName(state["player"])  + " " + state["phase"] + ", " + state["step"] + " " + state["text"]);
+
             /* It is our "turn" now, or we play solitaire and every turn is 'our' turn */
             if (g_role == state["player"] || g_solitaire) {
 
@@ -1161,24 +1167,61 @@
                         autopass = true;
                     }
 
-                    if (autopass) {
+                    if (autopass && !g_autopass_cancel) {
+                        console.log("onState autopass");
+
+                        stopTimer();
+                        // $("#autopass").hide();
+                        g_pass_on_next_priority = false;
+                        g_pass_on_next_priority_step = null;
+
+                        sess.publish(g_gameuri, 0);
+                    }
+                    else if (state["text"] == "You have priority" && g_pass_on_next_priority && (state["phase"] + " " + state["step"]) == g_pass_on_next_priority_step ) {
+                        console.log("onState passing due to g_pass_on_next_priority");
+
+                        stopTimer();
+                        // $("#autopass").hide();
+                        g_pass_on_next_priority = false;
+                        g_pass_on_next_priority_step = null;
+
                         sess.publish(g_gameuri, 0);
                     }
                     else {
-                        if (!g_autopass_cancel && state["text"] == "You have priority" && haspass && !((state["turn"] == g_role || g_solitaire) && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
-                            g_timeout = 3;
-                            g_timer = setTimeout('onTimer()', 1000);
+                        g_pass_on_next_priority = false;
+                        g_pass_on_next_priority_step = null;
 
-                            $("#autopass").empty();
-                            $("<div class='autopass_priority'></div>").text(g_state["text"]).append("<br/>" + g_timeout).appendTo($("#autopass"));
-                            $("#autopass").show();
+                        if (!g_autopass_cancel && state["text"] == "You have priority" && haspass && !((state["turn"] == g_role || g_solitaire) && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
+
+                            // If there is an existing timer started by the other player's priority wait...
+                            if (g_timer == null) {
+
+                                console.log("onState priority, no timer yet");
+
+                                g_timeout = 3;
+                                g_timer = setTimeout('onTimer()', 1000);
+
+                                g_pass_on_next_priority_step = state["phase"] + " " + state["step"];
+
+                                setAutopassPriorityMessasge();
+                            }
+                            else {
+                                console.log("onState priority, existing timer");
+
+                                setAutopassPriorityMessasge();
+                            }
                         }
                         else {
+                            console.log("onState priority, main phase");
+
+                            stopTimer();
                             $("#autopass").hide();
                         }
                     }
                 }
                 else if (state["query"] != null) {
+                    stopTimer();
+
                     $("#query_text").empty();
                     $("#query_text").text(state["query"]);
                     $("#query_input").val("");
@@ -1189,12 +1232,30 @@
                 if (state["player"] != null) {
                     $("#text").append("Waiting for " + getPlayerName(state["player"]));
 
-                    // It is not our turn
-                    $("#autopass").empty();
-                    $("<div class='autopass_wait'></div>").text("Waiting for " + getPlayerName(state["player"])).appendTo($("#autopass"));
-                    $("#autopass").show();
+                    if (state["text"] == "You have priority") {
+
+                        console.log("onState other player priority");
+
+                        stopTimer();
+                        g_timeout = 3;
+                        g_timer = setTimeout('onTimer()', 1000);
+                        g_pass_on_next_priority = false;
+                        g_pass_on_next_priority_step = state["phase"] + " " + state["step"];
+
+                        setAutopassPriorityMessasge();
+                    }
+                    else {
+                        console.log("onState other player wait");
+
+                        stopTimer();
+                        // It is not our turn
+                        $("#autopass").empty();
+                        $("<div class='autopass_wait'></div>").text("Waiting for " + getPlayerName(state["player"])).appendTo($("#autopass"));
+                        $("#autopass").show();
+                    }
                 }
                 else {
+                    stopTimer();
                     // game ended, do nothing
                     $("#autopass").hide();
                 }
@@ -1209,6 +1270,18 @@
             selectAction($("#query_input").val());
         }
 
+        function setAutopassPriorityMessasge() {
+            $("#autopass").empty();
+
+            if (g_state["step"]) {
+                $("<div class='autopass_priority'></div>").text(g_state["phase"]).append("<br/>").append(g_state["step"]).append("<br/>" + g_timeout).appendTo($("#autopass"));
+            }
+            else {
+                $("<div class='autopass_priority'></div>").text(g_state["phase"]).append("<br/>" + g_timeout).appendTo($("#autopass"));
+            }
+            $("#autopass").show();
+        }
+
         function stopTimer() {
             if (g_timer != null) {
                 clearTimeout(g_timer);
@@ -1219,6 +1292,8 @@
 
         function onTimer() {
 
+            console.log("onTimer");
+
             if (g_timeout == null) {
                 return;
             }
@@ -1227,13 +1302,30 @@
 
             if (g_timeout <= 0) {
                 stopTimer();
-                $("#pass").attr("disabled", "disabled");
-                sess.publish(g_gameuri, 0);
-                $("#autopass").empty();
+
+                // two options, one, we are waiting on our own pass, or the wait started during the opponents' priority wait and 
+                if (g_role == g_state["player"] && g_state["text"] == "You have priority") {
+
+                    console.log("onTimer autopassing");
+
+                    $("#pass").attr("disabled", "disabled");
+                    sess.publish(g_gameuri, 0);
+                    // $("#autopass").empty();
+                }
+                else {
+                    console.log("onTimer setting g_pass_on_next_priority");
+
+                    // we want to pass but cannot yet.
+                    $("#autopass").empty();
+                    $("<div class='autopass_wait'></div>").text("Waiting for " + getPlayerName(g_state["player"])).appendTo($("#autopass"));
+                    $("#autopass").show();
+                    g_pass_on_next_priority = true;
+                }
             }
             else {
-                $("#autopass").empty();
-                $("<div class='autopass_priority'></div>").text(g_state["text"]).append("<br/>" + g_timeout).appendTo($("#autopass"));
+                console.log("onTimer --");
+
+                setAutopassPriorityMessasge();
                 setTimeout('onTimer()', 1000);
             }
         }
