@@ -376,11 +376,10 @@ def evaluate (game):
             lost.append (player)
 
     if len(lost) == 1:
-        for player in game.players:
-            if player != lost[0]:
-                raise GameEndException(player)
+        game.doLoseGame(lost[0])
+
     elif len(lost) > 1:
-        raise GameEndException(None)
+        game.doEndGame()
 
 
 class PayCostProcess(Process):

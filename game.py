@@ -370,6 +370,10 @@ class Game:
             if p.id != player.id:
                 self.doWinGame(p)
 
+    def doEndGame(self):
+        self.output.gameEnds(None)
+        self.end = True
+
     def doWinGame(self, player):
         self.output.gameEnds(player.get_object())
         self.end = True
