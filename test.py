@@ -937,6 +937,44 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 21
 
+    def testLoneWolf(self):
+        g, a, p1, p2 = createGameInMainPhase(["Lone Wolf"], [], ["Norwood Ranger"], [])
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Lone Wolf"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Norwood Ranger"], ["Lone Wolf"])
+        
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Assign", "Yes")
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 18
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Lone Wolf"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Norwood Ranger"], ["Lone Wolf"])
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Assign", "No")
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 18 
+        assertNoSuchObjectInPlay(g, "Norwood Ranger")
+
+
     def testManaClash(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Mana Clash"], [], [])
         a = basicManaAbility(g, a, "Mountain", p1)

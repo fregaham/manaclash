@@ -1607,7 +1607,7 @@ class CombatDamageStepProcess(Process):
         elif self.state == 3:
             # x-sneaky
             a_id, b_ids = self.a_id2b_ids[self.i]
-            a_lki = id2lki[a_id]
+            a_lki = self.id2lki[a_id]
             a_obj = self.id2lki[a_id].get_object()
             a_state = self.id2lki[a_id].get_state()
 
@@ -1621,9 +1621,7 @@ class CombatDamageStepProcess(Process):
                 _no.text = "No" 
                 actions.append (_no)
 
-                _as = ActionSet (game, game.get_attacking_player(), "Assign %s combat damage as though it wasn't blocked" % (a_lki.get_object()), actions)
-
-                return _as 
+                return ActionSet (game, game.get_attacking_player(), "Assign %s combat damage as though it wasn't blocked" % (a_lki.get_object()), actions)
 
             else:
                 if action.text == "Yes":
