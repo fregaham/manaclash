@@ -298,16 +298,16 @@ class Game:
 
     def raise_event (self, event, *args, **kargs):
 
-        print "EVENT: " + `event`
+        # print "EVENT: " + `event`
 
         event_handlers = self.events.get(event, [])
         for handler in event_handlers:
-            print "EVENT: " + `event` + " handler: " + `handler`
+            # print "EVENT: " + `event` + " handler: " + `handler`
             handler (*args, **kargs)
 
         event_handlers = self.volatile_events.get(event, [])
         for handler in event_handlers:
-            print "EVENT: " + `event` + " volatile handler: " + `handler`
+            # print "EVENT: " + `event` + " volatile handler: " + `handler`
 
             handler (*args, **kargs)
 
@@ -619,7 +619,7 @@ class Game:
 
     def next(self, action):
         while True:
-            print "Stack: " + `self.process_stack` + " Returns: " + `self.process_returns_stack`
+            # print "Stack: " + `self.process_stack` + " Returns: " + `self.process_returns_stack`
 
             p = self.process_stack.pop()
             ret = p.next(self, action)

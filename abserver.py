@@ -47,6 +47,8 @@ from autobahn.wamp import exportRpc, \
                           WampClientFactory, \
                           WampClientProtocol
 
+from autobahn.resource import WebSocketResource, HTTPChannelHixie76Aware
+
 Context = threading.local()
 g_factory = None
 
@@ -957,18 +959,21 @@ if __name__ == '__main__':
 
     log.startLogging(sys.stdout)
 
-    g_factory = WampServerFactory("ws://localhost:9000", debugWamp = True)
+    g_factory = WampServerFactory("ws://localhost:8080")
     g_factory.protocol = MyServerProtocol
-    g_factory.setProtocolOptions(allowHixie76 = True)
-    listenWS(g_factory)
 
-    #factory = WampClientFactory("ws://localhost:9000")
-    #factory.protocol = MyClientProtocol
-    #connectWS(factory)
+    g_factory.startFactory()
 
-    webdir = File("web")
-    web = Site(webdir)
-    reactor.listenTCP(8080, web)
+    resource = WebSocketResource(g_factory)
+
+    root = File("web")
+
+    root.putChild("ws", resource)
+
+    site = Site(root)
+    site.protocol = HTTPChannelHixie76Aware
+    reactor.listenTCP(8080, site)
 
     reactor.run()
+
 

@@ -52,9 +52,9 @@
         window.onload = function() {
 
             if (window.location.protocol === "file:") {
-                wsuri = "ws://localhost:9000";
+                wsuri = "ws://localhost:8080/ws";
             } else {
-                wsuri = "ws://" + window.location.hostname + ":9000";
+                wsuri = "ws://" + window.location.hostname + ":8080/ws";
             }
 
             // connect to WAMP server
