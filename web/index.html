@@ -72,7 +72,9 @@
                   sess.subscribe("http://manaclash.org/users", onUsers);
                   sess.subscribe("http://manaclash.org/games", onGames);
 
-                  cardsSetup();
+                  if (g_cards_available.length == 0) {
+                      cardsSetup();
+                  }
                },
 
                // WAMP session is gone
