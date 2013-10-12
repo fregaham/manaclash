@@ -85,7 +85,7 @@ function login() {
 }
 
 $(document).ready(function() {
-    $('#cards_cardtable').dataTable();
+/*    $('#cards_cardtable').dataTable();*/
     $('#navbar_nav').hide();
     navigate("login");
 
@@ -221,9 +221,11 @@ $(document).ready(function() {
 
         <div class="row-fluid">
             <div class="span3">
-              <div class="well sidebar-nav">
+              <div class="well">
+                <div class="sidebar-nav">
 
-                <ul class="nav nav-list">
+                <ul id="lobby_available_players" class="nav nav-list">
+<!--
                   <li id="lobby_challenging_players" class="nav-header">Players challenging you</li>
                   <li><a href="#">Rincewind</a></li>
                   <li class="active">
@@ -242,22 +244,30 @@ $(document).ready(function() {
                     <button type="button" class="btn pull-right" style="margin-top:8px">Join Duel</button>
                     <a href="#"><b>Bublach</b><br/>Rank: 3.5</a>
                   </li>
+-->
 
-                  <li id="lobby_available_players" class="nav-header">Available Players</li>
+<!--                  <li id="lobby_available_players" class="nav-header">Available Players</li>-->
+              </ul>
+              <ul id="lobby_games_in_progress" class="nav nav-list">
+<!--
                   <li><a href="#">Foo</a></li>
                   <li class="active">
                                 <button type="button" class="btn pull-right" style="margin-top:8px">Challenge</button>
                                 <a href="#"><b>Bar</b><br/>Rank: 10.5</a> 
                   </li>
                   <li><a href="#">Jerry</a></li>
+-->
                   <li id="lobby_games_in_progress" class="nav-header">Games in Progress</li>
+<!--
                   <li><a href="#">Foo vs Bar</a></li>
                   <li><a href="#">Monty vs Blab</a></li>
                   <li class="active">
                     <button type="button" class="btn pull-right" style="margin-top:8px">Watch</button>
                     <a href="#"><b>Wizzo vs Chuck</b><br/>Turn: 5</a>
                   </li>
+-->
                 </ul>
+                </div>
               </div><!--/.well -->
             </div><!--/span-->
             <div class="span9">
@@ -362,6 +372,7 @@ $(document).ready(function() {
                         </tr>
                     </thead>
                     <tbody>
+<!--
                         <tr>
                             <td>Abyssal Specter</td> <td>2BB</td> <td>Creature - Specter</td> <td>2/4</td> <td>Flying Whenever Abyssal Specter deals damage to a player, that player discards a card.</td><td><button class="btn btn-small" disabled><i class="icon-plus"></i></button></td>
                         </tr>
@@ -371,7 +382,7 @@ $(document).ready(function() {
                         </tr>
                         <tr>
                             <td>Aladdin's Ring</td> <td>8</td> <td>Artifact</td> <td></td> <td>{8}, {T}: Aladdin's Ring deals 4 damage to target creature or player.</td><td><button class="btn btn-small"><i class="icon-plus"></i></button></td>
-                        </tr>
+                        </tr>-->
                     </tbody>
                 </table>
             </div>
