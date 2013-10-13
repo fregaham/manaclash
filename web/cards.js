@@ -6,6 +6,10 @@ var g_cards_decks = {};
 var g_cards_available_map = {};
 var g_cards_deckname = null;
 
+
+// maps card title to card list plus buttons (to be able to enable/disable them)
+var g_cards_plusbuttons = {};
+
 function cards_init(sess) {
     if (g_cards_available.length == 0) {
         cards_setup();
@@ -41,14 +45,29 @@ function cards_update_decks_available_cards() {
         tr.append(tdType);
         tr.append(tdPower);
         tr.append(tdText);
-        tr.append($("<td><button class='btn btn-small'><i class='icon-plus'></i></button></td>"));
+
+        var button = $("<button class='btn btn-small'><i class='icon-plus'></i></button>");
+        tdButton = $("<td></td>");
+
+
+        button.appendTo(tdButton);
+
+        tr.append(tdButton);
         tbody.append(tr);
+
+        button.click(function(card, event) {
+            cards_deck_add_card(card);
+        }.partial(card.title));
+
+        g_cards_plusbuttons[card.title] = button.get(0);
 
 /*       tbody.append("<tr><td>" + " </td> <td>2BB</td> <td>Creature - Specter</td> <td>2/4</td> <td>Flying Whenever Abyssal Specter deals damage to a player, that player discards a card.</td><td><button class="btn btn-small" disabled><i class="icon-plus"></i></button></td></tr>)*/
     }
 
     $('#cards_cardtable').dataTable({"bAutoWidth": false} );
 }
+
+
 
 function cards_update_decklist_dropdown(toggle, list) {
     toggle.empty();
@@ -88,6 +107,13 @@ function cards_update_deck_table() {
         var tdCount = $("<td></td>").text(count);
         var tdButtons = $("<td></td>");
 
+        var btnPlus = $("<button class='btn btn-small'><i class='icon-plus'></i></button>");
+        var btnMinus = $("<button class='btn btn-small'><i class='icon-minus'></i></button>");
+        var btnGroup = $("<div class='btn-group'></div>");
+
+        btnGroup.append(btnPlus);
+        btnGroup.append(btnMinus);        
+        tdButtons.append(btnGroup);
 
         tr.append(tdTitle);
         tr.append(tdCost);
@@ -95,6 +121,22 @@ function cards_update_deck_table() {
         tr.append(tdButtons);
         
         tbody.append(tr);
+
+        btnPlus.click(function(card, event) {
+            cards_deck_add_card(card);
+        }.partial(cardname));
+
+        btnMinus.click(function(card, event) {
+            cards_deck_remove_card(card);
+        }.partial(cardname));
+
+        if (count >= 4 && cardname != "Plains" && cardname != "Swamp" && cardname != "Mountain" && cardname != "Island" && cardname != "Forest") {
+            btnPlus.attr("disabled", "disabled");
+            var cardsButton = g_cards_plusbuttons[cardname];
+            if (cardsButton != null) {
+                $(cardsButton).attr("disabled", "disabled");
+            }
+        }
     }
     
 }
@@ -198,3 +240,51 @@ function cards_setup() {
         function(){ alert("failed to fetch available cards!"); }
     );
 }
+
+function cards_deck_add_card(card) {
+    var deck = g_cards_decks[g_cards_deckname];
+    var found = false;
+    for (var i = 0; i < deck.length; ++i) {
+        var count = deck[i][0];
+        var cardname = deck[i][1];
+       
+        if (cardname == card) {
+            if (count < 4 || card == "Plains" || card == "Mountain" || card == "Swamp" || card == "Forest" || card == "Island") {
+                deck[i][0] = count + 1;
+            }
+
+            found = true;
+        }
+    }
+
+    if (!found) {
+        deck.push([1, card]);
+    }
+
+    cards_update_decks();
+}
+
+function cards_deck_remove_card(card) {
+    var deck = g_cards_decks[g_cards_deckname];
+    for (var i = 0; i < deck.length; ++i) {
+        var count = deck[i][0];
+        var cardname = deck[i][1];
+
+        if (cardname == card) {
+            if (count > 1) {
+                deck[i][0] = count - 1;
+            }
+            else {
+                deck.splice(i, 1);
+            }
+        }
+    }
+
+    var cardsButton = g_cards_plusbuttons[card];
+    if (cardsButton != null) {
+        $(cardsButton).removeAttr("disabled");
+    }
+
+    cards_update_decks();
+}
+
