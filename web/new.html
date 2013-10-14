@@ -303,9 +303,9 @@ $(document).ready(function() {
                 <span class="icon-bar"></span>
 
                 <div class="btn-group">
-                    <button id="cards_deck_rename" class="btn" href="#" onclick="$('#cards_deck_rename_modal').modal('toggle')">Rename</button>
+                    <button id="cards_deck_rename" class="btn" href="#" onclick="cards_deck_rename();">Rename</button>
 
-                    <button id="cards_deck_delete" class="btn" href="#" onclick="$('#cards_deck_delete_modal').modal('toggle')">Delete</button>
+                    <button id="cards_deck_delete" class="btn" href="#" onclick="cards_deck_delete();">Delete</button>
                 </div>
 
                 <div id="cards_deck_rename_modal" class="modal hide fade" tabindex="-1" role="dialog">
@@ -315,12 +315,12 @@ $(document).ready(function() {
                     </div>
                     <div class="modal-body">
                         <div class="row-fluid">
-                            <input class="span12" id="" value="Green Machine" type="text">
+                            <input id="cards_deck_rename_input" class="span12" value="Green Machine" type="text">
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                        <button class="btn btn-primary">Rename</button>
+                        <button class="btn btn-primary" onclick="cards_deck_rename_confirm();">Rename</button>
                     </div>
                 </div>
 
@@ -334,7 +334,7 @@ $(document).ready(function() {
                     </div>
                     <div class="modal-footer">
                         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                        <button class="btn btn-primary">Delete</button>
+                        <button class="btn btn-primary" onclick="cards_deck_delete_confirm();">Delete</button>
                     </div>
                 </div>
               
@@ -349,12 +349,12 @@ $(document).ready(function() {
                     </div>
                     <div class="modal-body">
                         <div class="row-fluid">
-                            <input class="span12" id="" placeholder="Name the new deck..." type="text">
+                            <input class="span12" id="cards_deck_new_input" placeholder="Name the new deck..." type="text">
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                        <button class="btn btn-primary">Create</button>
+                        <button class="btn btn-primary" onclick="cards_deck_new_confirm();">Create</button>
                     </div>
                 </div>
 

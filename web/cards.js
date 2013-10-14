@@ -14,6 +14,12 @@ function cards_init(sess) {
     if (g_cards_available.length == 0) {
         cards_setup();
     }
+
+    $("#cards_deck_rename_input").keydown(function (e){
+        if(e.keyCode == 13) {
+            cards_deck_rename_confirm();
+        }
+    })
 }
 
 function cards_update_decks_available_cards() {
@@ -95,6 +101,11 @@ function cards_update_deck_table() {
     tbody.empty();
 
     var deck = g_cards_decks[g_cards_deckname];
+
+    if (deck == null) {
+        return;
+    }
+
     for (var i = 0; i < deck.length; ++i) {
         var count = deck[i][0];
         var cardname = deck[i][1];
@@ -286,5 +297,59 @@ function cards_deck_remove_card(card) {
     }
 
     cards_update_decks();
+}
+
+function cards_deck_rename() {
+    $("#cards_deck_rename_input").val(g_cards_deckname);
+    $('#cards_deck_rename_modal').modal('toggle');
+}
+
+function cards_deck_rename_confirm() {
+
+    var newdeckname = $("#cards_deck_rename_input").val();
+
+    var deck = g_cards_decks[g_cards_deckname];
+    var i = g_cards_decknames.indexOf(g_cards_deckname);
+    g_cards_decknames.splice(i, 1, newdeckname);
+    g_cards_decks[newdeckname] = deck;
+    g_cards_decks[g_cards_deckname] = null;
+
+    g_cards_deckname = newdeckname;
+
+    cards_update_decks();
+
+    $("#cards_deck_rename_modal").modal("hide");
+}
+
+function cards_deck_delete() {
+    $('#cards_deck_delete_modal').modal('toggle');
+}
+
+function cards_deck_delete_confirm() {
+
+    var deck = g_cards_decks[g_cards_deckname];
+    var i = g_cards_decknames.indexOf(g_cards_deckname);
+    g_cards_decknames.splice(i, 1);
+
+    g_cards_decks[g_cards_deckname] = null;
+
+    g_cards_deckname = g_cards_decknames[0];
+
+    cards_update_decks();
+
+    $("#cards_deck_delete_modal").modal("hide");
+}
+
+function cards_deck_new_confirm() {
+    var newdeckname = $("#cards_deck_new_input").val();
+    if (newdeckname != null && newdeckname != "") {
+        g_cards_decknames.push(newdeckname);
+        g_cards_decks[newdeckname] = [];
+        g_cards_deckname = newdeckname;
+
+        cards_update_decks();
+
+        $("#cards_deck_new_modal").modal("hide");
+    }
 }
 
