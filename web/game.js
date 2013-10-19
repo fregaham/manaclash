@@ -47,6 +47,7 @@ function game_init(sess) {
 
     // clear the log
     $("#messages").empty();
+    showZone(null);
 }
 
 function subscribeGame(gameUri) {

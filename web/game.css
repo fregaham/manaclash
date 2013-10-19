@@ -10,6 +10,8 @@
     background: white;
     margin:3px;
     color: black;
+
+    font-family: 'Open Sans', sans-serif;
 }
 
 .card_small > img {
@@ -57,7 +59,7 @@
 
 .card_small .header {
     position: absolute;
-    font-size: 8px;
+    font-size: 9px;
     height: 10px;
     width: 88px;
     border: 1px solid black;
@@ -314,7 +316,7 @@
     left: 0px;
     width: 92px;
     height: 123px;
-    font-size: 8px;
+    font-size: 9px;
     overflow: hidden;
 }
 
@@ -450,6 +452,7 @@
   left:4px;
   top:42px;
   width: 200px;
+  color: rgb(153, 153, 153);
 }
 
 .player_action {

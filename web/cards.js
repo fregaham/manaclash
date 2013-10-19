@@ -156,6 +156,8 @@ function cards_select_deck(deckname) {
     g_cards_deckname = deckname;
     localStorage.cardsDeckname = deckname;
     cards_update_decks();    
+
+    cards_set_server_deck();
 }
 
 function cards_update_decks() {

@@ -11,6 +11,7 @@
         <script src="cards.js"></script>
         <script src="game.js"></script>
 
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
         <link href="css/bootstrap.css" rel="stylesheet"/>
         <link href="css/jquery.dataTables.css" rel="stylesheet"/>
         <link href="game.css" rel="stylesheet"/>
@@ -67,6 +68,14 @@ function navigate(where) {
 
     $("#" + where).show();
     $("#" + where + "_li").addClass("active");
+
+    /* hack background color for game */
+    if (where == "game") {
+        $("body").css("background-color", "rgb(32, 32, 32)");
+    }
+    else {
+        $("body").css("background-color", "rgb(255, 255, 255)");
+    }
 }
 
 function login() {
