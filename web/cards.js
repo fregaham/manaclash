@@ -19,7 +19,7 @@ function cards_init(sess) {
         if(e.keyCode == 13) {
             cards_deck_rename_confirm();
         }
-    })
+    });
 }
 
 function cards_update_decks_available_cards() {
@@ -353,3 +353,8 @@ function cards_deck_new_confirm() {
     }
 }
 
+/* Sends the current deck to the server */
+function cards_set_server_deck() {
+    var deck = g_cards_decks[g_cards_deckname];
+    sess.call("http://manaclash.org/setDeck", deck);
+}

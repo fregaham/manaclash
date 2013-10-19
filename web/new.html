@@ -9,9 +9,11 @@
 
         <script src="lobby.js"></script>
         <script src="cards.js"></script>
+        <script src="game.js"></script>
 
         <link href="css/bootstrap.css" rel="stylesheet"/>
         <link href="css/jquery.dataTables.css" rel="stylesheet"/>
+        <link href="game.css" rel="stylesheet"/>
 
         <style>
           body {
@@ -78,6 +80,8 @@ function login() {
              else {
                 $('#navbar_nav').show();
                 navigate("lobby");
+
+                cards_set_server_deck();
              }
         },
         function(){ alert("failed to login!"); }
@@ -105,6 +109,7 @@ $(document).ready(function() {
 
           lobby_init(sess);
           cards_init(sess);
+          game_init(sess);
        },
 
        // WAMP session is gone
@@ -173,9 +178,9 @@ $(document).ready(function() {
 
                 <span class="icon-bar"></span>
 
-                Open to a duel? <div id="" class="btn-group" data-toggle="buttons-radio">
-                    <button type="button" class="btn">Yes</button>
-                    <button type="button" class="btn">No</button>
+                Open to a duel? <div id="lobby_open_duel_radio" class="btn-group" data-toggle="buttons-radio">
+                    <button id="lobby_open_duel_yes" type="button" class="btn">Yes</button>
+                    <button id="lobby_open_duel_no" type="button" class="btn">No</button>
                 </div>
 
                 <span class="icon-bar"></span>
@@ -224,6 +229,10 @@ $(document).ready(function() {
               <div class="well">
                 <div class="sidebar-nav">
 
+                <ul id="lobby_duel_players" class="nav nav-list">
+                    
+                </ul>
+
                 <ul id="lobby_available_players" class="nav nav-list">
 <!--
                   <li id="lobby_challenging_players" class="nav-header">Players challenging you</li>
@@ -248,6 +257,8 @@ $(document).ready(function() {
 
 <!--                  <li id="lobby_available_players" class="nav-header">Available Players</li>-->
               </ul>
+
+
               <ul id="lobby_games_in_progress" class="nav nav-list">
 <!--
                   <li><a href="#">Foo</a></li>
@@ -257,7 +268,7 @@ $(document).ready(function() {
                   </li>
                   <li><a href="#">Jerry</a></li>
 -->
-                  <li id="lobby_games_in_progress" class="nav-header">Games in Progress</li>
+<!--                  <li class="nav-header">Games in Progress</li>-->
 <!--
                   <li><a href="#">Foo vs Bar</a></li>
                   <li><a href="#">Monty vs Blab</a></li>
@@ -415,6 +426,99 @@ $(document).ready(function() {
     </div>
 
     <div id="game" class="container-fluid">
+        <div id="autopass"><span>3</span></div>
+
+        <div id="status">
+            <div id="card_details">
+            </div>
+
+            <div id="opponent">
+                <h3 id="opponent_header"><span id="opponent_name"></span> <span id="opponent_life"></span></h3>
+                <div><span id="opponent_manapool"></span></div>
+                <div id="opponent_hand_zone_button" onclick="showZone($('#opponent_hand_zone'));"><span id="opponent_hand"></span></div>
+
+                <div id="opponent_library_graveyard" class="library_graveyard">
+                    <span class="library" id="opponent_library" onclick="showZone($('#opponent_library_zone'));"></span>
+                    <span class="graveyard" id="opponent_graveyard" onclick="showZone($('#opponent_graveyard_zone'));"></span>
+                </div>
+            </div>
+
+            <div id="player">
+                <h3 id="player_header"><span id="player_name"></span> <span id="player_life"></span></h3>
+                <div><span id="player_manapool"></span></div>
+
+                <div id="player_library_graveyard" class="library_graveyard">
+                    <span class="library" id="player_library" onclick="showZone($('#player_library_zone'));"></span>
+                    <span class="graveyard" id="player_graveyard" onclick="showZone($('#player_graveyard_zone'));"></span>
+                </div>
+            </div>
+
+            <div>Turn: <span id="turn"></span></div>
+            <div>Phase: <span id="phase"></span></div>
+            <div>Step: <span id="step"></span></div>
+
+            <div id="text"></div>
+
+<!--                <div><button id="timer">Auto Pass</button></div>-->
+            <div><button id="pass" onclick="onPass();">Pass</button></div>
+
+            <div id="actions">
+                <button class="action_button">Action 1</button>
+                <button class="action_button">Action 2</button>
+                <button class="action_button">Action 2</button>
+            </div>
+        </div>
+
+        <div id="query">
+                <div id="query_text"></div>
+                <input id="query_input"/>
+                <div>
+                    <button id="query_button">Answer</button>
+                </div>
+        </div>
+
+        <div id="table">
+                <span class="cards_stack" style="width:100px;height:150px;background:red;display:inline-block;">
+                    <span  title="#1 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_1"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+
+                    <span style="position:relative; left:0px; top:20px;" title="#41 Swamp  basic land - swamp b" class="card_small card_tapped card_swamp" id="obj_41"><div class="card_content"><span class="header"><span class="title">Swamp</span><span class="manacost"></span></span><span class="body"><span class="types">basic land – swamp</span><span class="text">b</span></span></div></span>
+                </span>
+                <span class="tapped_dummy"></span>
+
+                <span class="cards_stack" style="width:100px;height:150px;background:red;display:inline-block;">
+                    <span title="#5 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_5"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                    <span style="position:relative; left:0px; top:20px;" title="#6 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_6"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                </span>
+
+                <span class="cards_stack" style="width:100px;height:150px;background:red;display:inline-block;">
+                    <span title="#5 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_5"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                    <span style="position:relative; left:0px; top:20px;" title="#6 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_6"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
+                </span>
+
+        </div>
+
+        <div id="game_messages">
+            <div id="messages">
+                <div id="message">foo</div>
+                <div id="message">foo</div>
+                <div id="message">foo</div>
+                <div id="message">foo</div>
+                <div id="message">foo</div>
+            </div>
+            <div id="game_messages_form">
+                <input size="60" id="game_messages_input" name="game_messages_input" /> <button id="game_messages_send">Send</button> <button id="game_messages_expand">^</button> <button onclick="endGame();">End Game</button>
+            </div>
+        </div>
+
+        <div id="zones">
+            <button id="zones_hide" onclick="showZone(null);">X</button>
+            <div class="zone" id="player_graveyard_zone"></div>
+            <div class="zone" id="player_library_zone"></div>
+            <div class="zone" id="opponent_graveyard_zone"></div>
+            <div class="zone" id="opponent_library_zone"></div>
+            <div class="zone" id="opponent_hand_zone"></div>
+            <div class="zone" id="revealed_zone"></div>
+        </div>
     </div>
 
     </body>

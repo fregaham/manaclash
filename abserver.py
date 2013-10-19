@@ -495,11 +495,17 @@ class ABClient:
         self.user = None
         self.player = None
 
+        # available for duel?
+        self.duel = False
+
+        self.deck = None
+
     def disconnect(self):
         if self.player is not None:
             self.player.setClient(None)
             self.player = None
         self.user = None
+        self.setDuel(False)
 
     def setPlayer(self, player):
         if self.player is not None:
@@ -508,20 +514,29 @@ class ABClient:
         if self.player is not None:
             self.player.setClient(self)
 
+    def setDuel(self, duel):
+        global available_for_duel
+        self.duel = duel
+        if duel is False:
+            if self in available_for_duel:
+                available_for_duel.remove(self)
+        else:
+            if self not in available_for_duel:
+                available_for_duel.append(self)
+
+    def setDeck(self, deck):
+        self.deck = deck
 
 client_map = {}
 user_map = {}
 game_map = {}
+available_for_duel = []
+
+duels = []
 
 last_game_id = 0
 
 chat_messages = []
-
-# Clients waiting for a random duel  [(abclient, deck)]
-random_duel_clients = []
-
-# clients waiting for a solitaire
-random_solitaire_clients = []
 
 def startGame(game_id):
     game = game_map.get(game_id)
@@ -540,6 +555,7 @@ def joinGame(game, client, user, role, deck):
 
     game.add(player)
     dispatchGames()
+    dispatchUsers()
 
     if len(game.players) == 2:
         reactor.callLater(1, startGame, game.id)
@@ -547,51 +563,66 @@ def joinGame(game, client, user, role, deck):
 
 def startDuels():
     """ Check if we can start any duels and start them if so """
-    global random_duel_clients
-    global random_solitaire_clients
+    global duels
+#    global random_solitaire_clients
     global game_map
 
     # filter disconnected clients
-    new_random_duel_clients = []
-    for c, d in random_duel_clients:
-        if c.user is not None:
-            new_random_duel_clients.append( (c,d) )
+    new_duels = []
+    for cs in duels:
+        connected = True
+        for c in cs:
+            if c.user is None:
+                connected = False
 
-    random_duel_clients = new_random_duel_clients
+        if connected:
+            new_duels.append(cs)
+
+    duels = new_duels
 
     for game in game_map.itervalues():
         if len(game.players) == 0:
-            # We need at least two clients
-            if len(random_duel_clients) <= 1:
+            if len(duels) == 0:
                 break
+
+            print "XXX: will start game"
 
             game.solitaire = False
             # start the game
-            client1, deck1 = random_duel_clients[0]
-            client2, deck2 = random_duel_clients[1]
-            random_duel_clients = random_duel_clients[2:]
+            client1, client2 = duels.pop()
+            deck1, deck2 = client1.deck, client2.deck
+
             joinGame(game, client1, client1.user, "player1", deck1)
             joinGame(game, client2, client2.user, "player2", deck2)
 
-    for game in game_map.itervalues():
-        if len(game.players) == 0:
-            if len(random_solitaire_clients) == 0:
-                break
+            print "XXX: game should be started"
 
-            game.solitaire = True
-            client, deck1, deck2 = random_solitaire_clients[0]
-            random_solitaire_clients = random_solitaire_clients[1:]
 
-            joinGame(game, client, client.user, "player1", deck1)
-            joinGame(game, None, client.user, "player2", deck2)
+#    for game in game_map.itervalues():
+#        if len(game.players) == 0:
+#            if len(random_solitaire_clients) == 0:
+#                break
+
+#            game.solitaire = True
+#            client, deck1, deck2 = random_solitaire_clients[0]
+#            random_solitaire_clients = random_solitaire_clients[1:]
+
+#            joinGame(game, client, client.user, "player1", deck1)
+#            joinGame(game, None, client.user, "player2", deck2)
            
 
 def dispatchUsers(exclude=[], eligible=None):
-    g_factory.dispatch("http://manaclash.org/users", map(lambda client:client.user.login, filter(lambda client:client.user is not None, client_map.values())), exclude, eligible)
+
+    global available_for_duel
+    message = {}
+    
+    message["duel"] = map(lambda client:client.user.login, filter(lambda client:client.user is not None and client.player is None, available_for_duel))
+    message["available"] = map(lambda client:client.user.login, filter(lambda client:client.user is not None and client.player is None, client_map.values()))
+    message["playing"] = map(lambda client:client.user.login, filter(lambda client:client.user is not None and client.player is not None, client_map.values()))
+
+    g_factory.dispatch("http://manaclash.org/users", message, exclude, eligible)
 
 def dispatchGames(exclude=[], eligible=None):
-    global random_duel_clients
-    global random_solitaire_clients
     message = {}
 
     games = []
@@ -620,8 +651,8 @@ def dispatchGames(exclude=[], eligible=None):
     x2login = lambda x:x[0].user.login
     userfilter = lambda x:x[0].user != None
 
-    message["duel"] = map(x2login, filter(userfilter, random_duel_clients))
-    message["solitaire"] = map(x2login, filter(userfilter, random_solitaire_clients))
+#    message["duel"] = map(x2login, filter(userfilter, random_duel_clients))
+#    message["solitaire"] = map(x2login, filter(userfilter, random_solitaire_clients))
 
     g_factory.dispatch("http://manaclash.org/games", message, exclude, eligible)
 
@@ -668,9 +699,11 @@ class MyServerProtocol(WampServerProtocol):
         self.registerForPubSub("http://manaclash.org/games")
         self.registerForPubSub("http://manaclash.org/game/", prefixMatch=True)
 
-        self.registerMethodForRpc("http://manaclash.org/random_duel", self, MyServerProtocol.onRandomDuel)
+        self.registerMethodForRpc("http://manaclash.org/setDeck", self, MyServerProtocol.onSetDeck)
+        self.registerMethodForRpc("http://manaclash.org/availableForDuel", self, MyServerProtocol.onAvailableForDuel)
+        self.registerMethodForRpc("http://manaclash.org/joinDuel", self, MyServerProtocol.onJoinDuel)
         self.registerMethodForRpc("http://manaclash.org/solitaire", self, MyServerProtocol.onSolitaire)
-        self.registerMethodForRpc("http://manaclash.org/cancel_duel", self, MyServerProtocol.onCancelDuel)
+#        self.registerMethodForRpc("http://manaclash.org/cancel_duel", self, MyServerProtocol.onCancelDuel)
 
         self.registerMethodForRpc("http://manaclash.org/login", self, MyServerProtocol.onLogin)
 
@@ -848,6 +881,53 @@ class MyServerProtocol(WampServerProtocol):
             random_duel_clients.append( (client, deck) )
             reactor.callLater(0, dispatchGames, [], [self])
             reactor.callLater(1, startDuels)
+            return True
+
+        return False
+
+    def onAvailableForDuel(self, available):
+        client = client_map.get(self.session_id)
+        if client is not None and client.user is not None and client.deck is not None:
+            client.setDuel(available)
+
+            reactor.callLater(0, dispatchUsers)
+
+            return True
+
+        return False
+
+    def onJoinDuel(self, username):
+
+        global available_for_duel
+
+        client = client_map.get(self.session_id)
+
+        print "XXX: onJoinDuel(%s)" % username
+
+        if client is not None and client.user is not None and client.deck is not None:
+            for other_client in available_for_duel:
+                if other_client.user is not None and other_client.user.login == username:
+
+                    print "XXX: appending duels"
+
+                    global duels
+                    duels.append ([other_client, client])
+
+                    startDuels() 
+
+#                    reactor.callLater(0, dispatchUsers)
+#                    reactor.callLater(0, dispatchGames)
+
+                    return True
+
+        return False
+                
+
+    def onSetDeck(self, deck):
+        client = client_map.get(self.session_id)
+        if client is not None and client.user is not None:
+            # TODO: verify
+            client.setDeck(deck)
             return True
 
         return False
