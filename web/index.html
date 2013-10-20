@@ -49,6 +49,7 @@
         <script>
 
     var g_login = null;
+    var g_view = null;
     var sess = null;
 
     $('#lobby_deck_dropdown').dropdown();
@@ -58,6 +59,8 @@
     $('#cards_deck_new_modal').modal();
 
 function navigate(where) {
+
+    console.log("navigating to " + where);
 
     var views = ["login", "lobby", "cards", "game"];
 
@@ -76,6 +79,8 @@ function navigate(where) {
     else {
         $("body").css("background-color", "rgb(255, 255, 255)");
     }
+
+    g_view = where;
 }
 
 function login() {
@@ -88,7 +93,10 @@ function login() {
              }
              else {
                 $('#navbar_nav').show();
-                navigate("lobby");
+
+                if (g_view == null || g_view == "login") {
+                    navigate("lobby");
+                }
 
                 cards_set_server_deck();
              }
@@ -435,7 +443,7 @@ $(document).ready(function() {
     </div>
 
     <div id="game" class="container-fluid">
-        <div id="autopass"><span>3</span></div>
+        <div id="autopass"><span>Game not started yet</span></div>
 
         <div id="status">
             <div id="card_details">
@@ -487,6 +495,7 @@ $(document).ready(function() {
         </div>
 
         <div id="table">
+<!--
                 <span class="cards_stack" style="width:100px;height:150px;background:red;display:inline-block;">
                     <span  title="#1 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_1"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
 
@@ -503,7 +512,7 @@ $(document).ready(function() {
                     <span title="#5 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_5"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
                     <span style="position:relative; left:0px; top:20px;" title="#6 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_6"><div class="card_content"><span class="header"><span class="title">Maggot Carrier</span><span class="manacost">B</span></span><span class="body"><span class="types"> creature – zombie</span><span class="text">when SELF enters the battlefield, each player loses 1 life.<span class="power">1/1</span></span></span></div></span>
                 </span>
-
+-->
         </div>
 
         <div id="game_messages">

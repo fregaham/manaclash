@@ -218,14 +218,21 @@ function lobby_onGames(topicUri, games) {
 
         var players = game["players"];
 
+        console.log("g_gameuri: " + g_gameuri);
+
         if (g_gameuri == null) {
             if (players.length == 2) {
                 for (var j = 0; j < players.length; j++) {
                     var player = players[j];
 
                     if (player["login"] == g_login) {
+                        console.log("taking over");
+
+                        navigate("game");
+
+                        $("#lobby_open_duel_no").button("toggle");
                         game_takeover(game.id, player.role);
-                    }
+                   }
                 }
             }
         }

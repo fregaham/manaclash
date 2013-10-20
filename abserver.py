@@ -254,6 +254,9 @@ def ab_game_action(ab_game, client_player, client_message):
 
         g_factory.dispatch("http://manaclash.org/game/" + str(ab_game.id) + "/state", ab_game.current_state)
 
+        if game.end:
+            ab_game.end()
+
 
 def ab_input_generator(ab_game):
     seed = random.randint(0,2**64)
@@ -458,6 +461,7 @@ class ABGame:
         self.current_state = None
         self.current_player = None
 
+        dispatchUsers()
         dispatchGames()
         reactor.callLater(1, startDuels)
 
@@ -513,6 +517,8 @@ class ABClient:
         self.player = player
         if self.player is not None:
             self.player.setClient(self)
+            if self in available_for_duel:
+                available_for_duel.remove(self)
 
     def setDuel(self, duel):
         global available_for_duel
@@ -585,8 +591,6 @@ def startDuels():
             if len(duels) == 0:
                 break
 
-            print "XXX: will start game"
-
             game.solitaire = False
             # start the game
             client1, client2 = duels.pop()
@@ -594,8 +598,6 @@ def startDuels():
 
             joinGame(game, client1, client1.user, "player1", deck1)
             joinGame(game, client2, client2.user, "player2", deck2)
-
-            print "XXX: game should be started"
 
 
 #    for game in game_map.itervalues():

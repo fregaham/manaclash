@@ -543,6 +543,7 @@
     background: #202020;
     border: 1px solid black;
     overflow: auto;
+    line-height: normal;
 }
 
 #zone_stack {
