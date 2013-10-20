@@ -83,6 +83,10 @@ function lobby_onUsers(topicUri, msg) {
     for (var i = 0; i < duel.length; i++) {
         var user = duel[i]; 
 
+        if (user == g_login) {
+            continue;
+        }
+
         var li = $("<li></li>");
         var a = $("<a href='#'></a>").text(user);
 
@@ -149,9 +153,11 @@ function lobby_onUsers(topicUri, msg) {
         var li = $("<li></li>");
         var a = $("<a href='#'></a>").text(user);
 
+        /*
         var button = $("<button type='button' class='btn pull-right btn-small' style='margin-top:-3px'>Challenge</button>");
         button.hide();
         button.appendTo(a);
+        */
 
         a.appendTo(li);
         li.appendTo($("#lobby_available_players"));
