@@ -135,8 +135,26 @@ function cards_update_deck_table() {
 
         var card = g_cards_available_map[cardname];
 
+        var fulltext =  card.title + " " + card.manacost + "\n " + card.supertypes.join(" ") + " " + card.types.join(" ");
+        if (card.subtypes.length > 0) {
+            fulltext += " - ";
+        }
+        fulltext += card.subtypes.join(" ") + " ";
+
+        fulltext += "\n" + card.text;
+
+        if (card.power != null) {
+            fulltext += "\n " + card.power + "/" + card.toughness;
+        }
+
+
+        var a_title = $("<a href='#' data-toggle='tooltip' data-trigger='click' data-placement='left'></a>").text(card.title);
+        a_title.attr("title", fulltext);
+
+        a_title.tooltip();
+
         var tr = $("<tr></tr>");
-        var tdTitle = $("<td></td>").text(card.title);
+        var tdTitle = $("<td></td>").append(a_title);
         var tdCost = $("<td></td>").text(card.manacost);
         var tdCount = $("<td></td>").text(count);
         var tdButtons = $("<td></td>");
@@ -197,6 +215,8 @@ function cards_update_decks() {
         g_cards_solitaire_deck2 = deck;
         cards_update_decks();
     });
+
+    cards_save();
 }
 
 function cards_update_all() {
@@ -285,6 +305,22 @@ function cards_setup() {
         },
         function(){ alert("failed to fetch available cards!"); }
     );
+}
+
+function cards_save() {
+    if(typeof(Storage)!=="undefined") {
+
+        localStorage.cardsDeckname = g_cards_deckname;
+        var decks = "";
+        for (var i = 0; i < g_cards_decknames.length; i++) {
+            decks += "n" + g_cards_decknames[i] + "\n";
+            for (var j = 0; j < g_cards_decks[g_cards_decknames[i]].length; j++) {
+                decks += "c" + g_cards_decks[g_cards_decknames[i]][j][0] + " " + g_cards_decks[g_cards_decknames[i]][j][1] + "\n";
+            }
+        }
+
+        localStorage.cardsDecks = decks;
+    }
 }
 
 function cards_deck_add_card(card) {
