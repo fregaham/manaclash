@@ -212,14 +212,14 @@ $(document).ready(function() {
                     <div class="modal-body">
                         <div class="row-fluid">
                             <div class="span6">
-                                <ul  class="nav nav-tabs nav-stacked">
+                                <ul id="lobby_solitaire_deck1" class="nav nav-tabs nav-stacked">
                                 <li class="nav-header">Deck 1</li>
                                 <li><a href="#" role="menuitem">Green Machine</a></li>
                                 <li class="active"><a href="#" role="menuitem">Red Fries</a></li>
                                 </ul>
                             </div>
                             <div class="span6">
-                                <ul class="nav nav-tabs nav-stacked">
+                                <ul id ="lobby_solitaire_deck2" class="nav nav-tabs nav-stacked">
                                 <li class="nav-header">Deck 2</li>
                                 <li class="active"><a href="#" role="menuitem">Green Machine</a></li>
                                 <li><a href="#" role="menuitem">Red Fries</a></li>
@@ -229,7 +229,7 @@ $(document).ready(function() {
                     </div>
                     <div class="modal-footer">
                         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                        <button class="btn btn-primary">Play</button>
+                        <button class="btn btn-primary" onclick="lobby_start_solitaire();">Play</button>
                     </div>
                 </div>
             </div>

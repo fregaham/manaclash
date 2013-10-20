@@ -238,6 +238,8 @@ function lobby_onGames(topicUri, games) {
 
                         $("#lobby_open_duel_no").button("toggle");
                         game_takeover(game.id, player.role);
+
+                        break;
                    }
                 }
             }
@@ -314,6 +316,14 @@ function lobby_onGames(topicUri, games) {
                 li.addClass("active");
             }
         });
+    }
+}
+
+
+function lobby_start_solitaire() {
+    if (g_cards_solitaire_deck1 != null && g_cards_solitaire_deck2 != null) {
+        $("#lobby_solitaire_modal").modal("hide");
+        game_solitaire(g_cards_decks[g_cards_solitaire_deck1], g_cards_decks[g_cards_solitaire_deck2]);
     }
 }
 

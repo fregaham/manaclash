@@ -16,6 +16,8 @@ var g_autopass_cancel = false;
 var g_pass_on_next_priority = false;
 var g_pass_on_next_priority_step = null;
 
+var g_pass_last_block = null;
+
 // map object id -> zone (e.g. "player_hand", "opponent_graveyard", etc.)
 var g_zone_map = {};
 
@@ -27,6 +29,9 @@ function game_init(sess) {
         stopTimer();
         g_autopass_cancel = true;
         g_pass_on_next_priority = false;
+
+        g_pass_last_block = g_pass_on_next_priority_step;
+
         g_pass_on_next_priority_step = null;
         $("#autopass").hide();
     });
@@ -86,6 +91,11 @@ function game_takeover(gameId, role) {
             g_gameuri = uri;
             sess.call("http://manaclash.org/refresh");
         });
+}
+
+function game_solitaire(deck1, deck2) {
+    g_solitaire = true;
+    sess.call("http://manaclash.org/solitaire", deck1, deck2);
 }
 
 function onPlayerOffline(uri, message) {
@@ -914,7 +924,7 @@ function onState(state) {
                 g_pass_on_next_priority = false;
                 g_pass_on_next_priority_step = null;
 
-                if (!g_autopass_cancel && state["text"] == "You have priority" && haspass && !((state["turn"] == g_role || g_solitaire) && (state["phase"] == "precombat main" || state["phase"] == "postcombat main"))) {
+                if (!g_autopass_cancel && state["text"] == "You have priority" && haspass && !((state["turn"] == g_role || g_solitaire) && (state["phase"] == "precombat main" || state["phase"] == "postcombat main")) && !(g_solitaire && state["phase"] + " " + state["step"] == g_pass_last_block) ) {
 
                     // If there is an existing timer started by the other player's priority wait...
                     if (g_timer == null) {
@@ -939,6 +949,10 @@ function onState(state) {
 
                     stopTimer();
                     $("#autopass").hide();
+                }
+
+                if (state["phase"] + " " + state["step"] != g_pass_last_block) {
+                    g_pass_last_block = null;
                 }
             }
         }
@@ -1026,23 +1040,32 @@ function onTimer() {
     if (g_timeout <= 0) {
         stopTimer();
 
-        // two options, one, we are waiting on our own pass, or the wait started during the opponents' priority wait and 
-        if (g_role == g_state["player"] && g_state["text"] == "You have priority") {
-
-            console.log("onTimer autopassing");
-
-            $("#pass").attr("disabled", "disabled");
-            sess.publish(g_gameuri, 0);
-            // $("#autopass").empty();
+        if (g_solitaire) {
+            if (g_state["text"] == "You have priority") {
+                $("#pass").attr("disabled", "disabled");
+                sess.publish(g_gameuri, 0);
+                g_pass_on_next_priority = true;
+            }
         }
         else {
-            console.log("onTimer setting g_pass_on_next_priority");
+            // two options, one, we are waiting on our own pass, or the wait started during the opponents' priority wait and 
+            if (g_role == g_state["player"] && g_state["text"] == "You have priority") {
 
-            // we want to pass but cannot yet.
-            $("#autopass").empty();
-            $("<div class='autopass_wait'></div>").text("Waiting for " + getPlayerName(g_state["player"])).appendTo($("#autopass"));
-            $("#autopass").show();
-            g_pass_on_next_priority = true;
+                console.log("onTimer autopassing");
+
+                $("#pass").attr("disabled", "disabled");
+                sess.publish(g_gameuri, 0);
+                // $("#autopass").empty();
+            }
+            else {
+                console.log("onTimer setting g_pass_on_next_priority");
+
+                // we want to pass but cannot yet.
+                $("#autopass").empty();
+                $("<div class='autopass_wait'></div>").text("Waiting for " + getPlayerName(g_state["player"])).appendTo($("#autopass"));
+                $("#autopass").show();
+                g_pass_on_next_priority = true;
+            }
         }
     }
     else {

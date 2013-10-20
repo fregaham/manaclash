@@ -6,6 +6,8 @@ var g_cards_decks = {};
 var g_cards_available_map = {};
 var g_cards_deckname = null;
 
+var g_cards_solitaire_deck1 = null;
+var g_cards_solitaire_deck2 = null;
 
 // maps card title to card list plus buttons (to be able to enable/disable them)
 var g_cards_plusbuttons = {};
@@ -96,6 +98,27 @@ function cards_update_decklist_dropdown(toggle, list) {
     }
 }
 
+function cards_update_decklist_navtabs(navtab, title, selected, selectFunction) {
+    navtab.empty();
+    $("<li class='nav-header'></li>").text(title).appendTo(navtab);
+
+    for (var i = 0; i < g_cards_decknames.length; ++i) {
+        var deckname = g_cards_decknames[i];
+        var a = $("<a href='#' role='menuitem'></a>");
+        a.text(deckname);
+
+        a.click(selectFunction.partial(deckname));
+
+        var li = $("<li></li>");
+        li.append(a);
+        navtab.append(li);
+
+        if (selected == deckname) {
+            li.addClass("active");
+        }
+    }
+}
+
 function cards_update_deck_table() {
     var tbody = $("#cards_decktable > tbody:last");
     tbody.empty();
@@ -164,6 +187,16 @@ function cards_update_decks() {
     cards_update_decklist_dropdown($("#lobby_deck_dropdown"), $("#lobby_deck_list"));
     cards_update_decklist_dropdown($("#cards_deck_dropdown"), $("#cards_deck_list"));
     cards_update_deck_table();
+
+    cards_update_decklist_navtabs($("#lobby_solitaire_deck1"), "Deck 1", g_cards_solitaire_deck1, function (deck, e) {
+        g_cards_solitaire_deck1 = deck;
+        cards_update_decks();
+    });
+
+    cards_update_decklist_navtabs($("#lobby_solitaire_deck2"), "Deck 2", g_cards_solitaire_deck2, function (deck, e) {
+        g_cards_solitaire_deck2 = deck;
+        cards_update_decks();
+    });
 }
 
 function cards_update_all() {

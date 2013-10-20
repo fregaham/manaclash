@@ -539,6 +539,7 @@ game_map = {}
 available_for_duel = []
 
 duels = []
+solitaires = []
 
 last_game_id = 0
 
@@ -570,6 +571,7 @@ def joinGame(game, client, user, role, deck):
 def startDuels():
     """ Check if we can start any duels and start them if so """
     global duels
+    global solitaires
 #    global random_solitaire_clients
     global game_map
 
@@ -586,6 +588,13 @@ def startDuels():
 
     duels = new_duels
 
+    new_solitaires = []
+    for solitaire in solitaires:
+        if solitaire[0].user is not None:
+            new_solitaires.append (solitaire)
+
+    solitaires = new_solitaires
+
     for game in game_map.itervalues():
         if len(game.players) == 0:
             if len(duels) == 0:
@@ -599,6 +608,16 @@ def startDuels():
             joinGame(game, client1, client1.user, "player1", deck1)
             joinGame(game, client2, client2.user, "player2", deck2)
 
+    # duels have preference over solitaires
+    for game in game_map.itervalues():
+        if len(game.players) == 0:
+            if len(solitaires) == 0:
+                break
+
+            game.solitaire = True
+            client, deck1, deck2 = solitaires.pop()
+            joinGame(game, client, client.user, "player1", deck1)
+            joinGame(game, None, client.user, "player2", deck2)
 
 #    for game in game_map.itervalues():
 #        if len(game.players) == 0:
@@ -961,13 +980,14 @@ class MyServerProtocol(WampServerProtocol):
 
 
     def onSolitaire(self, deck1, deck2):
-        global random_solitaire_clients
+        global solitaires
         client = client_map.get(self.session_id)
         # We don't allow users to play more than one game at a time
         if client is not None and client.user is not None and (client.player is not None or len(client.user.players) > 0):
             return False
 
-        random_solitaire_clients.append ( (client, deck1, deck2) )
+        # TODO: verify deck
+        solitaires.append ( (client, deck1, deck2) )
 
         reactor.callLater(1, startDuels)
 
