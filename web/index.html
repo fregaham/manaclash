@@ -167,10 +167,21 @@ $(document).ready(function() {
         <div class="container">
             <form class="form-signin">
                 <h2 class="form-signin-heading">Please log in</h2>
-                <input id="login_username" type="text" class="input-block-level" placeholder="Login">
+                <input id="login_username" type="text" class="input-block-level" placeholder="Username">
                 <input id="login_password" type="password" class="input-block-level" placeholder="Password">
                 <button class="btn btn-large btn-primary" type="submit" onclick="login(); return false;">Log in</button>
             </form>
+
+            <div class="alert alert-block alert-info">
+                <h4>No registration required</h4>
+                 This demo server doesn't persist any data between restarts, so there is no registration required. Just use the same arbitrary username/password combination every time. 
+            </div>
+
+            <div class="alert alert-block">
+            <h4>Firefox only</h4>
+                This alpha version has only been developed on and tested with Firefox browser. Other browsers may or may not work.
+            </div>
+
         </div>
     </div>
 
