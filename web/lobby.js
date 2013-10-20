@@ -237,7 +237,7 @@ function lobby_onGames(topicUri, games) {
                         navigate("game");
 
                         $("#lobby_open_duel_no").button("toggle");
-                        game_takeover(game.id, player.role);
+                        game_takeover(game.id, player.role, game["solitaire"]);
 
                         break;
                    }

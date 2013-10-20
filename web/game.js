@@ -81,7 +81,10 @@ function unsubscribeGame(gameUri) {
     sess.unsubscribe(gameUri + "/player/offline");
 }
 
-function game_takeover(gameId, role) {
+function game_takeover(gameId, role, solitaire) {
+    g_solitaire = solitaire;
+    g_gameuri = null;
+    g_role = null;
     sess.call("http://manaclash.org/takeover", gameId, role).then(
         function(ret) {
             var uri = ret[0];
