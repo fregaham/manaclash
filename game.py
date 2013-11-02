@@ -93,6 +93,8 @@ class Game:
         self.declared_blockers = set()
         self.declared_blockers_map = {}
 
+        self.temporary_blockers_map = {}
+
         self.output = output
 
         self.events = {}

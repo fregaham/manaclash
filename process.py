@@ -1268,6 +1268,8 @@ class DeclareBlockersStepProcess(Process):
             self.blockers = set()
             self.blockers_map = {}
 
+            game.temporary_blockers_map = self.blockers_map
+
             self.state = 3
             game.process_push(self)
 
@@ -1350,6 +1352,8 @@ class DeclareBlockersStepProcess(Process):
 
                 _as = self.blockers_map.get(self.blocker_id, [])
                 self.blockers_map[self.blocker_id] = _as + [action.object.id]
+
+                game.temporary_blockers_map = self.blockers_map
 
                 self.state = 3
                 game.process_push(self)

@@ -134,6 +134,8 @@ def object_to_map(game, o):
 
     ret["attackers"] = game.declared_blockers_map.get(o.id, [])
 
+    ret["blockers_map"] = game.declared_blockers_map
+
     return ret
 
 def zone_to_string(game, zone):

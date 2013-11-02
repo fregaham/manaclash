@@ -452,7 +452,7 @@ function _displayBattlefieldStack(stack, enchantments, div, zone_name) {
     }
 }
 
-function displayBattlefield(objects, in_play_divs, in_play_battle_divs, rolemap) {
+function displayBattlefield(objects, in_play_divs, in_play_battle_divs, rolemap, blockers_map) {
 
     /* Map object ids to list of enchantments */
     var enchantments = {};
@@ -471,6 +471,8 @@ function displayBattlefield(objects, in_play_divs, in_play_battle_divs, rolemap)
     var role2stacks = {};
     var role2stacks_battle = {};
 
+
+
     for (var i = 0; i < objects.length; ++i) {
         var obj = objects[i];
 
@@ -487,27 +489,43 @@ function displayBattlefield(objects, in_play_divs, in_play_battle_divs, rolemap)
                role2stacksmap[role] = [];
             }
 
-            /* Look if there is already a stack of cards with the same name */
-            var stacks = role2stacksmap[role];
-            var found = false;
-            for (var j = 0; j < stacks.length; ++j) {
-                var stack = stacks[j];
-                if (stack[0].title == obj.title) {
+            if (!battle) {
+                /* Look if there is already a stack of cards with the same name */
+                var stacks = role2stacksmap[role];
+                var found = false;
+                for (var j = 0; j < stacks.length; ++j) {
+                    var stack = stacks[j];
+                    if (stack[0].title == obj.title) {
 
-                    /* Add the object to this stack */
+                        /* Add the object to this stack */
+                        stack.push(obj);
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                /* No stack with this title yet, create a new one */
+                if (!found) {
+                    var stack = [];
                     stack.push(obj);
-
-                    found = true;
-                    break;
+                    stacks.push(stack);
+                }
+            }
+            else {
+                var stacks = role2stacksmap[role];
+                /* We arrange battle as distincs attackers, and stack of blockers below each attacker */
+                if (obj.tags.indexOf("attacking") >= 0) {
+                    var stack = [];
+                    stack.push(obj);
+                    stacks.push(stack);
+                }
+                else {
+                    /* Blocking, try to find an existing blocker for the same attacker */ 
+                    
                 }
             }
 
-            /* No stack with this title yet, create a new one */
-            if (!found) {
-                var stack = [];
-                stack.push(obj);
-                stacks.push(stack);
-            }
         }
     }
 
@@ -652,7 +670,7 @@ function onState(state) {
     in_play["player"] = $("<div></div>").appendTo(player_divs["player"]);
     player_hand["player"] = $("<div></div>").appendTo(player_divs["player"]);
 
-    displayBattlefield(state["in_play"], in_play, in_play_battle, rolemap);
+    displayBattlefield(state["in_play"], in_play, in_play_battle, rolemap, state["blockers_map"]);
 
     for (var i = 0; i < state["players"].length; ++i) {
         var player = state["players"][i];
