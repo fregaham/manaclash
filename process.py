@@ -209,25 +209,28 @@ def evaluate (game):
         attacker_lki_map = {}
 
         unblocked = set()
-        for obj in game.declared_attackers:
-            attacker_lki_map[obj.get_id()] = obj
+        for obj_lki_id in game.declared_attackers:
+            obj = game.lki(obj_lki_id)
+            attacker_lki_map[obj.get_id()] = obj_lki_id
             obj.get_state().tags.add ("attacking")
-            unblocked.add (obj)
+            unblocked.add (obj_lki_id)
 
-        for obj in game.declared_blockers:
+        for obj_lki_id in game.declared_blockers:
+
+            obj = game.lki(obj_lki_id)
 
             obj.get_state().tags.add ("blocking")
 
             blocked_ids = game.declared_blockers_map[obj.get_id()]
             for blocked_id in blocked_ids:
-                blocked_lki = attacker_lki_map[blocked_id]
-                blocked_lki.get_state().tags.add ("blocked")
+                blocked_lki_id = attacker_lki_map[blocked_id]
+                game.lki(blocked_lki_id).get_state().tags.add ("blocked")
 
-                if blocked_lki in unblocked:
-                    unblocked.remove (blocked_lki)
+                if blocked_lki_id in unblocked:
+                    unblocked.remove (blocked_lki_id)
 
-        for obj in unblocked:
-            obj.get_state().tags.add ("unblocked")
+        for obj_lki_id in unblocked:
+            game.lki(obj_lki_id).get_state().tags.add ("unblocked")
 
     # colors
     _as = AllSelector()
@@ -630,7 +633,7 @@ class ActivateTappingAbilityProcess(AbstractPlayProcess):
     def getObject(self, game):
         if self.obj_id is None:
             selfObj = self.getSelfObject(game)
-            e = game.create_effect_object (LastKnownInformation(game, selfObj), self.player_id, self.effect, {})
+            e = game.create_effect_object (game.create_lki(selfObj), self.player_id, self.effect, {})
             self.obj_id = e.id
        
         return game.obj(self.obj_id)
@@ -652,7 +655,7 @@ class ActivateAbilityProcess(AbstractPlayProcess):
     def getObject(self, game):
         if self.obj_id is None:
             selfObj = self.getSelfObject(game)
-            e = game.create_effect_object (LastKnownInformation(game, selfObj), self.player_id, self.effect, {})
+            e = game.create_effect_object (game.create_lki(selfObj), self.player_id, self.effect, {})
             self.obj_id = e.id
        
         return game.obj(self.obj_id)
@@ -991,12 +994,13 @@ class DeclareAttackersStepProcess(Process):
 
         elif self.state == 5:
             for a in self.attackers:
-                a_lki = LastKnownInformation(game, game.obj(a))
-                game.declared_attackers.add (a_lki)
-                game.creature_that_attacked_this_turn_lkis.add (a_lki)
+                a_lki_id = game.create_lki(game.obj(a))
+                game.declared_attackers.add (a_lki_id)
+                game.creature_that_attacked_this_turn_lkis.add (a_lki_id)
 
             # tap attacking creatures
-            for a in game.declared_attackers:
+            for a_lki_id in game.declared_attackers:
+                a = game.lki(a_lki_id)
                 if "vigilance" not in a.get_state().tags:
                     game.doTap(a.get_object())
 
@@ -1016,11 +1020,11 @@ class DeclareAttackersStepProcess(Process):
         elif self.state == 6:
             # remove the moved declared attackers
             torm = []
-            for attacker in game.declared_attackers:
-                if attacker.is_moved():
-                    torm.append (attacker)
-            for attacker in torm:
-                game.declared_attackers.remove(attacker)
+            for attacker_lki_id in game.declared_attackers:
+                if game.lki(attacker_lki_id).is_moved():
+                    torm.append (attacker_lki_id)
+            for attacker_lki_id in torm:
+                game.declared_attackers.remove(attacker_lki_id)
         
             game.process_push(PostStepProcess())
 
@@ -1063,7 +1067,7 @@ def process_step_declare_attackers (game):
 
         valid = validate_attack(game, attackers)
     for a in attackers:
-        a_lki = LastKnownInformation(game, a)
+        a_lki = game.create_lki(a)
         game.declared_attackers.add (a_lki)
         game.creature_that_attacked_this_turn_lkis.add (a_lki)
 
@@ -1216,7 +1220,8 @@ def validate_block(game, blockers, blockers_map):
                 return False
 
     # check for lures and that all creature able to block are blocking them are blocking something
-    for attacker in game.declared_attackers:
+    for attacker_lki_id in game.declared_attackers:
+        attacker = game.lki(attacker_lki_id)
         if "lure" in attacker.get_state().tags and "can't be blocked except by three or more creatures" not in attacker.get_state().tags and "can't be blocked except by two or more creatures" not in attacker.get_state().tags:
             selector = PermanentPlayerControlsSelector(game.get_defending_player())
             for permanent in selector.all(game, None):
@@ -1362,7 +1367,7 @@ class DeclareBlockersStepProcess(Process):
             else:
                 for b_id in self.blockers:
                     b = game.obj(b_id)
-                    b_lki = LastKnownInformation(game, b)
+                    b_lki = game.create_lki(b)
                     game.declared_blockers.add (b_lki)
                     game.declared_blockers_map[b_id] = self.blockers_map[b_id][:]
 
@@ -1380,11 +1385,11 @@ class DeclareBlockersStepProcess(Process):
         elif self.state == 7:
             # remove the moved declared attackers
             torm = []
-            for attacker in game.declared_attackers:
-                if attacker.is_moved():
-                    torm.append (attacker)
-            for attacker in torm:
-                game.declared_attackers.remove(attacker)
+            for attacker_lki_id in game.declared_attackers:
+                if game.lki(attacker_lki_id).is_moved():
+                    torm.append (attacker_lki_id)
+            for attacker_lki_id in torm:
+                game.declared_attackers.remove(attacker_lki_id)
 
             game.process_push(PostStepProcess())
    
@@ -1468,7 +1473,7 @@ def process_step_declare_blockers (game):
         valid = validate_block(game, blockers, blockers_map)
 
     for b in blockers:
-        b_lki = LastKnownInformation(game, b)
+        b_lki = game.create_lki(b)
         game.declared_blockers.add (b_lki)
         game.declared_blockers_map[b.id] = map(lambda x:x.id, blockers_map[b.id])
 
@@ -1494,15 +1499,15 @@ def process_step_declare_blockers (game):
 def process_raise_blocking_events(game):
     attacker_lki_map = {}
 
-    for obj in game.declared_attackers:
-        attacker_lki_map[obj.get_id()] = obj
+    for obj_lki_id in game.declared_attackers:
+        attacker_lki_map[game.lki(obj_lki_id).get_id()] = obj_lki_id
 
-    for obj in game.declared_blockers:
-        blocked_ids = game.declared_blockers_map[obj.get_id()]
+    for obj_lki_id in game.declared_blockers:
+        blocked_ids = game.declared_blockers_map[game.lki(obj_lki_id).get_id()]
         for blocked_id in blocked_ids:
-            blocked_lki = attacker_lki_map[blocked_id]
+            blocked_lki_id = attacker_lki_map[blocked_id]
 
-            game.raise_event("blocks", obj, blocked_lki)
+            game.raise_event("blocks", obj_lki_id, blocked_lki_id)
 
 class CombatDamageStepProcess(Process):
     # TODO: cleanup, factor
@@ -1542,22 +1547,22 @@ class CombatDamageStepProcess(Process):
             self.damage = []
 
             # Init the maps... for attackers
-            for a in game.declared_attackers:
+            for a_lki_id in game.declared_attackers:
                 # declared_attackers is an LastKnownInformation
-                _id = a.get_object().id
-                self.id2lki[_id] = a
+                _id = game.lki(a_lki_id).get_object().id
+                self.id2lki[_id] = a_lki_id
                 a_id2b_ids[_id] = []
 
             # ...and for blockers...
-            for b in game.declared_blockers:
-                _id = b.get_object().id
-                self.id2lki[_id] = b
+            for b_lki_id in game.declared_blockers:
+                _id = game.lki(b_lki_id).get_object().id
+                self.id2lki[_id] = b_lki_id
 
                 b_id2a_ids[_id] = []
 
                 # the declared_blockers_map map blocker id to the attacker ids it
                 # blocks
-                a_ids = game.declared_blockers_map[b.get_object().id]
+                a_ids = game.declared_blockers_map[game.lki(b_lki_id).get_object().id]
 
                 for a_id in a_ids:
                     a_id2b_ids[a_id].append (_id)
@@ -1579,15 +1584,17 @@ class CombatDamageStepProcess(Process):
             else:
                 a_id, b_ids = self.a_id2b_ids[self.i]
 
-                a_lki = self.id2lki[a_id]
-                a_obj = self.id2lki[a_id].get_object()
-                a_state = self.id2lki[a_id].get_state()
+                a_lki_id = self.id2lki[a_id]
+                a_lki = game.lki(a_lki_id)
+
+                a_obj = a_lki.get_object()
+                a_state = a_lki.get_state()
 
                 # only creatures deal combat damage
                 if not a_lki.is_moved() and "creature" in a_state.types and ((self.firstStrike and "first strike" in a_lki.get_state().tags) or (not self.firstStrike and "first strike" not in a_lki.get_state().tags) or (self.firstStrike and "double strike" in a_lki.get_state().tags)):
                     if len(b_ids) == 0:
                         # unblocked creature deal damage to the defending player
-                        self.damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
+                        self.damage.append ( (a_lki_id, game.create_lki(game.get_defending_player()), a_state.power) )
 
                         self.i += 1
                         game.process_push(self)
@@ -1606,9 +1613,11 @@ class CombatDamageStepProcess(Process):
         elif self.state == 3:
             # x-sneaky
             a_id, b_ids = self.a_id2b_ids[self.i]
-            a_lki = self.id2lki[a_id]
-            a_obj = self.id2lki[a_id].get_object()
-            a_state = self.id2lki[a_id].get_state()
+            a_lki_id = self.id2lki[a_id]
+            a_lki = game.lki(a_lki_id)
+
+            a_obj = a_lki.get_object()
+            a_state = a_lki.get_state()
 
             if action is None:
                 actions = []
@@ -1624,7 +1633,7 @@ class CombatDamageStepProcess(Process):
 
             else:
                 if action.text == "Yes":
-                    self.damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
+                    self.damage.append ( (a_lki_id, game.create_lki(game.get_defending_player()), a_state.power) )
                     self.i += 1
                     self.state = 2
                     game.process_push(self)
@@ -1634,15 +1643,17 @@ class CombatDamageStepProcess(Process):
 
         elif self.state == 4:
             a_id, b_ids = self.a_id2b_ids[self.i]
-            a_lki = self.id2lki[a_id]
-            a_obj = self.id2lki[a_id].get_object()
-            a_state = self.id2lki[a_id].get_state()
+            a_lki_id = self.id2lki[a_id]
+            a_lki = game.lki(a_lki_id)
+
+            a_obj = a_lki.get_object()
+            a_state = a_lki.get_state()
             
             if len(b_ids) == 1:
                 # blocked by one creature deal all damage to that creature
                 b_id = b_ids[0]
-                b_lki = self.id2lki[b_id]
-                self.damage.append ( (a_lki, b_lki, a_state.power) )
+                b_lki_id = self.id2lki[b_id]
+                self.damage.append ( (a_lki_id, b_lki_id, a_state.power) )
 
                 self.i += 1
                 self.state = 2
@@ -1656,9 +1667,12 @@ class CombatDamageStepProcess(Process):
 
         elif self.state == 5:
             a_id, b_ids = self.a_id2b_ids[self.i]
-            a_lki = self. id2lki[a_id]
-            a_obj = self.id2lki[a_id].get_object()
-            a_state = self.id2lki[a_id].get_state()
+
+            a_lki_id = self.id2lki[a_id]
+
+            a_lki = game.lki(a_lki_id)
+            a_obj = a_lki.get_object()
+            a_state = a_lki.get_state()
 
             if self.damageToAssign > 0:
                 if action is None:
@@ -1667,15 +1681,15 @@ class CombatDamageStepProcess(Process):
 
                     for b_id in b_ids:
                         _p = Action ()
-                        _p.object = self.id2lki[b_id].get_object()
+                        _p.object = game.lki(self.id2lki[b_id]).get_object()
                         _p.text = str(_p.object)
                         actions.append (_p)
 
                     _as = ActionSet (game, game.get_attacking_player(), "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
                     return _as
                 else:
-                    b_lki = self.id2lki[action.object.id]
-                    self.damage.append ( (a_lki, b_lki, 1) )
+                    b_lki_id = self.id2lki[action.object.id]
+                    self.damage.append ( (a_lki_id, b_lki_id, 1) )
 
                     self.damageToAssign -= 1
 
@@ -1694,9 +1708,10 @@ class CombatDamageStepProcess(Process):
                 game.process_push(self)
             else:
                 b_id, a_ids = self.b_id2a_ids[self.i]
-                b_lki = self.id2lki[b_id]
-                b_obj = self.id2lki[b_id].get_object()
-                b_state = self.id2lki[b_id].get_state()
+                b_lki_id = self.id2lki[b_id]
+                b_lki = game.lki(b_lki_id)
+                b_obj = b_lki.get_object()
+                b_state = b_lki.get_state()
 
                 if not b_lki.is_moved() and "creature" in b_state.types and ((self.firstStrike and "first strike" in b_lki.get_state().tags) or (not self.firstStrike and "first strike" not in b_lki.get_state().tags) or (self.firstStrike and "double strike" in b_lki.get_state().tags)):
 
@@ -1708,8 +1723,8 @@ class CombatDamageStepProcess(Process):
                     elif len(a_ids) == 1:
                         # creature blocking one attacker
                         a_id = a_ids[0]
-                        a_lki = self.id2lki[a_id]
-                        self.damage.append ( (b_lki, a_lki, b_state.power) )
+                        a_lki_id = self.id2lki[a_id]
+                        self.damage.append ( (b_lki_id, a_lki_id, b_state.power) )
 
                         self.i += 1
                         game.process_push(self)
@@ -1725,9 +1740,10 @@ class CombatDamageStepProcess(Process):
 
         elif self.state == 7:
              b_id, a_ids = self.b_id2a_ids[self.i]
-             b_lki = self.id2lki[b_id]
-             b_obj = self.id2lki[b_id].get_object()
-             b_state = self.id2lki[b_id].get_state()
+             b_lki_id = self.id2lki[b_id]
+             b_lki = game.lki(b_lki_id)
+             b_obj = b_lki.get_object()
+             b_state = b_lki.get_state()
 
              if self.damageToAssign > 0:
                 if action is None:
@@ -1735,15 +1751,15 @@ class CombatDamageStepProcess(Process):
 
                     for a_id in a_ids:
                         _p = Action ()
-                        _p.object = self.id2lki[a_id].get_object()
+                        _p.object = game.lki(self.id2lki[a_id]).get_object()
                         _p.text = str(_p.object)
                         actions.append (_p)
 
                     _as = ActionSet (game, game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
                     return _as
                 else:
-                    b_lki = self.id2lki[action.object.id]
-                    self.damage.append ( (a_lki, b_lki, 1) )
+                    b_lki_id = self.id2lki[action.object.id]
+                    self.damage.append ( (a_lki_id, b_lki_id, 1) )
 
                     self.damageToAssign -= 1
                     game.process_push(self)
@@ -1826,7 +1842,7 @@ def process_step_combat_damage (game, firstStrike):
 
             if len(b_ids) == 0:
                 # unblocked creature deal damage to the defending player
-                damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
+                damage.append ( (a_lki, game.create_lki(game.get_defending_player()), a_state.power) )
 
             else:
 
@@ -1846,7 +1862,7 @@ def process_step_combat_damage (game, firstStrike):
                     a = game.input.send (_as)
 
                     if a.text == "Yes":
-                        damage.append ( (a_lki, LastKnownInformation(game, game.get_defending_player()), a_state.power) )
+                        damage.append ( (a_lki, game.create_lki(game.get_defending_player()), a_state.power) )
                         doDamage = False
 
                 if doDamage:
@@ -2019,12 +2035,12 @@ class CombatPhaseProcess(Process):
 
             # any first or double strikers?
             firstStrike = False
-            for a in game.declared_attackers:
-                if "first strike" in a.get_state().tags or "double strike" in a.get_state().tags:
+            for a_lki_id in game.declared_attackers:
+                if "first strike" in game.lki(a_lki_id).get_state().tags or "double strike" in game.lki(a_lki_id).get_state().tags:
                     firstStrike = True
 
-            for b in game.declared_blockers:
-                if "first strike" in b.get_state().tags or "double strike" in b.get_state().tags:
+            for b_lki_id in game.declared_blockers:
+                if "first strike" in game.lki(b_lki_id).get_state().tags or "double strike" in game.lki(b_lki_id).get_state().tags:
                     firstStrike = True
 
             game.process_push(CombatDamageStepProcess(False))
@@ -2471,7 +2487,7 @@ class TriggerEffectProcess(SandwichProcess):
 
     def pre(self, game):
         source = game.obj(self.source_id)
-        e = game.create_effect_object (LastKnownInformation(game, source), source.controller_id, self.effect, self.slots)
+        e = game.create_effect_object (game.create_lki(source), source.controller_id, self.effect, self.slots)
         self.effect_object_id = e.id
 
         game.triggered_abilities.append (e)

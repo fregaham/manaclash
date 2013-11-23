@@ -32,6 +32,12 @@ class Selector:
     def slots(self):
         return []
 
+    def contains_lki(self, game, context, lki_id):
+        if lki_id is None:
+            return False
+
+        return self.contains(game, context, game.lki(lki_id))
+
     def empty(self, game, context):
         list = [x for x in self.all(game, context)]
         return len(list) == 0
@@ -167,7 +173,7 @@ class ThatPlayerSelector(Selector):
     def all(self, game, context):
         player_lki = context.get_slot("that player")
         assert player_lki is not None
-        yield player_lki
+        yield game.lki(player_lki)
 
     def __str__ (self):
         return "that player"
@@ -176,7 +182,7 @@ class ItSelector(Selector):
     def all(self, game, context):
         it_lki = context.get_slot("it")
         assert it_lki is not None
-        yield it_lki
+        yield game.lki(it_lki)
 
     def __str__ (self):
         return "it"
@@ -185,7 +191,7 @@ class ThatCardSelector(Selector):
     def all(self, game, context):
         that_lki = context.get_slot("that card")
         assert that_lki is not None
-        yield that_lki
+        yield game.lki(that_lki)
 
     def __str__ (self):
         return "that card"
@@ -194,7 +200,7 @@ class ItsControllerSelector(Selector):
     def all(self, game, context):
         it_lki = context.get_slot("it")
         assert it_lki is not None
-        yield game.objects[it_lki.get_controller_id()]
+        yield game.objects[game.lki(it_lki).get_controller_id()]
 
     def __str__ (self):
         return "its controller"
@@ -203,7 +209,7 @@ class ThatCreatureSelector(Selector):
     def all(self, game, context):
         creature_lki = context.get_slot("that creature")
         assert creature_lki is not None
-        yield creature_lki
+        yield game.lki(creature_lki)
 
     def __str__ (self):
         return "that creature"
@@ -212,7 +218,7 @@ class ThatCreaturesControllerSelector(Selector):
     def all(self, game, context):
         creature_lki = context.get_slot("that creature")
         assert creature_lki is not None
-        yield game.objects[creature_lki.get_controller_id()]
+        yield game.objects[game.lki(creature_lki).get_controller_id()]
 
     def __str__ (self):
         return "that creature's controller"
@@ -221,7 +227,7 @@ class ThatLandSelector(Selector):
     def all(self, game, context):
         land_lki = context.get_slot("that land")
         assert land_lki is not None
-        yield land_lki
+        yield game.lki(land_lki)
 
     def __str__ (self):
         return "that land"
@@ -230,7 +236,7 @@ class ThatLandsControllerSelector(Selector):
     def all(self, game, context):
         land_lki = context.get_slot("that land")
         assert land_lki is not None
-        yield game.objects[land_lki.get_controller_id()]
+        yield game.objects[game.lki(land_lki).get_controller_id()]
 
     def __str__ (self):
         return "that land's controller"
@@ -239,7 +245,7 @@ class SacrificedCreatureSelector(Selector):
     def all(self, game, context):
         creature_lki = context.get_slot("sacrificed")
         assert creature_lki is not None
-        yield creature_lki
+        yield game.lki(creature_lki)
 
     def __str__ (self):
         return "sacrificed creature"

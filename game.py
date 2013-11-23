@@ -76,6 +76,9 @@ class Game:
         self.objects = {}
         self.obj_max_id = 0
 
+        self.lkis = {}
+        self.lki_max_id = 0
+
         self.players = []
 
         self.active_player_id = None
@@ -127,6 +130,7 @@ class Game:
         # game has ended
         self.end = False
 
+
     def reset_interceptables(self):
         # TODO: have single method that also resets all the effects and other replacements stuff at the beginning of the evaluate process
         self.interceptable_draw.reset()
@@ -136,6 +140,17 @@ class Game:
         object.id = self.obj_max_id
         self.objects[self.obj_max_id] = object
         #object.game = self
+
+    def add_lki(self, lki):
+        self.lki_max_id += 1
+        lki.lki_id = "lki_" + str(self.lki_max_id)
+        self.lkis[lki.lki_id] = lki
+
+    def create_lki(self, obj):
+        lki = LastKnownInformation(self, obj)
+        self.add_lki(lki)
+
+        return lki.lki_id
 
     def create_card (self, title, manacost, supertypes, types, subtypes, tags, text, power, toughness):
         o = Object()
@@ -235,8 +250,8 @@ class Game:
 
         return d
 
-    def create_effect_object(self, origin, controller_id, text, slots):
-        e = EffectObject(origin, controller_id, text, slots)
+    def create_effect_object(self, origin_lki, controller_id, text, slots):
+        e = EffectObject(self.lki(origin_lki), controller_id, text, slots)
         self.add_object(e)
 
         self.output.createEffectObject(e.id)
@@ -396,6 +411,9 @@ class Game:
 
         #print("pre zone transfer %s from %s" % (object, object.zone_id))
 
+        # TODO: change to event handler
+        self._moveLkis(object, zone_from, zone, cause)
+
         self.raise_event ("pre_zone_transfer", object, zone_from, zone, cause)
 
         # also move enchantments to graveyard
@@ -458,23 +476,23 @@ class Game:
         dr = DamageReplacement(list, combat)
         self.raise_event("damage_replacement", dr)
 
-        for a, b, n in dr.list:
-            if not b.is_moved():
+        for a_lki_id, b_lki_id, n in dr.list:
+            if not self.lki(b_lki_id).is_moved():
 
                 # go through all applicable damage prevention effects
                 applicable = []
                 for damage_prevention in self.damage_preventions:
-                    if damage_prevention.canApply(self, (a,b,n), combat):
+                    if damage_prevention.canApply(self, (a_lki_id, b_lki_id, n), combat):
                         applicable.append (damage_prevention)
 
                 while len(applicable) > 0:
                     # do we have a unique applicable effect?
                     if len(applicable) == 1:
-                        a,b,n = applicable[0].apply(self, (a,b,n), combat)
+                        a_lki_id,b_lki_id,n = applicable[0].apply(self, (a_lki_id, b_lki_id, n), combat)
                         applicable = []
                     else:
                         # we let the reciever's controller choose
-                        controller = self.objects[b.get_controller_id()]
+                        controller = self.objects[self.lki(b_lki_id).get_controller_id()]
 
                         actions = []
                         for damage_prevention in applicable:
@@ -483,12 +501,12 @@ class Game:
                             action.damage_prevention = damage_prevention
                             actions.append(action)
 
-                        _as = ActionSet (self, controller, "Which damage prevention effect apply first for %d damage to %s?" % (n, str(b)), actions)
+                        _as = ActionSet (self, controller, "Which damage prevention effect apply first for %d damage to %s?" % (n, str(self.lki(b_lki_id))), actions)
                         action = self.input.send (_as)
 
                         damage_prevention = action.damage_prevention
 
-                        a,b,n = damage_prevention.apply(self, (a,b,n), combat)
+                        a_lki_id,b_lki_id,n = damage_prevention.apply(self, (a_lki_id,b_lki_id,n), combat)
                         applicable.remove(damage_prevention)
 
                         if n <= 0:
@@ -496,7 +514,7 @@ class Game:
 
                         new_applicable = []
                         for damage_prevention in applicable[:]:
-                            if damage_prevention.canApply(self, (a,b,n), combat):
+                            if damage_prevention.canApply(self, (a_lki_id,b_lki_id,n), combat):
                                 new_applicable.append(damage_prevention)
                         applicable = new_applicable
 
@@ -505,10 +523,12 @@ class Game:
                     continue
 
                 if combat:
-                     self.raise_event("pre_deal_combat_damage", a, b, n)
+                     self.raise_event("pre_deal_combat_damage", a_lki_id, b_lki_id, n)
 
-                self.raise_event("pre_deal_damage", a, b, n)
+                self.raise_event("pre_deal_damage", a_lki_id, b_lki_id, n)
 
+                a = self.lki(a_lki_id)
+                b = self.lki(b_lki_id)
                 if "player" in b.get_state().types:
                     if "damage that would reduce your life total to less than 1 reduces it to 1 instead" in b.get_state().tags and (b.get_object().life - n < 1):
                         b.get_object().life = 1
@@ -520,9 +540,9 @@ class Game:
                 self.output.damage(a.get_object(), b.get_object, n)
 
                 if combat:
-                     self.raise_event("post_deal_combat_damage", a, b, n)
+                     self.raise_event("post_deal_combat_damage", a_lki_id, b_lki_id, n)
 
-                self.raise_event("post_deal_damage", a, b, n)
+                self.raise_event("post_deal_damage", a_lki_id, b_lki_id, n)
 
     def doRegenerate(self, obj):
         obj = obj.get_object()
@@ -651,4 +671,14 @@ class Game:
 
     def obj(self, _id):
         return self.objects[_id]
+
+    def lki(self, _id):
+        ret = self.lkis[_id]
+        ret.game = self
+        return ret
+
+    def _moveLkis(self, object, zone_from, zone_to, cause):
+        for lki in self.lkis.itervalues():
+            if lki.object_id == object.id:
+                lki.onPreMoveObject(object, zone_from, zone_to, cause)
 

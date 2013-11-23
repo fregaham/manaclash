@@ -190,7 +190,7 @@ class EnchantPermanentRulesSelectTargets(SandwichProcess):
         if target == None:
             game.process_returns_push(False)
         else:
-            game.obj(self.obj_id).targets["target"] = LastKnownInformation(game, target)
+            game.obj(self.obj_id).targets["target"] = game.create_lki(target)
             game.process_returns_push(True)
         
 

@@ -266,52 +266,55 @@ class EffectObject(Object):
 
 class LastKnownInformation(Object):
     def __init__ (self, game, object):
+        self.lki_id = None
         self.game = game
-        self.object = object.get_object()
+        self.object_id = object.get_object().id
         self._state = None
         self.moved = False
         self.valid = True
         self.modal = None
         self.targets = None
-        self.game.add_event_handler ("pre_zone_transfer", self.onPreMoveObject)
+
+    def get_lki_id(self):
+        return self.lki_id
 
     def get_id(self):
-        return self.object.id
+        return self.object_id
 
     def get_self_id(self):
-        return self.object.id
+        return self.object_id
 
     def get_enchanted_id(self):
-        return self.object.get_enchanted_id()
+        return self.get_object().get_enchanted_id()
 
     def get_object (self):
-        return self.object
+        return self.game.obj(self.object_id)
 
     def get_state (self):
         if self._state == None:
-            return self.object.get_state ()
+            return self.get_object().get_state ()
         else:
             return self._state
 
     def onPreMoveObject (self, object, zone_from, zone_to, cause):
 
-        if not self.moved:
-            # only movements from the inplay zone require LKI
-            if zone_from.type != "in play":
-                return
+        if object.id == self.object_id:
+            if not self.moved:
+                # only movements from the inplay zone require LKI
+                if zone_from.type != "in play":
+                    return
 
-            if self._state is None and object == self.object:
-                self._state = self.object.get_state()
-                self.moved = True
-                self.modal = self.object.modal
-                self.targets = self.object.targets
+                if self._state is None:
+                    self._state = self.object.get_state()
+                    self.moved = True
+                    self.modal = object.modal
+                    self.targets = object.targets
+            else:
+                # after it's moved, the LKI is valid until it is put into play again
+                if zone_to.type != "in play":
+                    return
 
-        else:
-            # after it's moved, the LKI is valid until it is put into play again
-            if zone_to.type != "in play":
-                return
-
-            self.valid = False
+                self.valid = False
 
     def is_moved(self):
         return self.moved
@@ -320,23 +323,23 @@ class LastKnownInformation(Object):
         return self.valid
 
     def __str__ (self):
-        return str(self.object)
+        return str(self.get_object())
 
     def get_modal(self):
         if self._state == None:
-            return self.object.get_modal()
+            return self.get_object().get_modal()
         else:
             return self.modal
 
     def get_controller_id(self):
         if self._state == None:
-            return self.object.get_controller_id()
+            return self.get_object().get_controller_id()
         else:
             return self.get_state().controller_id
 
     def get_targets(self):
         if self.targets == None:
-            return self.object.get_targets()
+            return self.get_object().get_targets()
         else:
             return self.targets
 

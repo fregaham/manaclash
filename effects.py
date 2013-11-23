@@ -205,7 +205,7 @@ class SingleTargetOneShotEffectSelectTargetsProcess(SandwichProcess):
             return
 
         obj = game.obj(self.obj_id)
-        obj.targets["target"] = LastKnownInformation(game, target)
+        obj.targets["target"] = game.create_lki(target)
         game.raise_event ("target", obj, target)
 
     def post(self, game):
@@ -328,7 +328,7 @@ class MultipleTargetOneShotEffectSelectTargetsProcess(SandwichProcess):
             game.process_returns_push(False)
         else:
             for i in range(len(targets)):
-                obj.targets[i] = LastKnownInformation(game, game.obj(targets[i]))
+                obj.targets[i] = game.create_lki(game.obj(targets[i]))
                 game.raise_event ("target", obj, targets[i])
 
     def post(self, game):
@@ -1095,7 +1095,7 @@ class TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamageRe
         source = game.process_returns_pop()
         if source is not None:
             source = game.obj(source)
-            game.until_end_of_turn_effects.append ( (obj, TheNextTimeXWouldDealDamageToYPreventThatDamage(LKISelector(LastKnownInformation(game, source)), self.y_selector)))
+            game.until_end_of_turn_effects.append ( (obj, TheNextTimeXWouldDealDamageToYPreventThatDamage(LKISelector(game.create_lki(source)), self.y_selector)))
 
         game.process_returns_push(True)
 
@@ -2512,7 +2512,7 @@ class AllXBecomeNNCreaturesUntilEndOfTurn(OneShotEffect):
         from numberof import NNumber
 
         for o in self.selector.all(game, obj):
-            game.until_end_of_turn_effects.append ( (o, XIsANNCreature(LKISelector(LastKnownInformation(game, o)), NNumber(power), NNumber(toughness))))
+            game.until_end_of_turn_effects.append ( (o, XIsANNCreature(LKISelector(game.create_lki(o)), NNumber(power), NNumber(toughness))))
 
     def __str__ (self):
         return "AllXBecomeNNCreaturesUntilEndOfTurn(%s, %s, %s)" % (self.selector, self.powerNumber, self.toughnessNumber)
@@ -2711,7 +2711,7 @@ class AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(ContinuousEffect):
             c = self.z_selector.lki
         else:
             c = self.z_selector.only(game, SELF)
-            c = LastKnownInformation(game, c)
+            c = game.create_lki(c)
 
         for a,b,n in dr.list:
             if self.x_selector.contains(game, SELF, b) and self.y_selector.contains(game, SELF, a):
@@ -2729,7 +2729,7 @@ class SetReturnedObjectAsModalLKIProcess:
         obj = game.obj(self.obj_id)
         s_id = game.process_returns_pop()
         if s_id is not None:
-            s_lki = LastKnownInformation(game, game.obj(s_id))
+            s_lki = game.create_lki(game.obj(s_id))
             obj.modal = s_lki
             game.process_returns_push(True)
         else:
@@ -2750,7 +2750,7 @@ class AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstea
 
         game.process_returns_push(True)
 
-        z_lki = LastKnownInformation(game, self.z_selector.only(game, obj))
+        z_lki = game.create_lki(self.z_selector.only(game, obj))
         if obj.modal is not None:
             game.until_end_of_turn_effects.append ( (obj, AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(LKISelector(target), LKISelector(obj.modal), LKISelector(z_lki)) ) )
 
@@ -2836,7 +2836,7 @@ class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetXSelectTargetsProcess(
             obj.modal = []
             for target_id, damage in target_damage_map.items():
                 target = game.obj(target_id)
-                obj.targets[i] = LastKnownInformation(game, target)
+                obj.targets[i] = game.create_lki(target)
                 obj.modal.append (damage)
                 i += 1
                 game.raise_event ("target", obj, target)

@@ -400,16 +400,16 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("post_deal_damage", partial(self.onPostDealDamage, game, obj))]
 
-    def onPostDealDamage(self, game, SELF, source, dest, n):
-        if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
+    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+        if self.x_selector.contains_lki(game, SELF, source_lki) and self.y_selector.contains_lki(game, SELF, dest_lki):
             from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = source
+                slots[slot] = source_lki
 
             for slot in self.y_selector.slots():
-                slots[slot] = dest
+                slots[slot] = dest_lki
 
             slots["that much"] = n
 

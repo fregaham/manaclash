@@ -18,7 +18,6 @@
 # 
 
 from actions import *
-from objects import LastKnownInformation
 
 class Cost:
     def __init__ (self):
@@ -229,7 +228,7 @@ class SacrificeSelectorCostProcess:
             else:
                 game.process_returns_push(False)
         else:
-            effect.slots["sacrificed"] = LastKnownInformation(game, action.object)
+            effect.slots["sacrificed"] = game.create_lki(action.object)
             game.doSacrifice(action.object)
             game.process_returns_push(True)
 
