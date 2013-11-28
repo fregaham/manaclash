@@ -147,6 +147,12 @@ class Game:
         self.lkis[lki.lki_id] = lki
 
     def create_lki(self, obj):
+
+        if isinstance(obj, LastKnownInformation):
+           return obj.lki_id
+
+        assert isinstance(obj, Object)
+
         lki = LastKnownInformation(self, obj)
         self.add_lki(lki)
 
@@ -612,6 +618,9 @@ class Game:
         self.process_returns_push(result)
 
     def delete(self, obj):
+
+        print "!!! deleting " + `obj`
+
         if obj.zone_id is not None:
             self.objects[obj.zone_id].objects.remove(obj)
         obj.zone_id = None

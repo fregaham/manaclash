@@ -305,7 +305,7 @@ class LastKnownInformation(Object):
                     return
 
                 if self._state is None:
-                    self._state = self.object.get_state()
+                    self._state = object.get_state()
                     self.moved = True
                     self.modal = object.modal
                     self.targets = object.targets

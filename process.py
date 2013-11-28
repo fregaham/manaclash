@@ -1164,7 +1164,8 @@ def is_valid_block(game, attacker, blocker):
     # lure
     # warning, this can turn into a recursive hell, if not taken care
     if "lure" not in attacker.get_state().tags:
-        for a2 in game.declared_attackers:
+        for a2_lki in game.declared_attackers:
+            a2 = game.lki(a2_lki)
             if "lure" in a2.get_state().tags and "can't be blocked except by three or more creatures" not in attacker.get_state().tags and "can't be blocked except by two or more creatures" not in attacker.get_state().tags:
                 if is_valid_block(game, a2, blocker):
                     print("%s cannot block %s because there is a valid lure %s" % (blocker, attacker, a2))
@@ -2564,7 +2565,8 @@ class SelectSourceOfDamageProcess(Process):
                         if a.get_object() in sources:
                             valid_sources.add(a.get_object())
 
-                for target in obj.targets.values():
+                for target_lki in obj.targets.values():
+                    target = game.lki(target_lki)
                     if target.get_object() in sources and not isinstance(target.get_object(), EffectObject):
                         valid_sources.add(target.get_object())
 
@@ -2829,7 +2831,7 @@ class PutCardIntoPlayProcess(Process):
             # success of this process is depends on the success of selecting targets, keep the return in the stack
             if game.process_returns_top():
                 assert card.targets["target"] is not None
-                card.enchanted_id = card.targets["target"].get_id()
+                card.enchanted_id = game.lki(card.targets["target"]).get_id()
                 card.controller_id = controller.get_id()
                 card.tapped = self.tapped
                 game.doZoneTransfer(card, in_play_zone, cause)
@@ -2871,15 +2873,16 @@ def validate_target(game, obj, selector, target):
     return _is_valid_target(game, obj, target)
 
 class ValidateTargetProcess(Process):
-    def __init__ (self, source, selector, target):
-        assert isinstance(target, LastKnownInformation)
+    def __init__ (self, source, selector, target_lki):
+        #assert isinstance(target, LastKnownInformation)
+        assert target_lki.startswith("lki_")
         self.source_id = source.id
         self.selector = selector
-        self.target = target
+        self.target_lki = target_lki
 
     def next(self, game, action):
         source = game.obj(self.source_id)
-        game.process_returns_push(validate_target(game, source, self.selector, self.target))
+        game.process_returns_push(validate_target(game, source, self.selector, game.lki(self.target_lki)))
 
 
 class AskXProcess(Process):

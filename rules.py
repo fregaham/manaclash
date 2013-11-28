@@ -98,7 +98,8 @@ class EffectRulesProcess(SandwichProcess):
             game.onResolve(game.obj(self.obj_id))
 
     def post(self, game):
-        game.delete(game.obj(self.obj_id))
+        game.doZoneTransfer(game.obj(self.obj_id), game.get_removed_zone())
+#        game.delete(game.obj(self.obj_id))
 
 class EffectRules(ObjectRules):
     def __init__(self, effect):
@@ -163,7 +164,7 @@ class EnchantPermanentRulesResolveProcess(SandwichProcess):
         # peek at the return, pass it over to the upstream process
         if game.process_returns_top():
             obj = game.obj(self.obj_id)
-            obj.enchanted_id = obj.targets["target"].get_id()
+            obj.enchanted_id = game.lki(obj.targets["target"]).get_id()
             game.onResolve(obj)
 
     def post(self, game):

@@ -258,14 +258,16 @@ class YouSelector(Selector):
         return "you"
 
 class LKISelector(Selector):
-    def __init__ (self, lki):
-        self.lki = lki
+    def __init__ (self, lki_id):
+        assert lki_id.startswith("lki_")
+        self.lki_id = lki_id
     def all(self, game, context):
-        if self.lki.is_valid():
-            yield self.lki
+        lki = game.lki(self.lki_id)
+        if lki.is_valid():
+            yield lki
         return    
     def __str__ (self):
-        return str(self.lki)
+        return str(self.lki_id)
 
 class CreatureSelector(Selector):
     def all(self, game, context):

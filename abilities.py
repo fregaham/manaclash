@@ -313,7 +313,7 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
 
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = obj
+                slots[slot] = game.create_lki(obj)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -355,7 +355,7 @@ class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
 
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = obj
+                slots[slot] = game.create_lki(obj)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -379,9 +379,9 @@ class WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(TriggeredAbilit
             from process import TriggerEffectProcess
 
             slots = {}
-            slots["that card"] = obj
+            slots["that card"] = game.create_lki(obj)
             for slot in self.y_selector.slots():
-                slots[slot] = obj
+                slots[slot] = game.create_lki(obj)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -429,13 +429,13 @@ class WhenXDealsDamageDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("post_deal_damage", partial(self.onPostDealDamage, game, obj))]
 
-    def onPostDealDamage(self, game, SELF, source, dest, n):
-        if self.x_selector.contains(game, SELF, source):
+    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+        if self.x_selector.contains_lki(game, SELF, source_lki):
             from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = source
+                slots[slot] = source_lki
 
             slots["that much"] = n
 
@@ -456,16 +456,16 @@ class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))]
 
-    def onPostDealDamage(self, game, SELF, source, dest, n):
-        if self.x_selector.contains(game, SELF, source) and self.y_selector.contains(game, SELF, dest):
+    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+        if self.x_selector.contains_lki(game, SELF, source_lki) and self.y_selector.contains_lki(game, SELF, dest_lki):
             from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = source
+                slots[slot] = source_lki
 
             for slot in self.y_selector.slots():
-                slots[slot] = dest
+                slots[slot] = dest_lki
 
             slots["that much"] = n
 
@@ -485,13 +485,13 @@ class WhenXDealsCombatDamageDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))]
 
-    def onPostDealDamage(self, game, SELF, source, dest, n):
-        if self.x_selector.contains(game, SELF, source):
+    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+        if self.x_selector.contains_lki(game, SELF, source_lki):
             from process import TriggerEffectProcess
 
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = source
+                slots[slot] = source_lki
 
             slots["that much"] = n
 
@@ -516,7 +516,7 @@ class WhenXAttacksDoEffectAbility(TriggeredAbility):
         if self.selector.contains(game, SELF, attacker):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = attacker
+                slots[slot] = game.create_lki(attacker)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -539,7 +539,7 @@ class WhenXBlocksDoEffectAbility(TriggeredAbility):
         if self.selector.contains(game, SELF, blocker):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = blocker
+                slots[slot] = game.create_lki(blocker)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -562,7 +562,7 @@ class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
         if self.selector.contains(game, SELF, attacker):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = attacker
+                slots[slot] = game.create_lki(attacker)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -571,7 +571,7 @@ class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
         if self.selector.contains(game, SELF, blocker):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = blocker
+                slots[slot] = game.create_lki(blocker)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -596,14 +596,14 @@ class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
         if self.x_selector.contains(game, SELF, blocker) and self.y_selector.contains(game, SELF, attacker):
             slots = {}
             for slot in self.y_selector.slots():
-                slots[slot] = attacker
+                slots[slot] = game.create_lki(attacker)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
         elif (self.x_selector.contains(game, SELF, attacker) and self.y_selector.contains(game, SELF, blocker)):
             slots = {}
             for slot in self.y_selector.slots():
-                slots[slot] = blocker
+                slots[slot] = game.create_lki(blocker)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
   
@@ -626,7 +626,7 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
         if self.x_selector.contains(game, SELF, player):
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = player
+                slots[slot] = game.create_lki(player)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
@@ -649,7 +649,7 @@ class WhenXDrawsACardDoEffectAbility(TriggeredAbility):
         if self.x_selector.contains(game, SELF, player):
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = player
+                slots[slot] = game.create_lki(player)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
@@ -873,7 +873,7 @@ class AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(TriggeredAbility):
         from process import TriggerEffectProcess
         if game.current_step == "upkeep":
             slots = {}
-            slots["that player"] = game.get_active_player()
+            slots["that player"] = game.create_lki(game.get_active_player())
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -895,7 +895,7 @@ class AtTheBeginningOfYourUpkeepDoEffectAbility(TriggeredAbility):
         from process import TriggerEffectProcess
         if game.current_step == "upkeep" and str(SELF.get_controller_id()) == str(game.get_active_player().id):
             slots = {}
-            slots["that player"] = game.get_active_player()
+            slots["that player"] = game.create_lki(game.get_active_player())
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -916,7 +916,7 @@ class AtTheBeginningOfEachPlayerssEndStepDoEffectAbility(TriggeredAbility):
         from process import TriggerEffectProcess
         if game.current_step == "end of turn":
             slots = {}
-            slots["that player"] = game.get_active_player()
+            slots["that player"] = game.create_lki(game.get_active_player())
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -937,7 +937,7 @@ class AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(TriggeredAbility):
         from process import TriggerEffectProcess
         if game.current_step == "draw":
             slots = {}
-            slots["that player"] = game.get_active_player()
+            slots["that player"] = game.create_lki(game.get_active_player())
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -963,7 +963,7 @@ class WhenXIsReturnedToPlayersHandDoEffectAbility(TriggeredAbility):
             for slot in self.selector.slots():
                 slots[slot] = obj
 
-            slots["that player"] = game.objects[zone_to.player_id]
+            slots["that player"] = game.create_lki(game.objects[zone_to.player_id])
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 

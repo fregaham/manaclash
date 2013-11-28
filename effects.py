@@ -227,7 +227,7 @@ class SingleTargetOneShotEffectResolveProcess(SandwichProcess):
         if game.process_returns_pop():
             obj = game.obj(self.obj_id)
             target = obj.targets["target"]
-            self.effect.doResolve(game, obj, target)
+            self.effect.doResolve(game, obj, game.lki(target))
         else:
             game.process_returns_push(False)
 
@@ -379,7 +379,7 @@ class XDealNDamageToTargetYEffect(SingleTargetOneShotEffect):
 
         count = self.number.evaluate(game, obj)
 
-        game.doDealDamage([(source, target, count)])
+        game.doDealDamage([(game.create_lki(source), target.get_lki_id(), count)])
 
 
     def __str__ (self):
@@ -635,7 +635,7 @@ class TargetXGetsNNUntilEndOfTurn(SingleTargetOneShotEffect):
         elif toughness == "-X":
             toughness = - obj.x
         
-        game.until_end_of_turn_effects.append ( (obj, XGetsNN(LKISelector(target), power, toughness)))
+        game.until_end_of_turn_effects.append ( (obj, XGetsNN(LKISelector(target.get_lki_id()), power, toughness)))
 
     def __str__ (self):
         return "TargetXGetsNNUntilEndOfTurn(%s, %s, %s)" % (self.targetSelector, self.power, self.toughness)
@@ -996,15 +996,15 @@ class YouMayPayCostIfYouDoY(OneShotEffect):
 class PreventNextNDamageThatWouldBeDealtToXDamagePrevention(DamagePrevention):
 
     def __init__ (self, obj, effect):
-        self.obj = obj
+        self.obj_id = obj.id
         self.effect = effect
 
     def canApply(self, game, damage, combat):
-        source, dest, n = damage
+        source_lki, dest_lki, n = damage
         if self.effect.n <= 0:
             return False
 
-        return self.effect.selector.contains(game, self.obj, dest)
+        return self.effect.selector.contains_lki(game, game.obj(self.obj_id), dest_lki)
 
     def apply(self, game, damage, combat):
         source, dest, n = damage
@@ -1040,23 +1040,25 @@ class PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(SingleTargetOneShotEff
         if n == "X":
             n = obj.x
 
-        game.until_end_of_turn_effects.append ( (obj, PreventNextNDamageThatWouldBeDealtToX(LKISelector(target), n)))
+        game.until_end_of_turn_effects.append ( (obj, PreventNextNDamageThatWouldBeDealtToX(LKISelector(target.get_lki_id()), n)))
 
     def __str__ (self):
         return "PreventNextNDamageThatWouldBeDealtToTargetXThisTurn(%s, %s)" % (self.targetSelector, str(self.n))
 
 class TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(DamagePrevention):
-    def __init__ (self, obj, effect):
-        self.obj = obj
+    def __init__ (self, obj_id, effect):
+        self.obj_id = obj_id
         self.effect = effect
 
     def canApply(self, game, damage, combat):
-        source, dest, n = damage
+        source_lki_id, dest_lki_id, n = damage
 
         if self.effect.used_up:
             return False
 
-        return self.effect.x_selector.contains(game, self.obj, source) and self.effect.y_selector.contains(game, self.obj, dest)
+        obj = game.obj(self.obj_id)
+
+        return self.effect.x_selector.contains_lki(game, obj, source_lki_id) and self.effect.y_selector.contains_lki(game, obj, dest_lki_id)
 
     def apply(self, game, damage, combat):
         source, dest, n = damage
@@ -1076,7 +1078,9 @@ class TheNextTimeXWouldDealDamageToYPreventThatDamage(ContinuousEffect):
         self.used_up = False
 
     def apply(self, game, obj):
-        game.damage_preventions.append(TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(obj, self))
+        print `obj`
+        assert game.obj(obj.get_id()) is not None
+        game.damage_preventions.append(TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(obj.get_id(), self))
 
 class TheNextTimeSourceOfYourChoiceWouldDealDamageToYThisTurnPreventThatDamageResolveProcess(SandwichProcess):
     def __init__(self, obj, x_selector, y_selector):
@@ -1763,7 +1767,7 @@ class XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(On
     def resolve(self, game, obj):
         from process import DrawCardProcess
 
-        player = self.selector.only(game, obj)
+        player = self.selector.only(game, obj).get_object()
         hand = game.get_hand(player)
         library = game.get_library(player)
 
@@ -2390,10 +2394,10 @@ class ChangeTargetOfTargetX(SingleTargetOneShotEffect):
         return "ChangeTargetOfTargetX(%s)" % (self.targetSelector)
 
 class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurnProcess:
-    def __init__(self, player, obj, target):
+    def __init__(self, player, obj, target_lki_id):
         self.obj_id = obj.id
         self.player_id = player.id
-        self.target = target
+        self.target_lki_id = target_lki_id
 
     def next(self, game, action):
         obj = game.obj(self.obj_id)
@@ -2408,7 +2412,7 @@ class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurnProcess:
             return ActionSet (game, player, ("Choose a color"), actions)
         else:
             color = action.text.lower()
-            game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(self.target), color)))
+            game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(self.target_lki_id), color)))
 
 class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(SingleTargetOneShotEffect):
     def __init__ (self, targetSelector):
@@ -2418,7 +2422,7 @@ class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(SingleTargetOneShotEffect
         controller = game.objects[obj.get_controller_id()]
 
         game.process_returns_push(True)
-        game.process_push(TargetXBecomesTheColorOfYourChoiceUntilEndOfTurnProcess(controller, obj, target))
+        game.process_push(TargetXBecomesTheColorOfYourChoiceUntilEndOfTurnProcess(controller, obj, target.get_lki_id()))
 
     def __str__ (self):
         return "TargetXBecomesTheColorOfYourChoiceUntilEndOfTurn(%s)" % (self.targetSelector)
@@ -2546,9 +2550,9 @@ class YouAndXEachFlipCoinSELFDealsNDamageToEachPlayerWhoseCoinComesUpTailsRepeat
 
             damage = []
             if playerflip == "tails":
-                damage.append ( (obj.get_source_lki(), player, self.n) )
+                damage.append ( (game.create_lki(obj.get_source_lki()), game.create_lki(player), self.n) )
             if targetflip == "tails":
-                damage.append ( (obj.get_source_lki(), target, self.n) )
+                damage.append ( (game.create_lki(obj.get_source_lki()), game.create_lki(target), self.n) )
 
             if playerflip == "heads" and targetflip == "heads":
                 pass
@@ -2667,7 +2671,7 @@ class ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOn
 
     def doResolve(self, game, obj, target):
         game.process_returns_push(True)
-        game.indefinite_effects.append ( (obj, target, ChangeTheTextOfXByReplacingAllInstancesOfAWithB(LKISelector(target), obj.modal[0], obj.modal[1])))
+        game.indefinite_effects.append ( (obj, target, ChangeTheTextOfXByReplacingAllInstancesOfAWithB(LKISelector(target.get_lki_id()), obj.modal[0], obj.modal[1])))
 
     def __str__ (self):
         return "ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOneBasicLandTypeWithAnother(%s)" % (self.targetSelector)
@@ -2708,13 +2712,13 @@ class AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(ContinuousEffect):
 
         # TODO: make an selector api for that 
         if isinstance(self.z_selector, LKISelector):
-            c = self.z_selector.lki
+            c = self.z_selector.lki_id
         else:
             c = self.z_selector.only(game, SELF)
             c = game.create_lki(c)
 
         for a,b,n in dr.list:
-            if self.x_selector.contains(game, SELF, b) and self.y_selector.contains(game, SELF, a):
+            if self.x_selector.contains_lki(game, SELF, b) and self.y_selector.contains_lki(game, SELF, a):
                 list.append ( (a,c,n) )
             else:
                 list.append ( (a,b,n) )
@@ -2752,7 +2756,7 @@ class AllDamageThatWouldBeDealtToTargetXThisTurnByAYOfYourChoiceIsDealtToZInstea
 
         z_lki = game.create_lki(self.z_selector.only(game, obj))
         if obj.modal is not None:
-            game.until_end_of_turn_effects.append ( (obj, AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(LKISelector(target), LKISelector(obj.modal), LKISelector(z_lki)) ) )
+            game.until_end_of_turn_effects.append ( (obj, AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(LKISelector(target.get_lki_id()), LKISelector(obj.modal), LKISelector(z_lki)) ) )
 
     def __str__ (self):
         return "AllDamageThatWouldBeDealtToTargetXThisTurnByASourceOfYourChoiceIsDealtToYInstead(%s, %s, %s)" % (self.targetSelector, self.y_selector, self.z_selector)
@@ -2862,8 +2866,8 @@ class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(OneShotEffect):
             for i, target in targets.items():
                 damage = modal[i]
 
-                if not target.is_moved():
-                    damage_list.append ( (obj.get_source_lki(), target, damage) )
+                if not game.lki(target).is_moved():
+                    damage_list.append ( (game.create_lki(obj.get_source_lki()), target, damage) )
 
             game.doDealDamage(damage_list)
 
@@ -2874,7 +2878,7 @@ class DealsNDamageDividedAsYouChooseAmongAnyNumberOfTargetX(OneShotEffect):
         from process import validate_target
 
         for target in obj.targets.values():
-            if not validate_target(game, obj, self.targetSelector, target):
+            if not validate_target(game, obj, self.targetSelector, game.lki(target)):
                 return False
 
         return True
@@ -3188,7 +3192,7 @@ class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayer
                 count = self.n.evaluate(game, obj)
 
                 damage = []
-                damage.append ( (obj, player, count) )
+                damage.append ( (game.create_lki(obj), game.create_lki(player), count) )
                 game.doDealDamage(damage)
 
                 game.doZoneTransfer(top_card, graveyard, obj)
