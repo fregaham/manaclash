@@ -305,9 +305,11 @@ class WhenXComesIntoPlayDoEffectAbility(TriggeredAbility):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
+        return [("post_zone_transfer", partial(self.onPostZoneTransfer, obj.id))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
+    def onPostZoneTransfer(self, game, SELF_id, obj, zone_from, zone_to, cause):
+        SELF = game.obj(SELF_id)
+
         if self.selector.contains(game, SELF, obj) and zone_to.type == "in play":
             from process import TriggerEffectProcess
 
@@ -328,9 +330,11 @@ class AsSelfComesIntoPlayAnswerDialog(TriggeredAbility):
         return True
 
     def getEventHandlers(self, game, obj):
-        return [("post_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
+        return [("post_zone_transfer", partial(self.onPostZoneTransfer, obj.id))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
+    def onPostZoneTransfer(self, game, SELF_id, obj, zone_from, zone_to, cause):
+        SELF = game.obj(SELF_id)
+
         if SelfSelector().contains(game, SELF, obj) and zone_to.type == "in play":
             self.dialog.doModal(game, SELF)
 
@@ -347,9 +351,11 @@ class WhenXIsPutIntoGraveyardFromPlayDoEffectAbility(TriggeredAbility):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
+        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, obj.id))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
+    def onPostZoneTransfer(self, game, SELF_id, obj, zone_from, zone_to, cause):
+        SELF = game.obj(SELF_id)
+
         if self.selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play":
             from process import TriggerEffectProcess
 
@@ -372,9 +378,11 @@ class WheneverXCausesYToBePutIntoYourGraveyardFromTheBattlefield(TriggeredAbilit
         return isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
+        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, obj.id))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
+    def onPostZoneTransfer(self, game, SELF_id, obj, zone_from, zone_to, cause):
+        SELF = game.obj(SELF_id)
+
         if cause is not None and  self.x_selector.contains(game, SELF, cause) and self.y_selector.contains(game, SELF, obj) and zone_to.type == "graveyard" and zone_from.type == "in play" and zone_to.player_id == SELF.get_controller_id():
             from process import TriggerEffectProcess
 
@@ -398,9 +406,11 @@ class WhenXDealsDamageToYDoEffectAbility(TriggeredAbility):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_deal_damage", partial(self.onPostDealDamage, game, obj))]
+        return [("post_deal_damage", partial(self.onPostDealDamage, obj.id))]
 
-    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+    def onPostDealDamage(self, game, SELF_id, source_lki, dest_lki, n):
+        SELF = game.obj(SELF_id)
+
         if self.x_selector.contains_lki(game, SELF, source_lki) and self.y_selector.contains_lki(game, SELF, dest_lki):
             from process import TriggerEffectProcess
 
@@ -427,9 +437,11 @@ class WhenXDealsDamageDoEffectAbility(TriggeredAbility):
         return isinstance(self.x_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_deal_damage", partial(self.onPostDealDamage, game, obj))]
+        return [("post_deal_damage", partial(self.onPostDealDamage, obj.id))]
 
-    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+    def onPostDealDamage(self, game, SELF_id, source_lki, dest_lki, n):
+        SELF = game.obj(SELF_id)
+
         if self.x_selector.contains_lki(game, SELF, source_lki):
             from process import TriggerEffectProcess
 
@@ -454,9 +466,11 @@ class WhenXDealsCombatDamageToYDoEffectAbility(TriggeredAbility):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))]
+        return [("post_deal_combat_damage", partial(self.onPostDealDamage, obj.id))]
 
-    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+    def onPostDealDamage(self, game, SELF_id, source_lki, dest_lki, n):
+        SELF = game.obj(SELF_id)
+
         if self.x_selector.contains_lki(game, SELF, source_lki) and self.y_selector.contains_lki(game, SELF, dest_lki):
             from process import TriggerEffectProcess
 
@@ -483,9 +497,11 @@ class WhenXDealsCombatDamageDoEffectAbility(TriggeredAbility):
         return isinstance(self.x_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_deal_combat_damage", partial(self.onPostDealDamage, game, obj))]
+        return [("post_deal_combat_damage", partial(self.onPostDealDamage, obj.id))]
 
-    def onPostDealDamage(self, game, SELF, source_lki, dest_lki, n):
+    def onPostDealDamage(self, game, SELF_id, source_lki, dest_lki, n):
+        SELF = game.obj(SELF_id)
+
         if self.x_selector.contains_lki(game, SELF, source_lki):
             from process import TriggerEffectProcess
 
@@ -509,9 +525,11 @@ class WhenXAttacksDoEffectAbility(TriggeredAbility):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("attacks", partial(self.onAttacks, game, obj))]
+        return [("attacks", partial(self.onAttacks, obj.id))]
 
-    def onAttacks(self, game, SELF, attacker):
+    def onAttacks(self, game, SELF_id, attacker):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.selector.contains(game, SELF, attacker):
             slots = {}
@@ -532,9 +550,11 @@ class WhenXBlocksDoEffectAbility(TriggeredAbility):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("blocks", partial(self.onBlocks, game, obj))]
+        return [("blocks", partial(self.onBlocks, obj.id))]
 
-    def onBlocks(self, game, SELF, blocker, attacker):
+    def onBlocks(self, game, SELF_id, blocker, attacker):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.selector.contains(game, SELF, blocker):
             slots = {}
@@ -555,9 +575,11 @@ class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("attacks", partial(self.onAttacks, game, obj)), ("blocks", partial(self.onBlocks, game, obj))]
+        return [("attacks", partial(self.onAttacks, obj.id)), ("blocks", partial(self.onBlocks, obj.id))]
 
-    def onAttacks(self, game, SELF, attacker):
+    def onAttacks(self, game, SELF_id, attacker):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.selector.contains(game, SELF, attacker):
             slots = {}
@@ -589,9 +611,11 @@ class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("blocks", partial(self.onBlocks, game, obj))]
+        return [("blocks", partial(self.onBlocks, obj.id))]
 
-    def onBlocks(self, game, SELF, blocker, attacker):
+    def onBlocks(self, game, SELF_id, blocker, attacker):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, blocker) and self.y_selector.contains(game, SELF, attacker):
             slots = {}
@@ -619,9 +643,11 @@ class WhenXDiscardsACardDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_discard", partial(self.onDiscard, game, obj))]
+        return [("post_discard", partial(self.onDiscard, obj.id))]
 
-    def onDiscard(self, game, SELF, player, card, cause):
+    def onDiscard(self, game, SELF_id, player, card, cause):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, player):
             slots = {}
@@ -642,9 +668,11 @@ class WhenXDrawsACardDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_draw", partial(self.onDraw, game, obj))]
+        return [("post_draw", partial(self.onDraw, obj.id))]
 
-    def onDraw(self, game, SELF, player, card):
+    def onDraw(self, game, SELF_id, player, card):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, player):
             slots = {}
@@ -667,9 +695,11 @@ class WhenXCausesYToDiscardZ(TriggeredAbility):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.z_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_discard", partial(self.onDiscard, game, obj))]
+        return [("post_discard", partial(self.onDiscard, obj.id))]
 
-    def onDiscard(self, game, SELF, player, card, cause):
+    def onDiscard(self, game, SELF_id, player, card, cause):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, cause) and self.y_selector.contains(game, SELF, player) and self.z_selector.contains(game, SELF, card):
             slots = {}
@@ -696,9 +726,11 @@ class WhenXCastsYDoEffectAbility(TriggeredAbility):
         return isinstance(self.y_selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("play", partial(self.onPlay, game, obj))]
+        return [("play", partial(self.onPlay, obj.id))]
 
-    def onPlay(self, game, SELF, spell):
+    def onPlay(self, game, SELF_id, spell):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
 
         if self.x_selector.contains(game, SELF, game.objects[spell.get_controller_id()]) and self.y_selector.contains(game, SELF, spell):
@@ -721,9 +753,11 @@ class WhenXBecomesTappedDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("post_tap", partial(self.onTap, game, obj))]
+        return [("post_tap", partial(self.onTap, obj.id))]
 
-    def onTap(self, game, SELF, obj):
+    def onTap(self, game, SELF_id, obj):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, obj):
             slots = {}
@@ -748,9 +782,11 @@ class WhenXBecomesTappedForManaDoManaEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("tapped_for_mana", partial(self.onTap, game, obj))]
+        return [("tapped_for_mana", partial(self.onTap, obj.id))]
 
-    def onTap(self, game, SELF, obj, player, mana):
+    def onTap(self, game, SELF_id, obj, player, mana):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, obj):
             slots = {}
@@ -780,9 +816,11 @@ class WhenXTapsYForManaDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("tapped_for_mana", partial(self.onTap, game, obj))]
+        return [("tapped_for_mana", partial(self.onTap, obj.id))]
 
-    def onTap(self, game, SELF, obj, player, mana):
+    def onTap(self, game, SELF_id, obj, player, mana):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, player) and self.y_selector.contains(game, SELF, obj):
             slots = {}
@@ -807,9 +845,11 @@ class WhenXBecomesTargetOfYDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj) or isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
 
     def getEventHandlers(self, game, obj):
-        return [("target", partial(self.onTarget, game, obj))]
+        return [("target", partial(self.onTarget, obj.id))]
 
-    def onTarget(self, game, SELF, source, target):
+    def onTarget(self, game, SELF_id, source, target):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if self.x_selector.contains(game, SELF, target) and self.y_selector.contains(game, SELF, source):
             slots = {}
@@ -867,9 +907,11 @@ class AtTheBeginningOfEachPlayerssUpkeepDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("step", partial(self.onStep, game, obj))]
+        return [("step", partial(self.onStep, obj.id))]
 
-    def onStep(self, game, SELF):
+    def onStep(self, game, SELF_id):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if game.current_step == "upkeep":
             slots = {}
@@ -889,9 +931,11 @@ class AtTheBeginningOfYourUpkeepDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("step", partial(self.onStep, game, obj))]
+        return [("step", partial(self.onStep, obj.id))]
 
-    def onStep(self, game, SELF):
+    def onStep(self, game, SELF_id):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if game.current_step == "upkeep" and str(SELF.get_controller_id()) == str(game.get_active_player().id):
             slots = {}
@@ -910,9 +954,11 @@ class AtTheBeginningOfEachPlayerssEndStepDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("step", partial(self.onStep, game, obj))]
+        return [("step", partial(self.onStep, obj.id))]
 
-    def onStep(self, game, SELF):
+    def onStep(self, game, SELF_id):
+        SELF = game.obj(SELF_id)
+
         from process import TriggerEffectProcess
         if game.current_step == "end of turn":
             slots = {}
@@ -931,9 +977,10 @@ class AtTheBeginningOfEachPlayerssDrawStepDoEffectAbility(TriggeredAbility):
         return game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("step", partial(self.onStep, game, obj))]
+        return [("step", partial(self.onStep, obj.id))]
 
-    def onStep(self, game, SELF):
+    def onStep(self, game, SELF_id):
+        SELF = game.obj(SELF_id)
         from process import TriggerEffectProcess
         if game.current_step == "draw":
             slots = {}
@@ -953,9 +1000,11 @@ class WhenXIsReturnedToPlayersHandDoEffectAbility(TriggeredAbility):
         return isinstance(self.selector, SelfSelector) or game.isInPlay(obj)
 
     def getEventHandlers(self, game, obj):
-        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, game, obj))]
+        return [("pre_zone_transfer", partial(self.onPostZoneTransfer, obj.id))]
 
-    def onPostZoneTransfer(self, game, SELF, obj, zone_from, zone_to, cause):
+    def onPostZoneTransfer(self, game, SELF_id, obj, zone_from, zone_to, cause):
+        SELF = game.obj(SELF_id)
+
         if self.selector.contains(game, SELF, obj) and zone_to.type == "hand" and zone_from.type == "in play":
             from process import TriggerEffectProcess
 

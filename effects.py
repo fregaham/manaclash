@@ -64,6 +64,12 @@ class DamagePrevention(Effect):
     def apply(self, game, damage, combat):
         return damage
 
+    def getEffect(self):
+        return None
+
+    def setEffect(self, effect):
+        pass    
+
 class PlayerLooseLifeEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
         self.selector = playerSelector
@@ -558,7 +564,7 @@ class IfCXGetsTag(ContinuousEffect):
 
 class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention):
     def __init__ (self, context, x_selector, y_selector, n):
-        self.context = context
+        self.context_id = context.id
         self.x_selector = x_selector
         self.y_selector = y_selector
         self.n = n
@@ -566,8 +572,9 @@ class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention
         self.text = "If " + str(self.x_selector) + " would deal damage to " + str(self.y_selector) + ", prevent " + str(n) + " of that damage."
 
     def canApply(self, game, damage, combat):
+        context = game.obj(self.context_id)
         source, dest, n = damage
-        if self.x_selector.contains(game, self.context, source) and self.y_selector.contains(game, self.context, dest):
+        if self.x_selector.contains(game, context, source) and self.y_selector.contains(game, context, dest):
             return True
 
         return False
@@ -599,15 +606,17 @@ class IfXWouldDealDamageToYItDealsDoubleThatDamageToThatYInstead(ContinuousEffec
         self.y_selector = y_selector
 
     def apply(self, game, obj):
-        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, game, obj))
+        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, obj.id))
 
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
 
-    def onDamageReplacement(self, game, SELF, dr):
+    def onDamageReplacement(self, game, SELF_id, dr):
+        SELF = game.obj(SELF_id)
+
         list = []
         for a,b,n in dr.list:
-            if self.x_selector.contains(game, SELF, a) and self.y_selector.contains(game, SELF, b):
+            if self.x_selector.contains_lki(game, SELF, a) and self.y_selector.contains_lki(game, SELF, b):
                 list.append ( (a,b,n*2) )
             else:
                 list.append ( (a,b,n) )
@@ -1020,6 +1029,12 @@ class PreventNextNDamageThatWouldBeDealtToXDamagePrevention(DamagePrevention):
     def getText(self):
         return "Prevent next " + str(self.effect.n) + " damage that would be dealt to " + str(self.effect.selector)
 
+    def getEffect(self):
+        return self.effect
+
+    def setEffect(self, effect):
+        self.effect = effect
+
 class PreventNextNDamageThatWouldBeDealtToX(ContinuousEffect):
     def __init__ (self, selector, n):
         self.selector = selector
@@ -1069,7 +1084,12 @@ class TheNextTimeXWouldDealDamageToYPreventThatDamageDamagePrevention(DamagePrev
 
     def getText(self):
         return "Prevent damage that " + str(self.effect.x_selector) + " would deal to " + str(self.effect.y_selector) + "."
-  
+
+    def getEffect(self):
+        return self.effect
+
+    def setEffect(self, effect):
+        self.effect = effect 
 
 class TheNextTimeXWouldDealDamageToYPreventThatDamage(ContinuousEffect):
     def __init__ (self, x_selector, y_selector):
@@ -2088,9 +2108,11 @@ class XCostsNLessToCast(ContinuousEffect):
         self.n = n
 
     def apply(self, game, obj):
-        game.play_cost_replacement_effects.append (partial(self.replace, obj))
+        game.play_cost_replacement_effects.append (partial(self.replace, obj.id))
 
-    def replace(self, context, game, ability, obj, player, costs):
+    def replace(self, context_id, game, ability, obj, player, costs):
+        context = game.obj(context_id)
+
         if self.selector.contains(game, context, obj):
             ret = []
             for c in costs:
@@ -2117,12 +2139,15 @@ class XCostsNMoreToCastExceptDuringItsControllersTurn(ContinuousEffect):
         self.n = n
 
     def apply(self, game, obj):
-        game.play_cost_replacement_effects.append (partial(self.replace, obj))
+        # TODO: 
+        game.play_cost_replacement_effects.append (partial(self.replace, obj.id))
 
     def isSelf(self):
         return isinstance(self.selector, SelfSelector)
 
-    def replace(self, context, game, ability, obj, player, costs):
+    def replace(self, context_id, game, ability, obj, player, costs):
+        context = game.obj(context_id)
+
         if self.selector.contains(game, context, obj) and player.id != game.active_player_id:
             ret = []
             replaced = False
@@ -2702,12 +2727,14 @@ class AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(ContinuousEffect):
         self.z_selector = z_selector
 
     def apply(self, game, obj):
-        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, game, obj))
+        game.add_volatile_event_handler("damage_replacement", partial(self.onDamageReplacement, obj.id))
 
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or isinstance(self.z_selector, SelfSelector)
 
-    def onDamageReplacement(self, game, SELF, dr):
+    def onDamageReplacement(self, game, SELF_id, dr):
+        SELF = game.obj(SELF_id)
+
         list = []
 
         # TODO: make an selector api for that 
@@ -2896,18 +2923,18 @@ class PreventAllDamageThatWouldBeDealtToXDamagePrevention(DamagePrevention):
 
     def __init__ (self, obj, effect):
         self.obj = obj
-        self.effect = effect
+        self.selector = effect.selector
 
     def canApply(self, game, damage, combat):
         source, dest, n = damage
-        return self.effect.selector.contains(game, self.obj, dest)
+        return self.selector.contains(game, self.obj, dest)
 
     def apply(self, game, damage, combat):
         source, dest, n = damage
         return (source, dest, 0)
 
     def getText(self):
-        return "Prevent all damage that would be dealt to " + str(self.effect.selector)
+        return "Prevent all damage that would be dealt to " + str(self.selector)
 
 class PreventAllDamageThatWouldBeDealtToX(ContinuousEffect):
     def __init__ (self, selector):
@@ -2962,7 +2989,9 @@ class PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStepE
         self.tag = tag
         self.active = True
 
-    def handle(self, game, SELF):
+    def handle(self, game, SELF_id):
+        SELF = game.obj(SELF_id)
+
         if self.active and game.current_step == "end of turn":
             game.create_token(self.controller_id, set(), set(["creature"]), set([self.typ]), set([self.color, self.tag]), "", self.power, self.toughness)
             self.active = False
@@ -2985,7 +3014,7 @@ class PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(
 
         handler = PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStepEventHandler(obj.get_controller_id(), power, toughness, self.color, self.typ, self.tag)
 
-        game.add_event_handler("step", partial(handler.handle, game, obj))
+        game.add_event_handler("step", partial(handler.handle, obj.id))
 
     def __str__(self):
         return "PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStep(%s, %s, %s, %s, %s)" % (self.power, self.toughness, self.color, self.typ, self.tag)
@@ -2996,12 +3025,14 @@ class XCantAttackUnlessDefendingPlayerControlsAY(ContinuousEffect):
         self.y_selector = y_selector
 
     def apply(self, game, obj):
-        game.add_volatile_event_handler("validate_attacker", partial(self.onCanAttack, game, obj))
+        game.add_volatile_event_handler("validate_attacker", partial(self.onCanAttack, obj.id))
 
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector)
 
-    def onCanAttack(self, game, SELF, av):
+    def onCanAttack(self, game, SELF_id, av):
+        SELF = game.obj(SELF_id)
+
         if av.can and self.x_selector.contains(game, SELF, av.attacker):
             for o in self.y_selector.all(game, SELF):
                 if o.get_controller_id() == game.defending_player_id:
@@ -3017,12 +3048,14 @@ class XCantBlockOrBeBlockerByY(ContinuousEffect):
         self.y_selector = y_selector
 
     def apply(self, game, obj):
-        game.add_volatile_event_handler("validate_blocker", partial(self.onCanBlock, game, obj))
+        game.add_volatile_event_handler("validate_blocker", partial(self.onCanBlock, obj.id))
 
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
 
-    def onCanBlock(self, game, SELF, bv):
+    def onCanBlock(self, game, SELF_id, bv):
+        SELF = game.obj(SELF_id)
+
         if bv.can and ((self.x_selector.contains(game, SELF, bv.attacker) and self.y_selector.contains(game, SELF, bv.blocker)) or (self.x_selector.contains(game, SELF, bv.blocker) and self.y_selector.contains(game, SELF, bv.attacker))):
             bv.can = False
 
@@ -3035,12 +3068,14 @@ class XCantBlockY(ContinuousEffect):
         self.y_selector = y_selector
 
     def apply(self, game, obj):
-        game.add_volatile_event_handler("validate_blocker", partial(self.onCanBlock, game, obj))
+        game.add_volatile_event_handler("validate_blocker", partial(self.onCanBlock, obj.id))
 
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
 
-    def onCanBlock(self, game, SELF, bv):
+    def onCanBlock(self, game, SELF_id, bv):
+        SELF = game.obj(SELF_id)
+
         if bv.can and (self.x_selector.contains(game, SELF, bv.blocker) and self.y_selector.contains(game, SELF, bv.attacker)):
             bv.can = False
 
@@ -3262,7 +3297,7 @@ class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfA
                         game.process_push(self)
 
             else:
-                self.interceptable.proceed(player)
+                self.interceptable.proceed(game, player)
 
         elif self.state == 1:
             # payed cost?
@@ -3283,9 +3318,10 @@ class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfA
         self.cost = cost
 
     def apply(self, game, obj):
-        game.interceptable_draw.add(partial(self.interceptDraw, game, obj))
+        game.interceptable_draw.add(partial(self.interceptDraw, obj.id))
 
-    def interceptDraw(self, game, SELF, interceptable, player):
+    def interceptDraw(self, SELF_id, interceptable, player):
+        SELF = game.obj(SELF_id)
         from process import RevealCardsProcess
 
         if self.x_selector.contains(game, SELF, player):
@@ -3302,7 +3338,7 @@ class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfA
                 game.process_push(RevealCardsProcess(player, [top_card]))
 
         else:
-            return interceptable.proceed(player)
+            return interceptable.proceed(game, player)
              
 
     def isSelf(self):

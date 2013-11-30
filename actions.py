@@ -19,48 +19,45 @@
 
 class Action:
     def __init__ (self):
-        self.player = None
+        self.player_id = None
         self.text = None
-        self.object = None
+        self.object_id = None
         self.ability = None
 
 class PassAction(Action):
-    def __init__ (self, player):
+    def __init__ (self, player_id):
         Action.__init__ (self)
-        self.player = player
+        self.player_id = player_id
         self.text = "Pass"
 
 class AbilityAction(Action):
-    def __init__ (self, player, object, ability, text):
+    def __init__ (self, player_id, object_id, ability, text):
         Action.__init__(self)
-        self.player = player
-        self.object = object
+        self.player_id = player_id
+        self.object_id = object_id
         self.ability = ability
         self.text = text
 
 class PayCostAction(Action):
-    def __init__ (self, player, cost, text):
+    def __init__ (self, player_id, cost, text):
         Action.__init__ (self)
-        self.player = player
+        self.player_id = player_id
         self.cost = cost
         self.text = text
 
 class ActionSet:
-    def __init__ (self, game, player, text, actions):
-        self.game = game
-        self.player = player
+    def __init__ (self, player_id, text, actions):
+        self.player_id = player_id
         self.text = text
         self.actions = actions
 
 class QueryNumber:
-    def __init__(self, game, player, text):
-        self.game = game
+    def __init__(self, player_id, text):
         self.player = player
         self.text = text
 
 class QueryString:
-    def __init__ (self, game, player, text):
-        self.game = game
-        self.player = player
+    def __init__ (self, player_id, text):
+        self.player_id = player_id
         self.text = text
 

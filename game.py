@@ -18,6 +18,7 @@
 # 
 
 import random
+import copy
 
 from objects import *
 from actions import Action,ActionSet
@@ -321,6 +322,8 @@ class Game:
 
         # print "EVENT: " + `event`
 
+        args = [self] + args
+
         event_handlers = self.events.get(event, [])
         for handler in event_handlers:
             # print "EVENT: " + `event` + " handler: " + `handler`
@@ -383,7 +386,7 @@ class Game:
             self.raise_event ("post_draw", player, card)
 
     def doDrawCard (self, player):
-        self.interceptable_draw(player)
+        self.interceptable_draw(self, player)
        
     def doLoseGame(self, player):
         # TODO: multiplayer
@@ -690,4 +693,113 @@ class Game:
         for lki in self.lkis.itervalues():
             if lki.object_id == object.id:
                 lki.onPreMoveObject(object, zone_from, zone_to, cause)
+
+
+    def copy(self):
+        g = Game(self.output)
+        
+
+        for key, obj in self.objects:
+            g.objects[key] = obj.copy()
+
+        g.obj_max_id = self.obj_max_id
+        for zone in self.zones:
+            g.zones.append (g.objects[zone.id])
+
+        # LKIs are special, as they hold reference to the current game, we replace it here:
+        for key, lki in self.lkis:
+            lki_copy = lki.copy()
+            lki_copy.game = g
+            g.lkis[key] = lki_copy
+
+        g.lki_max_id = self.lki_max_id    
+        
+        # effect objects are special as they hold reference to the source_lki, we replace it here:
+        for key, obj in g.objects:
+            if isinstance(obj, EffectObject):
+                obj.source_lki = g.lkis[obj.source_lki.get_lki_id()]
+
+        for player in self.players:
+            g.players.append (g.objects[player.id])
+    
+        g.active_player_id = self.active_player_id
+        g.current_player_priority_id = self.current_player_priority_id
+        g.current_phase = self.current_phase
+        g.current_step = self.current_step
+
+        g.defending_player_id = self.defending_player_id
+        g.attacking_player_id = self.attacking_player_id
+
+        for effect in self.triggered_abilities:
+            g.append (g.objects[effect.id])
+
+        g.declared_attackers = self.declared_attackers.copy()
+        g.declared_blockers = self.declared_blockers.copy()
+        g.declared_blockers_map = self.declared_blockers_map.copy()
+
+        g.output = self.output
+
+        g.events = self.events.copy()
+        g.volatile_events = self.volatile_events.copy()
+
+        effect_map = {}
+
+        for obj, effect in self.until_end_of_turn_effects:
+            assert isinstance(effect, ContinuousEffect)
+            effect_copy = copy.copy(effect)
+            effect_map[effect] = effect_copy
+            g.until_end_of_turn_effects ( (g.obj(obj.id), effect_copy ) )
+
+        for obj, lki, effect in self.indefinite_effects:
+            assert isinstance(effect, ContinuousEffect)
+            effect_copy = copy.copy(effect)
+            g.indefinite_effects ( (g.obj(obj.id), g.lki(lki.get_lki_id()), effect_copy ) )
+
+        for e in self.end_of_combat_triggers:
+            g.end_of_combat_triggers.append (g.obj(e.id))
+
+        g.turn_number = self.turn_number
+
+        g.revealed = self.revealed[:]
+
+        g.looked_at = self.looked_at.copy()
+
+        # TODO: clone the effect, change from partial to an interface
+        g.play_cost_replacement_effects = self.play_cost_replacement_effects[:]
+
+        # damage prevention effects may hold references to continuous effects that created them
+        for dp in self.damage_preventions:
+            dp_copy = copy.copy(dp)
+
+            effect = dp.getEffect()
+            if effect is not None and effect in effect_map:
+                dp_copy.setEffect(effect_map[effect])
+                
+            g.damage_preventions.append(dp_copy)
+
+        g.creature_that_attacked_this_turn_lkis = self.creature_that_attacked_this_turn_lkis.copy()
+
+        g.additional_combat_phase_followed_by_an_additional_main_phase = self.additional_combat_phase_followed_by_an_additional_main_phase
+
+        g.interceptable_draw = copy.copy(self.interceptable_draw)
+
+        for process in self.process_stack:
+            process_copy = copy.copy(process)
+            g.process_stack.append(process_copy)
+
+        for ret in self.process_returns_stack:
+            ret_copy = None
+            if isinstance(ret, LastKnownInformation):
+                ret_copy = g.lki(ret.get_lki_id())
+            elif isinstance(ret, Object):
+                ret_copy = g.obj(ret.id)
+            else:
+                ret_copy = copy.copy(ret)
+
+            g.process_returns_stack.append (ret_copy)
+
+        # game has ended
+        g.end = self.end
+
+        return g
 

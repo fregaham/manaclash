@@ -343,3 +343,17 @@ class LastKnownInformation(Object):
         else:
             return self.targets
 
+    def copy(self):
+        return LastKnownInformation(game, self.get_object())._copy()
+
+    def _copy(self, src):
+        Object._copy(self, src)
+
+        self.lki_id = src.lki_id
+        self.object_id = src.object_id
+        self._state = src._state
+        self.moved = src.moved
+        self.valid = src.valid
+        self.modal = src.modal
+        self.targets = src.targets
+
