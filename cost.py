@@ -168,16 +168,16 @@ class TapSelectorCostProcess:
                     continue
 
                 _p = Action ()
-                _p.object = o
+                _p.object_id = o.id
                 _p.text = "Tap %s" % str(o)
                 actions.append (_p)
 
             if len(actions) > 0:
-                return ActionSet (game, player, "Choose %s to tap" % self.selector, actions)
+                return ActionSet (player.id, "Choose %s to tap" % self.selector, actions)
             else:
                 game.process_returns_push(False)
         else:
-            game.doTap(action.object)
+            game.doTap(game.obj(action.object_id))
             game.process_returns_push(True)
         
 
@@ -219,17 +219,18 @@ class SacrificeSelectorCostProcess:
                     continue
 
                 _p = Action ()
-                _p.object = o
+                _p.object_id = o.id
                 _p.text = "Sacrifice %s" % str(o)
                 actions.append (_p)
 
             if len(actions) > 0:
-                return ActionSet (game, player, "Choose %s to sacrifice" % self.selector, actions)
+                return ActionSet (player.id, "Choose %s to sacrifice" % self.selector, actions)
             else:
                 game.process_returns_push(False)
         else:
-            effect.slots["sacrificed"] = game.create_lki(action.object)
-            game.doSacrifice(action.object)
+            obj = game.obj(action.object_id)
+            effect.slots["sacrificed"] = game.create_lki(obj)
+            game.doSacrifice(obj)
             game.process_returns_push(True)
 
 class SacrificeSelectorCost(Cost):
@@ -266,16 +267,16 @@ class DiscardXProcess:
             for o in hand.objects:
                 if self.selector.contains(game, obj, o):
                     _p = Action ()
-                    _p.object = o
+                    _p.object_id = o.id
                     _p.text = "Discard %s" % str(o)
                     actions.append (_p)
 
             if len(actions) > 0:
-                return ActionSet (game, player, "Discard %s" % self.selector, actions)
+                return ActionSet (player.id, "Discard %s" % self.selector, actions)
             else:
                 game.process_returns_push(False)
         else:
-            game.doDiscard(player, action.object, obj)
+            game.doDiscard(player, game.obj(action.object_id), obj)
             game.process_returns_push(True)
 
 class DiscardX(Cost):

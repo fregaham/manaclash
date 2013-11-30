@@ -128,7 +128,7 @@ def playSpell(g, ax, name):
     for a in ax.actions:
         if isinstance(a, AbilityAction):
             if isinstance(a.ability, PlaySpell):
-                if a.object.get_state().title == name:
+                if g.obj(a.object_id).get_state().title == name:
                     return g.next(a)
 
     assert False
@@ -138,21 +138,22 @@ def playLand(g, ax, name):
     for a in ax.actions:
         if isinstance(a, AbilityAction):
             if isinstance(a.ability, PlayLandAbility):
-                if a.object.get_state().title == name:
+                if g.obj(a.object_id).get_state().title == name:
                     return g.next(a)
 
     assert False
 
 
 def printState(g, a):
-    print ("player %s: %s" % (a.player.name, a.text))
-    print ("turn %s, phase: %s, step: %s" % (a.game.get_active_player().name, a.game.current_phase, a.game.current_step))
-    print ("battlefield: %s" % (" ".join(map(lambda x:str(x),a.game.get_in_play_zone().objects))))
-    print ("stack: %s" % (" ".join(map(lambda x:"["+str(x)+"]",a.game.get_stack_zone().objects))))
-    print ("library: %d graveyard: %d" % (len(a.game.get_library(a.player).objects), len(a.game.get_graveyard(a.player).objects) ))
-    print ("hand: %s" % (" ".join(map(lambda x:"["+str(x)+"]",a.game.get_hand(a.player).objects))))
-    print ("manapool: %s" % (a.player.manapool))
-    print ("life: %d" % (a.player.life))
+    player = g.obj(a.player_id)
+    print ("player %s: %s" % (player.name, a.text))
+    print ("turn %s, phase: %s, step: %s" % (g.get_active_player().name, g.current_phase, g.current_step))
+    print ("battlefield: %s" % (" ".join(map(lambda x:str(x),g.get_in_play_zone().objects))))
+    print ("stack: %s" % (" ".join(map(lambda x:"["+str(x)+"]",g.get_stack_zone().objects))))
+    print ("library: %d graveyard: %d" % (len(g.get_library(player).objects), len(g.get_graveyard(player).objects) ))
+    print ("hand: %s" % (" ".join(map(lambda x:"["+str(x)+"]",g.get_hand(player).objects))))
+    print ("manapool: %s" % (player.manapool))
+    print ("life: %d" % (player.life))
 
     if isinstance(a, ActionSet):
         for _ in a.actions:
@@ -203,7 +204,8 @@ def declareAttackers(g, ax, lst):
         found = False
         assert ax.text == "Select attackers"
         for a in ax.actions:
-            if a.object != None and a.object.get_state().title == attacker:
+            obj = None if a.object_id is None else g.obj(a.object_id)
+            if obj != None and obj.get_state().title == attacker:
                 found = True
                 ax = g.next(a)
                 break
@@ -222,7 +224,8 @@ def declareBlockers(g, ax, blockers, attackers):
         foundBlocker = False
         assert ax.text == "Select blockers"
         for b in ax.actions:
-            if b.object != None and b.object.get_state().title == blocker:
+            obj = None if b.object_id is None else g.obj(b.object_id)
+            if obj != None and obj.get_state().title == blocker:
                 foundBlocker = True
                 ax = g.next(b)
 
@@ -231,7 +234,8 @@ def declareBlockers(g, ax, blockers, attackers):
                 foundAttacker = False
                 assert ax.text.startswith("Block which")
                 for a in ax.actions:
-                    if a.object != None and a.object.get_state().title == attacker:
+                    a_obj = None if a.object_id is None else g.obj(a.object_id)
+                    if a_obj != None and a_obj.get_state().title == attacker:
                         foundAttacker = True
                         ax = g.next(a)
                         break
@@ -254,12 +258,12 @@ def emptyStack(g, ax):
     return ax
 
 def activateAbility(g, ax, name, player_id):
-    while ax.text != "You have priority" or ax.player.id != player_id:
+    while ax.text != "You have priority" or ax.player_id != player_id:
         ax = _pass(g, ax)
 
     for a in ax.actions:
         if isinstance(a, AbilityAction):
-            if a.object.get_state().title == name:
+            if g.obj(a.object_id).get_state().title == name:
                 return g.next(a)
 
     assert False
@@ -267,7 +271,7 @@ def activateAbility(g, ax, name, player_id):
 def basicManaAbility(g, ax, name, player_id):
     for a in ax.actions:
         if isinstance(a, AbilityAction):
-            if isinstance(a.ability, BasicManaAbility) and a.object.get_state().title == name:
+            if isinstance(a.ability, BasicManaAbility) and g.obj(a.object_id).get_state().title == name:
                 return g.next(a) 
 
     assert False
@@ -299,7 +303,7 @@ def discardACard(g, ax, name):
     printState(g, ax)
     assert ax.text == "Discard a card"
     for a in ax.actions:
-        if a.text.startswith("Discard") and a.object.get_state().title == name:
+        if a.text.startswith("Discard") and g.obj(a.object_id).get_state().title == name:
             return g.next(a)
 
     assert False
@@ -308,8 +312,8 @@ def selectTarget(g, ax, name):
     printState(g, ax)
     assert ax.text.startswith("Choose a target")
     for a in ax.actions:
-        if a.object is not None:
-            if a.object.get_state().title == name:
+        if a.object_id is not None:
+            if g.obj(a.object_id).get_state().title == name:
                 return g.next(a)
 
     assert False
@@ -317,8 +321,8 @@ def selectTarget(g, ax, name):
 def selectObject(g, ax, name):
     printState(g, ax)
     for a in ax.actions:
-        if a.object is not None:
-            if a.object.get_state().title == name:
+        if a.object_id is not None:
+            if g.obj(a.object_id).get_state().title == name:
                 return g.next(a)
 
     assert False
@@ -373,8 +377,8 @@ def assertNoSuchObjectInPlay(g, name):
 
 def assertCardInOptions(g, ax, name):
     for a in ax.actions:
-        if a.object is not None:
-            if a.object.get_state().title == name:
+        if a.object_id is not None:
+            if g.obj(a.object_id).get_state().title == name:
                 return True
 
     assert False
@@ -384,14 +388,31 @@ class ManaClashTest(unittest.TestCase):
     def testAbyssalSpecter(self):
         g, a, p1, p2 = createGameInMainPhase(["Abyssal Specter"], [], [], ["Plains", "Mountain"])
 
+        g = g.copy()
+
         a = declareAttackersStep(g, a)
+
+        g = g.copy()
+
         a = declareAttackers(g, a, ["Abyssal Specter"])
+
+        g = g.copy()
+
         
         a = combatDamageStep(g, a)
+        g = g.copy()
+
         a = _pass(g, a)
+        g = g.copy()
+
         a = _pass(g, a)
+        g = g.copy()
         a = _pass(g, a)
+        
+        g = g.copy()
         a = _pass(g, a)
+
+        g = g.copy()
         a = discardACard(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
@@ -720,7 +741,7 @@ class ManaClashTest(unittest.TestCase):
         a = payCosts(g, a)
         a = _pass(g, a)
         a = _pass(g, a)
-        assert a.player.id == p1
+        assert a.player_id == p1
         printState(g, a)
 
         a = selectObject(g, a, "Raging Goblin")
@@ -1329,19 +1350,19 @@ class ManaClashTest(unittest.TestCase):
 
         printState(g, a)
 
-        assert a.player.name == "Player1"
+        assert a.player_id == p1
         a = selectObject(g, a, "Raging Goblin")
-        assert a.player.name == "Player2"
+        assert a.player_id == p2
         a = selectObject(g, a, "Pacifism")
         printState(g, a)
         # choosing a target to enchant
-        assert a.player.name == "Player2"
+        assert a.player_id == p2
         a = selectObject(g, a, "Raging Goblin")
-        assert a.player.name == "Player1"
+        assert a.player_id == p1
         a = selectObject(g, a, "Eastern Paladin")
-        assert a.player.name == "Player2"
+        assert a.player_id == p2
         a = selectObject(g, a, "Plains")
-        assert a.player.name == "Player1"
+        assert a.player_id == p1
         a = selectObject(g, a, "Plains")
         printState(g, a)
 

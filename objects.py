@@ -89,7 +89,8 @@ class Object:
 
     def copy(self):
         ret = Object()
-        return ret._copy(self)
+        ret._copy(self)
+        return ret
 
     def is_moved(self):
         return False
@@ -156,7 +157,9 @@ class Zone(Object):
         self.objects = []
 
     def copy(self):
-        return Zone()._copy(self)
+        z = Zone()
+        z._copy(self)
+        return z
 
     def _copy(self, src):
         Object._copy(self, src)
@@ -180,7 +183,10 @@ class Player (Object):
         self.draw_cards_count = 1
 
     def copy(self):
-        return Player(self.name)._copy(self)
+        p = Player(self.name)
+        p._copy(self)
+
+        return p
 
     def _copy(self, src):
         Object._copy(self, src)
@@ -209,7 +215,9 @@ class DamageAssignment (Object):
         self.combat = combat
 
     def copy(self):
-        return DamageAssignment(self.damage_assignment_list, self.combat)._copy(self)
+        dmg = DamageAssignment(self.damage_assignment_list, self.combat)
+        dmg._copy(self)
+        return dmg
 
     def _copy(self, src):
         Object._copy(self, src)
@@ -249,7 +257,10 @@ class EffectObject(Object):
         return self.source_lki.get_enchanted_id()
 
     def copy(self):
-        return EffectObject(self.source_lki, self.controller_id, self.text, self.slots)._copy(self)
+        e = EffectObject(self.source_lki, self.controller_id, self.initial_state.text, self.slots)
+        e._copy(self)
+
+        return e
 
     def _copy(self, src):
         Object._copy(self, src)
@@ -344,10 +355,12 @@ class LastKnownInformation(Object):
             return self.targets
 
     def copy(self):
-        return LastKnownInformation(game, self.get_object())._copy()
+        lki = LastKnownInformation(self.game, self.get_object())
+        lki._copy(self)
+        return lki
 
     def _copy(self, src):
-        Object._copy(self, src)
+        # Object._copy(self, src)
 
         self.lki_id = src.lki_id
         self.object_id = src.object_id

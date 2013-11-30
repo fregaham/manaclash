@@ -322,7 +322,7 @@ class Game:
 
         # print "EVENT: " + `event`
 
-        args = [self] + args
+        args = [self] + list(args)
 
         event_handlers = self.events.get(event, [])
         for handler in event_handlers:
@@ -376,7 +376,7 @@ class Game:
     def doAddMana (self, player, source, mana):
         player.manapool += mana
 
-    def _drawCard(self, interceptable, player):
+    def _drawCard(self, interceptable, game, player):
         library = self.get_library(player)
         if len(library.objects) == 0:
             self.doLoseGame(player)
@@ -415,6 +415,9 @@ class Game:
         random.shuffle(zone.objects)
 
     def doZoneTransfer (self, object, zone, cause = None):
+
+        assert self.obj(object.id) == object
+
         object.damage = 0
         zone_from = self.objects[object.zone_id]
 
@@ -698,16 +701,26 @@ class Game:
     def copy(self):
         g = Game(self.output)
         
+        for key, obj in self.objects.iteritems():
+            assert obj is not None
 
-        for key, obj in self.objects:
-            g.objects[key] = obj.copy()
+            obj_copy = obj.copy()
+            g.objects[key] = obj_copy
+
+            assert g.objects[key] is not None
 
         g.obj_max_id = self.obj_max_id
         for zone in self.zones:
-            g.zones.append (g.objects[zone.id])
+            zone_clone = g.objects[zone.id]
+            g.zones.append (zone_clone)
+
+            orig_objects = zone_clone.objects
+            zone_clone.objects = []
+            for obj in orig_objects:
+                zone_clone.objects.append ( g.objects[obj.id] )
 
         # LKIs are special, as they hold reference to the current game, we replace it here:
-        for key, lki in self.lkis:
+        for key, lki in self.lkis.iteritems():
             lki_copy = lki.copy()
             lki_copy.game = g
             g.lkis[key] = lki_copy
@@ -715,7 +728,7 @@ class Game:
         g.lki_max_id = self.lki_max_id    
         
         # effect objects are special as they hold reference to the source_lki, we replace it here:
-        for key, obj in g.objects:
+        for key, obj in g.objects.iteritems():
             if isinstance(obj, EffectObject):
                 obj.source_lki = g.lkis[obj.source_lki.get_lki_id()]
 
@@ -797,6 +810,8 @@ class Game:
                 ret_copy = copy.copy(ret)
 
             g.process_returns_stack.append (ret_copy)
+
+        g.stack = g.get_stack_zone().objects
 
         # game has ended
         g.end = self.end

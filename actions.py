@@ -27,12 +27,17 @@ class Action:
 class PassAction(Action):
     def __init__ (self, player_id):
         Action.__init__ (self)
+        assert type(player_id) == type(1)
         self.player_id = player_id
         self.text = "Pass"
 
 class AbilityAction(Action):
     def __init__ (self, player_id, object_id, ability, text):
         Action.__init__(self)
+
+        assert type(player_id) == type(1)
+        assert type(object_id) == type(1)
+
         self.player_id = player_id
         self.object_id = object_id
         self.ability = ability
@@ -41,23 +46,32 @@ class AbilityAction(Action):
 class PayCostAction(Action):
     def __init__ (self, player_id, cost, text):
         Action.__init__ (self)
+
+        assert type(player_id) == type(1)
+
         self.player_id = player_id
         self.cost = cost
         self.text = text
 
 class ActionSet:
     def __init__ (self, player_id, text, actions):
+
+        assert type(player_id) == type(1)
+
         self.player_id = player_id
         self.text = text
         self.actions = actions
 
 class QueryNumber:
     def __init__(self, player_id, text):
-        self.player = player
+        assert type(player_id) == type(1)
+        self.player_id = player_id
         self.text = text
 
 class QueryString:
     def __init__ (self, player_id, text):
+        assert type(player_id) == type(1)
+
         self.player_id = player_id
         self.text = text
 

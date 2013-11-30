@@ -35,7 +35,7 @@ class ChooseCreatureTypeProcess:
         context = game.obj(self.context_id)
         player = game.objects[context.get_controller_id()]
         if action is None:
-            return QueryString(game, player, "Choose Creature Type")
+            return QueryString(player.id, "Choose Creature Type")
         else:
             context.modal = action.lower()
 

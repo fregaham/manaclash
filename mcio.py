@@ -143,14 +143,15 @@ def input_generator (game):
     log = []
 
     while True:
-        print ("player %s: %s" % (_as.player.name, _as.text))
-        print ("turn %s, phase: %s, step: %s" % (_as.game.get_active_player().name, _as.game.current_phase, _as.game.current_step))
-        print ("battlefield: %s" % (" ".join(map(lambda x:str(x),_as.game.get_in_play_zone().objects))))
-        print ("stack: %s" % (" ".join(map(lambda x:"["+str(x)+"]",_as.game.get_stack_zone().objects))))
-        print ("library: %d graveyard: %d" % (len(_as.game.get_library(_as.player).objects), len(_as.game.get_graveyard(_as.player).objects) ))
-        print ("hand: %s" % (" ".join(map(lambda x:"["+str(x)+"]",_as.game.get_hand(_as.player).objects))))
-        print ("manapool: %s" % (_as.player.manapool))
-        print ("life: %d" % (_as.player.life))
+        player = game.obj(_as.player_id)
+        print ("player %s: %s" % (player.name, _as.text))
+        print ("turn %s, phase: %s, step: %s" % (game.get_active_player().name, game.current_phase, game.current_step))
+        print ("battlefield: %s" % (" ".join(map(lambda x:str(x), game.get_in_play_zone().objects))))
+        print ("stack: %s" % (" ".join(map(lambda x:"["+str(x)+"]",game.get_stack_zone().objects))))
+        print ("library: %d graveyard: %d" % (len(game.get_library(player).objects), len(game.get_graveyard(player).objects) ))
+        print ("hand: %s" % (" ".join(map(lambda x:"["+str(x)+"]",game.get_hand(player).objects))))
+        print ("manapool: %s" % (player.manapool))
+        print ("life: %d" % (player.life))
         action = None
         while action == None:
             i = 0
@@ -214,6 +215,8 @@ def input_generator (game):
                 action = selected
 
         # print "Action: " + `action`
+
+#        game = game.copy()
 
         _as = game.next(action)
 

@@ -62,13 +62,13 @@ def get_possible_actions (game, player):
             if isinstance(ability, ActivatedAbility):
                 #print "testing ability: " + `ability`
                 if ability.canActivate(game, obj, player):
-                    ret.append (AbilityAction(player, obj, ability, ability.get_text(game, obj)))
+                    ret.append (AbilityAction(player.id, obj.id, ability, ability.get_text(game, obj)))
 
     return ret
 
 def do_action (game, player, a):
     if isinstance(a, AbilityAction):
-        a.ability.activate(game, a.object, player)
+        a.ability.activate(game, game.obj(a.object_id), player)
     else:
         raise Exception("cannot do action " + repr(a))
 
@@ -404,7 +404,7 @@ class PayCostProcess(Process):
                 obj = game.obj(self.obj_id)
 
                 actions = []
-                _pass = PassAction (player)
+                _pass = PassAction (player.id)
                 _pass.text = "Cancel"
                 actions.append (_pass)
 
@@ -413,13 +413,13 @@ class PayCostProcess(Process):
                     for ability in o.state.abilities:
                         if isinstance(ability, ManaAbility):
                             if ability.canActivate(game, o, player):
-                                actions.append (AbilityAction(player, o, ability, ability.get_text(game, o)))
+                                actions.append (AbilityAction(player.id, o.id, ability, ability.get_text(game, o)))
 
                 for cost in self.notpaid:
                     if cost.canPay(game, obj, player):
-                        actions.append (PayCostAction(player, cost, cost.get_text(game, obj, player)))
+                        actions.append (PayCostAction(player.id, cost, cost.get_text(game, obj, player)))
 
-                _as = ActionSet (game, player, "Play Mana Abilities", actions)
+                _as = ActionSet (player.id, "Play Mana Abilities", actions)
                 return _as
             else:
                 game.process_returns_push(True) 
@@ -459,7 +459,7 @@ def process_pay_cost (game, player, obj, effect, costs):
     while len(notpaid) > 0:
         actions = []
 
-        _pass = PassAction (player)
+        _pass = PassAction (player.id)
         _pass.text = "Cancel"
         actions.append (_pass)
 
@@ -468,13 +468,13 @@ def process_pay_cost (game, player, obj, effect, costs):
             for ability in o.state.abilities:
                 if isinstance(ability, ManaAbility):
                     if ability.canActivate(game, o, player):
-                        actions.append (AbilityAction(player, o, ability, ability.get_text(game, o)))
+                        actions.append (AbilityAction(player.id, o.id, ability, ability.get_text(game, o)))
 
         for cost in notpaid:
             if cost.canPay(game, obj, player):
-                actions.append (PayCostAction(player, cost, cost.get_text(game, obj, player)))
+                actions.append (PayCostAction(player.id, cost, cost.get_text(game, obj, player)))
 
-        _as = ActionSet (game, player, "Play Mana Abilities", actions)
+        _as = ActionSet (player.id, "Play Mana Abilities", actions)
         a = game.input.send (_as)
 
         if a == _pass:
@@ -699,7 +699,7 @@ class PrioritySuccessionProcess(Process):
 
     def next(self, game, action):
         if self.state == 0:
-            game.current_player_priority = game.obj(self.player_id)
+            game.current_player_priority_id = self.player_id
             self.first_passed_id = None
             self.state = 1
             game.process_push(self)
@@ -714,11 +714,11 @@ class PrioritySuccessionProcess(Process):
             evaluate(game)
         elif self.state ==2:
             actions = []
-            _pass = PassAction (game.current_player_priority)
+            _pass = PassAction (game.current_player_priority_id)
             actions.append (_pass)
 
-            actions.extend(get_possible_actions (game, game.current_player_priority))
-            _as = ActionSet (game, game.current_player_priority, "You have priority", actions)
+            actions.extend(get_possible_actions (game, game.obj(game.current_player_priority_id)))
+            _as = ActionSet (game.current_player_priority_id, "You have priority", actions)
 
             self.state = 3
 
@@ -728,9 +728,9 @@ class PrioritySuccessionProcess(Process):
                 self.state = 1
                 game.process_push(self)
                 self.first_passed_id = None
-                do_action (game, game.current_player_priority, action)
+                do_action (game, game.obj(game.current_player_priority_id), action)
             else:
-                np = game.get_next_player (game.current_player_priority)
+                np = game.get_next_player (game.obj(game.current_player_priority_id))
                 if self.first_passed_id == np.id:
                     if game.get_stack_length () == 0:
                         return
@@ -740,8 +740,8 @@ class PrioritySuccessionProcess(Process):
                         resolve (game, game.stack_top ())
                 else:
                     if self.first_passed_id == None:
-                        self.first_passed_id = game.current_player_priority.id
-                    game.current_player_priority = np
+                        self.first_passed_id = game.current_player_priority_id
+                    game.current_player_priority_id = np.id
 
                     self.state = 1
                     game.process_push(self)
@@ -752,7 +752,7 @@ class PrioritySuccessionProcess(Process):
             game.process_returns_pop()
 
             self.first_passed_id = None
-            game.current_player_priority = game.obj(self.player_id)
+            game.current_player_priority_id = self.player_id
 
             self.state = 1
             game.process_push(self)
@@ -958,7 +958,7 @@ class DeclareAttackersStepProcess(Process):
             self.state = 3
 
             actions = []
-            _pass = PassAction (game.get_attacking_player())
+            _pass = PassAction (game.get_attacking_player().id)
             _pass.text = "No more attackers"
             actions.append (_pass)
 
@@ -970,12 +970,12 @@ class DeclareAttackersStepProcess(Process):
                     game.raise_event("validate_attacker", v)
                     if v.can:
                         _p = Action ()
-                        _p.object = permanent
-                        _p.player = game.get_attacking_player()
+                        _p.object_id = permanent.id
+                        _p.player_id = game.get_attacking_player().id
                         _p.text = "Attack with %s" % permanent
                         actions.append (_p)
 
-            _as = ActionSet (game, game.get_attacking_player(), "Select attackers", actions)
+            _as = ActionSet (game.get_attacking_player().id, "Select attackers", actions)
             return _as
 
         elif self.state == 3:
@@ -983,7 +983,7 @@ class DeclareAttackersStepProcess(Process):
                 self.state = 4
                 game.process_push(self)
             else:
-                self.attackers.add(action.object.id)
+                self.attackers.add(action.object_id)
                 self.state = 2
                 game.process_push(self)
 
@@ -1052,16 +1052,16 @@ def process_step_declare_attackers (game):
                     game.raise_event("validate_attacker", v)
                     if v.can:
                         _p = Action ()
-                        _p.object = permanent
-                        _p.player = game.get_attacking_player()
+                        _p.object_id = permanent.id
+                        _p.player_id = game.get_attacking_player().id
                         _p.text = "Attack with %s" % permanent
                         actions.append (_p)
 
-            _as = ActionSet (game, game.get_attacking_player(), "Select attackers", actions)
+            _as = ActionSet (game.get_attacking_player().id, "Select attackers", actions)
             a = game.input.send (_as)
 
             if a != _pass:
-                attackers.add (a.object)
+                attackers.add (a.object_id)
             else:
                 break
 
@@ -1284,7 +1284,7 @@ class DeclareBlockersStepProcess(Process):
             self.blocker_id = None
 
             actions = []
-            _pass = PassAction (game.get_defending_player())
+            _pass = PassAction (game.get_defending_player().id)
             _pass.text = "No more blockers"
             actions.append (_pass)
 
@@ -1307,12 +1307,12 @@ class DeclareBlockersStepProcess(Process):
                     continue
 
                 _p = Action ()
-                _p.object = permanent
-                _p.player = game.get_defending_player()
+                _p.object_id = permanent.id
+                _p.player_id = game.get_defending_player().id
                 _p.text = "Block with %s" % permanent
                 actions.append (_p)
 
-            _as = ActionSet (game, game.get_defending_player(), "Select blockers", actions)
+            _as = ActionSet (game.get_defending_player().id, "Select blockers", actions)
             return _as
 
         elif self.state == 4:
@@ -1321,13 +1321,13 @@ class DeclareBlockersStepProcess(Process):
                 game.process_push(self)
             else:
 
-                self.blocker_id = action.object.id
+                self.blocker_id = action.object_id
                 blocker = game.obj(self.blocker_id)
 
                 self.state = 5
 
                 actions = []
-                _pass = PassAction (game.get_defending_player())
+                _pass = PassAction (game.get_defending_player().id)
                 _pass.text = "Cancel block"
                 actions.append (_pass)
 
@@ -1340,11 +1340,11 @@ class DeclareBlockersStepProcess(Process):
 
                         if is_valid_block(game, permanent, blocker):
                             _p = Action ()
-                            _p.object = permanent
-                            _p.player = game.get_defending_player()
+                            _p.object_id = permanent.id
+                            _p.player_id = game.get_defending_player().id
                             _p.text = "Let %s block %s" % (blocker, permanent)
                             actions.append (_p)
-                _as = ActionSet (game, game.get_defending_player(), "Block which attacker", actions) 
+                _as = ActionSet (game.get_defending_player().id, "Block which attacker", actions) 
                 return _as
 
         elif self.state == 5:
@@ -1355,7 +1355,7 @@ class DeclareBlockersStepProcess(Process):
                 self.blockers.add (self.blocker_id)
 
                 _as = self.blockers_map.get(self.blocker_id, [])
-                self.blockers_map[self.blocker_id] = _as + [action.object.id]
+                self.blockers_map[self.blocker_id] = _as + [action.object_id]
 
                 self.state = 3
                 game.process_push(self)
@@ -1430,12 +1430,12 @@ def process_step_declare_blockers (game):
                             continue
 
                 _p = Action ()
-                _p.object = permanent
-                _p.player = game.get_defending_player()
+                _p.object_id = permanent.id
+                _p.player_id = game.get_defending_player().id
                 _p.text = "Block with %s" % permanent
                 actions.append (_p)
 
-            _as = ActionSet (game, game.get_defending_player(), "Select blockers", actions)
+            _as = ActionSet (game.get_defending_player().id, "Select blockers", actions)
             b = game.input.send (_as)
 
             if b != _pass:
@@ -1454,11 +1454,11 @@ def process_step_declare_blockers (game):
 
                         if is_valid_block(game, permanent, b.object):
                             _p = Action ()
-                            _p.object = permanent
-                            _p.player = game.get_defending_player()
+                            _p.object_id = permanent.id
+                            _p.player_id = game.get_defending_player().id
                             _p.text = "Let %s block %s" % (b.object, permanent)
                             actions.append (_p)
-                _as = ActionSet (game, game.get_defending_player(), "Block which attacker", actions)
+                _as = ActionSet (game.get_defending_player().id, "Block which attacker", actions)
                 a = game.input.send (_as)
 
                 if a != _pass:
@@ -1630,7 +1630,7 @@ class CombatDamageStepProcess(Process):
                 _no.text = "No" 
                 actions.append (_no)
 
-                return ActionSet (game, game.get_attacking_player(), "Assign %s combat damage as though it wasn't blocked" % (a_lki.get_object()), actions)
+                return ActionSet (game.get_attacking_player().id, "Assign %s combat damage as though it wasn't blocked" % (a_lki.get_object()), actions)
 
             else:
                 if action.text == "Yes":
@@ -1682,14 +1682,14 @@ class CombatDamageStepProcess(Process):
 
                     for b_id in b_ids:
                         _p = Action ()
-                        _p.object = game.lki(self.id2lki[b_id]).get_object()
-                        _p.text = str(_p.object)
+                        _p.object_id = game.lki(self.id2lki[b_id]).get_object().id
+                        _p.text = str(game.lki(self.id2lki[b_id]).get_object())
                         actions.append (_p)
 
-                    _as = ActionSet (game, game.get_attacking_player(), "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
+                    _as = ActionSet (game.get_attacking_player().id, "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
                     return _as
                 else:
-                    b_lki_id = self.id2lki[action.object.id]
+                    b_lki_id = self.id2lki[action.object_id]
                     self.damage.append ( (a_lki_id, b_lki_id, 1) )
 
                     self.damageToAssign -= 1
@@ -1752,14 +1752,14 @@ class CombatDamageStepProcess(Process):
 
                     for a_id in a_ids:
                         _p = Action ()
-                        _p.object = game.lki(self.id2lki[a_id]).get_object()
+                        _p.object_id = game.lki(self.id2lki[a_id]).get_object().id
                         _p.text = str(_p.object)
                         actions.append (_p)
 
-                    _as = ActionSet (game, game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
+                    _as = ActionSet (game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
                     return _as
                 else:
-                    b_lki_id = self.id2lki[action.object.id]
+                    b_lki_id = self.id2lki[action.object_id]
                     self.damage.append ( (a_lki_id, b_lki_id, 1) )
 
                     self.damageToAssign -= 1
@@ -1882,11 +1882,11 @@ def process_step_combat_damage (game, firstStrike):
 
                             for b_id in b_ids:
                                 _p = Action ()
-                                _p.object = id2lki[b_id].get_object()
+                                _p.object_id = id2lki[b_id].get_object().id
                                 _p.text = str(_p.object)
                                 actions.append (_p)
 
-                            _as = ActionSet (game, game.get_attacking_player(), "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
+                            _as = ActionSet (game.get_attacking_player().id, "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
                             a = game.input.send (_as)
 
                             b_lki = id2lki[a.object.id]
@@ -1920,11 +1920,11 @@ def process_step_combat_damage (game, firstStrike):
 
                     for a_id in a_ids:
                         _p = Action ()
-                        _p.object = id2lki[a_id].get_object()
+                        _p.object_id = id2lki[a_id].get_object().id
                         _p.text = str(_p.object)
                         actions.append (_p)
 
-                    _as = ActionSet (game, game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
+                    _as = ActionSet (game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
                     a = game.input.send (_as)
 
                     a_lki = id2lki[a.object.id]
@@ -2134,14 +2134,14 @@ class DiscardACardProcess(Process):
             actions = []
             for card in game.get_hand(player).objects:
                 _p = Action ()
-                _p.object = card
+                _p.object_id = card.id
                 _p.text = "Discard " + str(card)
                 actions.append (_p)
 
-            _as = ActionSet (game, player, "Discard a card", actions)
+            _as = ActionSet (player.id, "Discard a card", actions)
             return _as
         else:
-            game.doDiscard(player, action.object, cause)
+            game.doDiscard(player, game.obj(action.object_id), cause)
 
 # DONE
 def process_discard_a_card(game, player, cause = None):
@@ -2152,7 +2152,7 @@ def process_discard_a_card(game, player, cause = None):
     actions = []
     for card in game.get_hand(player).objects:
         _p = Action ()
-        _p.object = card
+        _p.object_id = card.id
         _p.text = "Discard " + str(card)
         actions.append (_p)
 
@@ -2187,48 +2187,19 @@ class RevealHandAndDiscardACardProcess(Process):
 
                 if self.cardSelector.contains(game, context, card):
                     _p = Action ()
-                    _p.object = card
+                    _p.object_id = card.id
                     _p.text = "Choose " + str(card)
                     actions.append (_p)
 
             evaluate(game)
 
-            return ActionSet (game, chooser, "Choose a card", actions)
+            return ActionSet (chooser.id, "Choose a card", actions)
         else:
-            game.doDiscard(player, action.object, context)
+            game.doDiscard(player, game.obj(action.object_id), context)
 
             game.revealed = self.oldrevealed
             evaluate(game)
 
-
-#DONE?
-def process_reveal_hand_and_discard_a_card(game, player, chooser, cardSelector, context):
-    if len(game.get_hand(player).objects) == 0:
-        return
-
-    oldrevealed = game.revealed
-    game.revealed = game.revealed[:]
-     
-    actions = []
-    for card in game.get_hand(player).objects:
-
-        game.revealed.append(card.get_id())
-        
-        if cardSelector.contains(game, context, card):
-            _p = Action ()
-            _p.object = card
-            _p.text = "Choose " + str(card)
-            actions.append (_p)
-
-    evaluate(game)
-
-    _as = ActionSet (game, chooser, "Choose a card", actions)
-    a = game.input.send (_as)
-
-    game.doDiscard(player, a.object, context)
-
-    game.revealed = oldrevealed
-    evaluate(game)
 
 class RevealCardsProcess(Process):
     def __init__ (self, player, cards):
@@ -2258,10 +2229,10 @@ class RevealCardsProcess(Process):
             p = game.obj(self.p_id)
 
             if action is None:
-                _ok = PassAction(p)
+                _ok = PassAction(p.id)
                 _ok.text = "OK"
 
-                return ActionSet(game, p, "Player %s reveals cards" % player.name, [_ok])
+                return ActionSet(p.id, "Player %s reveals cards" % player.name, [_ok])
             else:
                 self.p_id = game.get_next_player(p).id
                 if self.p_id == self.player_id:
@@ -2312,10 +2283,10 @@ class LookAtCardsProcess(Process):
 
             evaluate(game)
             
-            _ok = PassAction(player)
+            _ok = PassAction(player.id)
             _ok.text = "OK" 
 
-            return ActionSet(game, player, "Look at cards", [_ok])
+            return ActionSet(player.id, "Look at cards", [_ok])
 
         else:
             game.looked_at = self.oldlooked_at
@@ -2510,7 +2481,7 @@ def process_select_selector(game, player, source, selector, text, optional=False
 
     for obj in selector.all(game, source):
         _p = Action()
-        _p.object = obj
+        _p.object_id = obj.id
         _p.text = str(obj)
         actions.append(_p)
 
@@ -2540,7 +2511,7 @@ class SelectSourceOfDamageProcess(Process):
 
         if action is None:
             actions = []
-            _pass = PassAction(player)
+            _pass = PassAction(player.id)
             _pass.text = "Cancel"
 
             sources = set([obj for obj in self.selector.all(game, SELF)])
@@ -2572,21 +2543,20 @@ class SelectSourceOfDamageProcess(Process):
 
             for obj in valid_sources:
                 _p = Action()
-                _p.object = obj
+                _p.object_id = obj.id
                 _p.text = str(obj)
                 actions.append(_p)
 
             if len(actions) == 0 or self.optional:
                 actions = [_pass] + actions
 
-            return ActionSet(game, player, self.text, actions)
+            return ActionSet(player.id, self.text, actions)
 
         else:
-
             if isinstance(action, PassAction):
                 game.process_returns_push(None)
             else:
-                game.process_returns_push(action.object.id)
+                game.process_returns_push(action.object_id)
 
 
 def process_select_source_of_damage(game, player, SELF, selector, text, optional=False):
@@ -2622,7 +2592,7 @@ def process_select_source_of_damage(game, player, SELF, selector, text, optional
 
     for obj in valid_sources:
         _p = Action()
-        _p.object = obj
+        _p.object_id = obj.id
         _p.text = str(obj)
         actions.append(_p)
 
@@ -2667,27 +2637,27 @@ class SelectTargetProcess(Process):
 
             actions = []
 
-            _pass = PassAction (player)
+            _pass = PassAction (player.id)
             _pass.text = "Cancel"
 
             for obj in self.selector.all(game, source):
                 if _is_valid_target(game, source, obj):
                     _p = Action ()
-                    _p.object = obj
+                    _p.object_id = obj.id
                     _p.text = "Target " + str(obj)
                     actions.append (_p)
 
             if len(actions) == 0 or self.optional:
                 actions = [_pass] + actions
 
-            _as = ActionSet (game, player, "Choose a target for " + str(source), actions)
+            _as = ActionSet (player.id, "Choose a target for " + str(source), actions)
             return _as
 
         elif self.state == 1:
             if isinstance(action, PassAction):
                 game.process_returns_push(None)
             else:
-                game.process_returns_push(action.object)
+                game.process_returns_push(action.object_id)
 
 
 class SelectTargetsProcess(Process):
@@ -2710,16 +2680,16 @@ class SelectTargetsProcess(Process):
             if action is None:
                 actions = []
 
-                _pass = PassAction (player)
+                _pass = PassAction (player.id)
                 _pass.text = "Cancel"
 
-                _enough = PassAction(player)
+                _enough = PassAction(player.id)
                 _enough.text = "Enough targets"
 
                 for obj in self.selector.all(game, source):
                     if (obj.id not in self.targets or self.multi) and _is_valid_target(game, source, obj):
                         _p = Action ()
-                        _p.object = obj
+                        _p.object_id = obj.id
                         _p.text = "Target " + str(obj)
                         actions.append (_p)
 
@@ -2735,7 +2705,7 @@ class SelectTargetsProcess(Process):
                 else:
                     query = ("Choose the %dth target for " % self.i) + str(source)
 
-                return ActionSet (game, player, query, actions)
+                return ActionSet (player.id, query, actions)
 
             else:
                 if action.text == "Cancel":
@@ -2743,7 +2713,7 @@ class SelectTargetsProcess(Process):
                 elif action.text == "Enough targets":
                     game.process_returns_push(self.targets)
                 else:
-                    self.targets.append(action.object.id)
+                    self.targets.append(action.object_id)
                     self.i += 1
                     game.process_push(self)
 
@@ -2768,7 +2738,7 @@ def process_select_targets(game, player, source, selector, n, optional=False):
         for obj in selector.all(game, source):
             if obj not in targets and _is_valid_target(game, source, obj):
                 _p = Action ()
-                _p.object = obj
+                _p.object_id = obj.id
                 _p.text = "Target " + str(obj)
                 actions.append (_p)
 
@@ -2894,7 +2864,7 @@ class AskXProcess(Process):
         player = game.obj(self.player_id)
         obj = game.obj(self.obj_id)
         if action is None:
-            return QueryNumber(game, player, "Choose X")
+            return QueryNumber(player.id, "Choose X")
         else:
             obj.x = action
             # convert number to mana string

@@ -204,11 +204,13 @@ class SingleTargetOneShotEffectSelectTargetsProcess(SandwichProcess):
         game.process_push(SelectTargetProcess(player, obj, self.effect.targetSelector, self.effect.optional))
 
     def main(self, game):
-        target = game.process_returns_pop()
-        if target == None:
+        target_id = game.process_returns_pop()
+        if target_id == None:
             game.process_returns_push(False)
             # TODO: return game state
             return
+
+        target = game.obj(target_id)
 
         obj = game.obj(self.obj_id)
         obj.targets["target"] = game.create_lki(target)
@@ -864,7 +866,7 @@ class ChooseColorTargetXDiscardsCardsOfThatColorDoModalProcess:
                 a.text = name
                 actions.append(a)
 
-            return ActionSet (game, player, ("Choose a color"), actions)
+            return ActionSet (player.id, ("Choose a color"), actions)
         else:
             obj.modal = action.text.lower()
             game.process_returns_push(True)
@@ -900,20 +902,21 @@ class XMayPutYFromHandIntoPlayResolveProcess:
             for card in game.get_hand(player).objects:
                 if self.selector.contains(game, obj, card):
                     _p = Action ()
-                    _p.object = card
+                    _p.object_id = card.id
                     _p.text = "Put " + str(card) + " into play"
                     actions.append (_p)
 
             if len(actions) > 0:
-                _pass = PassAction (player)
+                _pass = PassAction (player.id)
                 _pass.text = "Pass"
 
                 actions = [_pass] + actions
 
-                return ActionSet (game, player, "Choose a card to put into play", actions)
+                return ActionSet (player.id, "Choose a card to put into play", actions)
         else:
-            action.object.tapped = self.tapped
-            game.doZoneTransfer (action.object, game.get_in_play_zone(), obj)
+            a_obj = game.obj(action.object_id)
+            a_obj.tapped = self.tapped
+            game.doZoneTransfer (a_obj, game.get_in_play_zone(), obj)
             
 
 class XMayPutYFromHandIntoPlay(OneShotEffect):
@@ -972,7 +975,7 @@ class YouMayPayCostIfYouDoResolveProcess:
                 _notpay = Action()
                 _notpay.text = "No"
 
-                return ActionSet (game, player, ("Pay %s to %s?" % (", ".join(map(str, self.cost)), self.effectText)), [_pay, _notpay])
+                return ActionSet (player.id, ("Pay %s to %s?" % (", ".join(map(str, self.cost)), self.effectText)), [_pay, _notpay])
 
             else:
                 if action.text == "Yes":
@@ -1232,19 +1235,19 @@ class SearchLibraryForXProcess:
                 
                 if self.selector.contains(game, obj, card):
                     _p = Action ()
-                    _p.object = card
+                    _p.object_id = card.id
                     _p.text = self.selectCardText % str(card)
                     actions.append (_p)
 
             if len(actions) > 0:
-                _pass = PassAction (player)
+                _pass = PassAction (player.id)
                 _pass.text = "Pass"
 
                 actions = [_pass] + actions
 
                 evaluate(game)
 
-                return ActionSet (game, player, self.actionSetText, actions)
+                return ActionSet (player.id, self.actionSetText, actions)
                
             else:
                 game.looked_at = self.old_looked_at
@@ -1257,7 +1260,7 @@ class SearchLibraryForXProcess:
             if isinstance(action, PassAction):
                 game.process_returns_push(None)
             else:
-                game.process_returns_push(action.object.id)
+                game.process_returns_push(action.object_id)
            
 class PutCardIntoPlayProcess:
     def __init__ (self, tapped, cause):
@@ -1417,7 +1420,7 @@ class AbstractDoXUnlessYouCostProcess:
                 _notpay = Action()
                 _notpay.text = self.alternative_text
 
-                return ActionSet (game, controller, "Choose", [_pay, _notpay])
+                return ActionSet (controller.id, "Choose", [_pay, _notpay])
             else:
                 if action.text == self.alternative_text:
                     self.state = 2
@@ -1497,15 +1500,15 @@ class SacrificeYProcess:
             for o in self.selector.all(game, obj):
                 if o.get_controller_id() == player.get_id():
                     a = Action()
-                    a.object = o
+                    a.object_id = o.id
                     a.text = "Sacrifice %s" % str(o)
                     _as.append (a)
 
             if len(_as) > 0:
-                return ActionSet (game, player, "Sacrifice %s" % self.selector, _as)
+                return ActionSet (player.id, "Sacrifice %s" % self.selector, _as)
 
         else:
-            game.doSacrifice(action.object, obj)
+            game.doSacrifice(game.obj(action.object_id), obj)
 
 
 class XSacrificeY(OneShotEffect):
@@ -1542,7 +1545,7 @@ class ChooseEffectSelectProcess:
             _option2 = Action()
             _option2.text = str(self.effect2text)
 
-            return ActionSet (game, player, "Choose", [_option1, _option2])
+            return ActionSet (player.id, "Choose", [_option1, _option2])
 
         else:
             if action.text == str(self.effect1text):
@@ -1636,16 +1639,16 @@ class AbstractPutCardsIntoLibraryProcess:
                     card = game.obj(card_id)
                     _option = Action()
                     _option.text = str(card)
-                    _option.object = card
+                    _option.object_id = card.id
                     options.append (_option)
 
                     game.looked_at[player.id].append(card.get_id())
         
                 evaluate(game)
 
-                return ActionSet (game, player, self.message, options)
+                return ActionSet (player.id, self.message, options)
             else:
-                card = action.object
+                card = game.obj(action.object_id)
                 self.card_ids.remove (card.id)
                 
                 self.putSelectedCard(game, library, card)
@@ -1899,17 +1902,16 @@ class ReturnTargetXToPlay(SingleTargetOneShotEffect):
         return "ReturnTargetXToPlay(%s)" % self.targetSelector
 
 class YouMayTapOrUntapTargetXResolveProcess:
-    def __init__ (self, player_id, obj, target):
+    def __init__ (self, player_id, obj, target_lki):
         self.player_id = player_id
         self.obj_id = obj.id
-        # TODO: LKI
-        self.target = target
+        self.target_lki = target_lki
 
     def next(self, game, action):
         player = game.obj(self.player_id)
         obj = game.obj(self.obj_id)
         if action is None:
-            _pass = PassAction(player)
+            _pass = PassAction(player.id)
 
             _tap = Action()
             _tap.text = "Tap"
@@ -1917,13 +1919,13 @@ class YouMayTapOrUntapTargetXResolveProcess:
             _untap = Action()
             _untap.text = "Untap"
 
-            return ActionSet (game, player, "You may tap or untap target", [_pass, _tap, _untap])
+            return ActionSet (player.id, "You may tap or untap target", [_pass, _tap, _untap])
         else:
             game.process_returns_push(True)
             if action.text == "Tap":
-                game.doTap(self.target)
+                game.doTap(game.lki(self.target_lki))
             elif action.text == "Untap":
-                game.doUntap(self.target)
+                game.doUntap(game.lki(self.target_lki))
 
 
 class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
@@ -1932,7 +1934,7 @@ class YouMayTapOrUntapTargetX(SingleTargetOneShotEffect):
 
     def doResolve(self, game, obj, target):
         controller_id = obj.get_controller_id()
-        game.process_push(YouMayTapOrUntapTargetXResolveProcess(controller_id, obj, target))
+        game.process_push(YouMayTapOrUntapTargetXResolveProcess(controller_id, obj, target.get_lki_id()))
 
     def __str__ (self):
         return "YouMayTapOrUntapTargetX(%s)" % (self.targetSelector)
@@ -1978,21 +1980,21 @@ class UntapUpToNXProcess:
         if self.i < self.number:
             if action is None:
                 actions = []
-                _pass = PassAction(player)
+                _pass = PassAction(player.id)
                 actions.append (_pass)
                 for o in self.selector.all(game, obj):
                     if o.tapped:
                         a = Action()
                         a.text = "Untap %s" % (str(o))
-                        a.object = o
+                        a.object_id = o.id
                         actions.append (a)
 
-                return ActionSet(game, player, "Untap up to %d %s" % (self.number - self.i, str(self.selector)), actions)
+                return ActionSet(player.id, "Untap up to %d %s" % (self.number - self.i, str(self.selector)), actions)
             else:
                 if not isinstance(action, PassAction):
                     self.i += 1
                     game.process_push(self)
-                    game.doUntap(action.object)
+                    game.doUntap(game.obj(action.object_id))
 
 class UntapUpToNX(OneShotEffect):
     def __init__ (self, number, selector):
@@ -2023,7 +2025,7 @@ class PlayerMayDrawACardResolveProcess(Process):
             _no = Action()
             _no.text = "No"
 
-            _as = ActionSet (game, player, ("Draw a card?"), [_yes, _no])
+            _as = ActionSet (player.id, ("Draw a card?"), [_yes, _no])
             return _as
         else:
             game.process_returns_push(True)
@@ -2272,7 +2274,7 @@ class XAddNManaOfAnyColorToYourManapoolResolveProcess(Process):
                 a.text = name
                 actions.append(a)
 
-            _as = ActionSet (game, player, ("Choose a color"), actions)
+            _as = ActionSet (player.id, ("Choose a color"), actions)
             return _as
         else:
             color = colors[names.index(action.text)]
@@ -2306,7 +2308,7 @@ class XAddOneOfTheseManaToYourManaPoolProcess:
                 a.text = o
                 actions.append(a)
 
-            return ActionSet (game, player, ("Choose mana"), actions)
+            return ActionSet (player.id, ("Choose mana"), actions)
         else:
             mana = action.text
             player.manapool += mana
@@ -2434,7 +2436,7 @@ class TargetXBecomesTheColorOfYourChoiceUntilEndOfTurnProcess:
                 a.text = name
                 actions.append(a)
 
-            return ActionSet (game, player, ("Choose a color"), actions)
+            return ActionSet (player.id, ("Choose a color"), actions)
         else:
             color = action.text.lower()
             game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(self.target_lki_id), color)))
@@ -2665,7 +2667,7 @@ class ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOn
                     a.text = name
                     actions.append(a)
 
-                return ActionSet (game, player, ("Choose a color or a basic land type"), actions)
+                return ActionSet (player.id, ("Choose a color or a basic land type"), actions)
             else:
                 self.what = action.text.lower()
                 if self.what in colors:
@@ -2680,7 +2682,7 @@ class ChangeTheTextOfTargetXByReplacingAllInstancesOfOneColorWordWithAnotherOrOn
                         a.text = name
                         actions.append(a)
 
-                return ActionSet (game, player, ("Change '%s' to..." % self.what), actions)
+                return ActionSet (player.id, ("Change '%s' to..." % self.what), actions)
         else:
             to = action.text.lower()
             obj.modal = (self.what, to)
@@ -2732,7 +2734,7 @@ class AllDamageThatWouldBeDealtToXByYIsDealtToZInstead(ContinuousEffect):
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector) or isinstance(self.z_selector, SelfSelector)
 
-    def onDamageReplacement(self, game, SELF_id, dr):
+    def onDamageReplacement(self, SELF_id, game, dr):
         SELF = game.obj(SELF_id)
 
         list = []
@@ -3152,14 +3154,14 @@ class ExileAllXStartingWithYouEachPlayerChoosesOneOfTheExiledCardsAndPutsItOntoT
                     for card_id in self.card_ids:
                         card = game.obj(card_id)
                         _p = Action ()
-                        _p.object = card
+                        _p.object_id = card.id
                         _p.text = "Choose " + str(card)
                         options.append (_p)
 
-                    return ActionSet (game, player, "Choose a card to return to the battlefield.", options)
+                    return ActionSet (player.id, "Choose a card to return to the battlefield.", options)
 
                 else:
-                    card = action.object
+                    card = game.obj(action.object_id)
                     self.card_id = card.id
 
                     self.state = 2
@@ -3205,7 +3207,7 @@ class TargetPlayerNamesCardThenRevealsTopCardOfLibraryIfItsTheNamedCardThePlayer
 
         if self.state == 0:
             self.state = 1
-            return QueryString(game, player, "Name a Card")
+            return QueryString(player.id, "Name a Card")
         elif self.state == 1:
             self.title = action.lower().strip()
 
@@ -3283,7 +3285,7 @@ class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfA
                     _notpay = Action()
                     _notpay.text = "No"
 
-                    return ActionSet (game, next_player, ("Pay %s to put %s into its owner's graveyard?" % (", ".join(map(str, self.cost)), top_card.get_state().title)), [_pay, _notpay])
+                    return ActionSet (next_player.id, ("Pay %s to put %s into its owner's graveyard?" % (", ".join(map(str, self.cost)), top_card.get_state().title)), [_pay, _notpay])
                 else:
                     if action.text == "Yes":
                         self.state = 1
@@ -3320,7 +3322,7 @@ class IfAPlayerWouldDrawACardHeOrSheRevealsItInsteadThenAnyOtherPlayerMayPayCIfA
     def apply(self, game, obj):
         game.interceptable_draw.add(partial(self.interceptDraw, obj.id))
 
-    def interceptDraw(self, SELF_id, interceptable, player):
+    def interceptDraw(self, SELF_id, interceptable, game, player):
         SELF = game.obj(SELF_id)
         from process import RevealCardsProcess
 
