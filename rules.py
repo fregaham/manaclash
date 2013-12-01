@@ -65,7 +65,7 @@ class BasicPermanentRules(ObjectRules):
         return [PlaySpell()] + self.abilities
 
     def resolve(self, game, obj):
-        print("resolving permanenet %s" % obj.state.title)
+#        print("resolving permanenet %s" % obj.state.title)
         game.onResolve(obj)
         game.doZoneTransfer(obj, game.get_in_play_zone())
         game.process_returns_push(True)

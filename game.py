@@ -699,6 +699,7 @@ class Game:
 
 
     def copy(self):
+        from effects import ContinuousEffect
         g = Game(self.output)
         
         for key, obj in self.objects.iteritems():
@@ -707,6 +708,8 @@ class Game:
             obj_copy = obj.copy()
             g.objects[key] = obj_copy
 
+            assert obj != obj_copy
+
             assert g.objects[key] is not None
 
         g.obj_max_id = self.obj_max_id
@@ -714,10 +717,13 @@ class Game:
             zone_clone = g.objects[zone.id]
             g.zones.append (zone_clone)
 
-            orig_objects = zone_clone.objects
             zone_clone.objects = []
-            for obj in orig_objects:
+            for obj in zone.objects:
                 zone_clone.objects.append ( g.objects[obj.id] )
+
+            assert zone != zone_clone
+            assert id(zone.objects) != id(zone_clone.objects)
+            assert len(zone.objects) == len(zone_clone.objects)
 
         # LKIs are special, as they hold reference to the current game, we replace it here:
         for key, lki in self.lkis.iteritems():
@@ -744,7 +750,7 @@ class Game:
         g.attacking_player_id = self.attacking_player_id
 
         for effect in self.triggered_abilities:
-            g.append (g.objects[effect.id])
+            g.triggered_abilities.append (g.objects[effect.id])
 
         g.declared_attackers = self.declared_attackers.copy()
         g.declared_blockers = self.declared_blockers.copy()
@@ -761,12 +767,12 @@ class Game:
             assert isinstance(effect, ContinuousEffect)
             effect_copy = copy.copy(effect)
             effect_map[effect] = effect_copy
-            g.until_end_of_turn_effects ( (g.obj(obj.id), effect_copy ) )
+            g.until_end_of_turn_effects.append ( (g.obj(obj.id), effect_copy ) )
 
         for obj, lki, effect in self.indefinite_effects:
             assert isinstance(effect, ContinuousEffect)
             effect_copy = copy.copy(effect)
-            g.indefinite_effects ( (g.obj(obj.id), g.lki(lki.get_lki_id()), effect_copy ) )
+            g.indefinite_effects.append ( (g.obj(obj.id), g.lki(lki.get_lki_id()), effect_copy ) )
 
         for e in self.end_of_combat_triggers:
             g.end_of_combat_triggers.append (g.obj(e.id))
@@ -795,6 +801,7 @@ class Game:
         g.additional_combat_phase_followed_by_an_additional_main_phase = self.additional_combat_phase_followed_by_an_additional_main_phase
 
         g.interceptable_draw = copy.copy(self.interceptable_draw)
+        g.interceptable_draw.original = g._drawCard
 
         for process in self.process_stack:
             process_copy = copy.copy(process)

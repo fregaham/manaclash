@@ -914,9 +914,10 @@ class XMayPutYFromHandIntoPlayResolveProcess:
 
                 return ActionSet (player.id, "Choose a card to put into play", actions)
         else:
-            a_obj = game.obj(action.object_id)
-            a_obj.tapped = self.tapped
-            game.doZoneTransfer (a_obj, game.get_in_play_zone(), obj)
+            if action.object_id is not None:
+                a_obj = game.obj(action.object_id)
+                a_obj.tapped = self.tapped
+                game.doZoneTransfer (a_obj, game.get_in_play_zone(), obj)
             
 
 class XMayPutYFromHandIntoPlay(OneShotEffect):

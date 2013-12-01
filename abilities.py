@@ -527,14 +527,15 @@ class WhenXAttacksDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("attacks", partial(self.onAttacks, obj.id))]
 
-    def onAttacks(self, SELF_id, game, attacker):
+    def onAttacks(self, SELF_id, game, attacker_lki):
+        assert isinstance(game.lki(attacker_lki), LastKnownInformation)
         SELF = game.obj(SELF_id)
 
         from process import TriggerEffectProcess
-        if self.selector.contains(game, SELF, attacker):
+        if self.selector.contains_lki(game, SELF, attacker_lki):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = game.create_lki(attacker)
+                slots[slot] = attacker_lki
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 

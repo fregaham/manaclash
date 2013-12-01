@@ -165,7 +165,10 @@ class Zone(Object):
         Object._copy(self, src)
         self.type = src.type
         self.player_id = src.player_id
-        self.objects = src.objects[:]
+
+        self.objects = []
+        for obj in src.objects:
+            self.objects.append (obj)
 
 class Player (Object):
     def __init__ (self, name):
@@ -221,7 +224,7 @@ class DamageAssignment (Object):
 
     def _copy(self, src):
         Object._copy(self, src)
-        self.damage_assignment_list = src.damage_assignment_list
+        self.damage_assignment_list = src.damage_assignment_list[:]
         self.combat = src.combat
 
 class EffectObject(Object):

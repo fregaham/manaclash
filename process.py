@@ -452,6 +452,21 @@ class PayCostProcess(Process):
             if game.process_returns_pop():
                 self.notpaid.remove(self.cost)
             
+    def __copy__(self):
+        class Idable:
+            def __init__(self, id):
+                self.id = id
+
+        pid = Idable(self.player_id)
+        oid = Idable(self.obj_id)
+        eid = Idable(self.effect_id)
+
+        ret = PayCostProcess(pid, oid, eid, self.notpaid)
+        ret.cost = self.cost
+        ret.state = self.state
+
+        return ret
+
         
 # DONE
 def process_pay_cost (game, player, obj, effect, costs):
@@ -777,7 +792,7 @@ class PostPhaseProcess(Process):
             converted_mana = mana_converted_cost(player.manapool)
             if converted_mana > 0:
                 howmuch = converted_mana
-                print("manaburn %d" % (howmuch))
+                # print("manaburn %d" % (howmuch))
                 player.manapool = ""
                 game.doLoseLife(player, howmuch)
 
