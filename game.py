@@ -131,6 +131,9 @@ class Game:
         # game has ended
         self.end = False
 
+        self.winners = set()
+        self.losers = set()
+
 
     def reset_interceptables(self):
         # TODO: have single method that also resets all the effects and other replacements stuff at the beginning of the evaluate process
@@ -390,9 +393,12 @@ class Game:
        
     def doLoseGame(self, player):
         # TODO: multiplayer
+        self.losers.add(player.get_id())
         for p in self.players:
             if p.id != player.id:
-                self.doWinGame(p)
+                self.winners.add(p.id)
+
+        self.end = True
 
     def doEndGame(self):
         self.output.gameEnds(None)
@@ -401,6 +407,12 @@ class Game:
     def doWinGame(self, player):
         self.output.gameEnds(player.get_object())
         self.end = True
+        self.winners.add (player.get_id())
+
+        # TODO: multiplayer
+        for p in self.players:
+            if p.id != player.id:
+                self.losers.add(p.id)
 
     def get_active_player(self):
         return self.objects[self.active_player_id]
@@ -625,8 +637,6 @@ class Game:
 
     def delete(self, obj):
 
-        print "!!! deleting " + `obj`
-
         if obj.zone_id is not None:
             self.objects[obj.zone_id].objects.remove(obj)
         obj.zone_id = None
@@ -822,6 +832,9 @@ class Game:
 
         # game has ended
         g.end = self.end
+
+        g.winners = self.winners.copy()
+        g.losers = self.losers.copy()
 
         return g
 

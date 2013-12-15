@@ -110,18 +110,28 @@ if __name__ == "__main__":
 
     game = g
 
+    previous_step = None
+
     while True:
 
         player = game.obj(_as.player_id)
 
-        print ("player %s: %s" % (player.name, _as.text))
-        print ("turn %s, phase: %s, step: %s" % (game.get_active_player().name, game.current_phase, game.current_step))
-        print ("battlefield: \n%s" % ("\n".join(map(lambda x:str(x), game.get_in_play_zone().objects))))
-        print ("stack: %s" % (" ".join(map(lambda x:"["+str(x)+"]",game.get_stack_zone().objects))))
-        print ("library: %d graveyard: %d" % (len(game.get_library(player).objects), len(game.get_graveyard(player).objects) ))
+        step = game.get_active_player().name + game.current_phase + game.current_step
+        if previous_step != step:
+            #print ("player %s: %s" % (player.name, _as.text))
+            print
+            print ("turn %d %s, phase: %s, step: %s" % (game.turn_number, game.get_active_player().name, game.current_phase, game.current_step))
+            print ("battlefield: \n%s" % ("\n".join(map(lambda x:str(x), game.get_in_play_zone().objects))))
+            #print ("stack: %s" % (" ".join(map(lambda x:"["+str(x)+"]",game.get_stack_zone().objects))))
+            #print ("library: %d graveyard: %d" % (len(game.get_library(player).objects), len(game.get_graveyard(player).objects) ))
 #        print ("hand: %s" % (" ".join(map(lambda x:"["+str(x)+"]",game.get_hand(player).objects))))
-        print ("manapool: %s" % (player.manapool))
-        print ("life: %d" % (player.life))
+        #print ("manapool: %s" % (player.manapool))
+        #print ("life: %d" % (player.life))
+
+            for player in game.players:
+                print ("%s life: %d, hand: %s" % (player.name, player.life, " ".join(map(lambda x:"["+str(x.get_state().title)+"]",game.get_hand(player).objects))))
+
+            previous_step = step
 
         if game.end:
             break
@@ -149,7 +159,7 @@ if __name__ == "__main__":
             hand1 = len(game.get_hand(game.obj(p1.id)).objects)
             hand2 = len(game.get_hand(game.obj(p2.id)).objects)
 
-            action = ai.choose_action(game, _as, 7)
+            action = ai.choose_action(game, _as, 7, 1000)
 
             hand1_ = len(game.get_hand(game.obj(p1.id)).objects)
             hand2_ = len(game.get_hand(game.obj(p2.id)).objects)
@@ -157,9 +167,13 @@ if __name__ == "__main__":
             assert hand1 == hand1_
             assert hand2 == hand2_
 
-        print 
-        print action.text if isinstance(action, Action) else `action`
-        print
+        if action is None and isinstance(_as, ActionSet):
+            # ai failed to choose
+            action = _as.actions[0]
+
+        #print 
+        print "\t\t" + (action.text if isinstance(action, Action) else `action`)
+        #print
 
         _as = game.next(action)
 

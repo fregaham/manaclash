@@ -1043,6 +1043,14 @@ class DeclareAttackersStepProcess(Process):
         
             game.process_push(PostStepProcess())
 
+    def __copy__(self):
+        ret = DeclareAttackersStepProcess()
+        ret.state = self.state
+        ret.valid = self.valid
+        ret.attackers = self.attackers.copy()
+
+        return ret
+
 
 def process_step_declare_attackers (game):
     game.current_step = "declare attackers"
@@ -1408,7 +1416,15 @@ class DeclareBlockersStepProcess(Process):
                 game.declared_attackers.remove(attacker_lki_id)
 
             game.process_push(PostStepProcess())
-   
+
+    def __copy__(self):
+        ret = DeclareBlockersStepProcess()
+        ret.state = self.state
+        ret.blocker_id = self.blocker_id
+        ret.blockers_map = self.blockers_map.copy()
+
+        return ret
+
 # DONE ?
 def process_step_declare_blockers (game):
     game.current_step = "declare blockers"
@@ -1806,6 +1822,22 @@ class CombatDamageStepProcess(Process):
             game.process_push(PostStepProcess())
             game.process_push(PrioritySuccessionProcess(game.get_active_player()))
   
+    def __copy__(self):
+        ret = CombatDamageStepProcess(self.firstStrike)
+        ret.state = self.state
+
+        ret.a_id2b_ids = self.a_id2b_ids[:]
+        ret.b_id2a_ids = self.b_id2a_ids[:]
+
+        ret.id2lki = self.id2lki.copy()
+
+        ret.i = self.i
+
+        ret.damage = self.damage[:]
+        ret.damageToAssign = self.damageToAssign
+
+        return ret
+
 
 # DONE?
 def process_step_combat_damage (game, firstStrike):

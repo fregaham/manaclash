@@ -17,7 +17,7 @@
 #
 # 
 
-from actions import ActionSet, PassAction
+from actions import Action, ActionSet, PassAction, QueryNumber
 
 from mcio import NullOutput
 
@@ -35,6 +35,9 @@ class TreeNode:
 
     def expand(self):
 
+        if self.game.end:
+            return
+
         if isinstance(self.action, PassAction) and self.action.text.startswith("Cancel"):
             # ignore cancel action, consider being a dead-end
             return
@@ -44,19 +47,32 @@ class TreeNode:
 
             texts = set()
 
+            filtered_actions = []
+
+            mana_texts = set(["[G]","[W]","[B]","[R]","[U]"])
+
             for action in self.actions.actions:
 
                 # optimization, ignore options that look the same
                 if action.text in texts:
                     continue
 
+                if action.text in mana_texts and not (self.actions.text == "Play Mana Abilities" or self.actions.text.startswith("Pay")):
+                    continue
+
+                filtered_actions.append (action)
+                texts.add(action.text)
+
+            for action in filtered_actions:
+
                 game_next = self.game.copy()
                 game_next.output = NullOutput()
                 actions_next = game_next.next(action)
 
-                self.nodes[action] = TreeNode(game_next, self.actions.player_id, action, actions_next, self.depth + 1)
+                # depth of a non-forking (linear) action is the same as parent
+                next_depth = self.depth if len(filtered_actions) == 1 else self.depth + 1
 
-                texts.add(action.text)
+                self.nodes[action] = TreeNode(game_next, self.actions.player_id, action, actions_next, next_depth)
 
         elif isinstance(self.actions, QueryNumber):
             # 0 to 10 should be enough for most situations
@@ -74,7 +90,11 @@ class TreeNode:
         best_action = None
         for action, node in self.nodes.iteritems():
 
-            print "action: %s score: %f" % (action.text, node._score)
+            if isinstance(action, Action):
+                print "\taction: %s score: %f leaves: %d" % (action.text, node._score, node.leaves_count())
+            else:
+                print "\taction: %s score: %f leaves: %d" % (`action`, node._score, node.leaves_count())
+
             if node._score > best_score:
                 best_score = node._score
                 best_action = action
@@ -117,16 +137,19 @@ class TreeNode:
             return bestValue
         
 
-def expand_to_depth(root, depth):
+def expand_to_depth(root, depth, expansions_limit = -1):
     stack = [root]
 
-    while len(stack) > 0:
+    expansions = 0
+
+    while len(stack) > 0 and (expansions < expansions_limit or expansions_limit < 0):
         node = stack.pop()
         if node.depth < depth:
             if node.isLeaf():
                 node.expand()
+                expansions += 1
             for key, nextnode in node.nodes.iteritems():
-                stack.append (nextnode)
+                stack.insert (0, nextnode)
 
 
 def default_scoring_fn(node, maximizing_player_id):
@@ -138,6 +161,10 @@ def default_scoring_fn(node, maximizing_player_id):
     hand_mult = 1.0 / 8
 
     alpha = 1 if node.player_id == maximizing_player_id else -1
+
+    if node.game.end:
+        if maximizing_player_id in node.game.winners:
+            return float("inf")
 
     if isinstance(node.action, PassAction) and node.action.text.startswith("Cancel"):
         return float('-inf') if node.player_id == maximizing_player_id else float('inf')
@@ -163,11 +190,11 @@ def default_scoring_fn(node, maximizing_player_id):
 
     return score
 
-def choose_action(game, actions, depth):
+def choose_action(game, actions, depth, max_expansions = -1):
     player_id = actions.player_id
 
     root = TreeNode(game, None, None, actions, 0)
-    expand_to_depth(root, depth)
+    expand_to_depth(root, depth, max_expansions)
 
     root.score(default_scoring_fn, player_id)
 
