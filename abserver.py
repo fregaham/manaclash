@@ -178,10 +178,10 @@ def game_state(game):
 
     return state
    
-def ab_game_state(_as):
+def ab_game_state(game, _as):
     # send the game state
-    state = game_state(_as.game)
-    state["player"] = player_to_role(_as.game, _as.player)
+    state = game_state(game)
+    state["player"] = player_to_role(game, game.obj(_as.player_id))
     state["text"] = _as.text
 
     actions = None
@@ -191,18 +191,18 @@ def ab_game_state(_as):
         for a in _as.actions:
             am = {}
             am["text"] = a.text
-            if a.object is not None:
+            if a.object_id is not None:
                 # We don't treat players as objects on the client side
-                if isinstance(a.object, Player):
-                    am["player_object"] = player_to_role(_as.game, a.object) 
+                if isinstance(game.obj(a.object_id), Player):
+                    am["player_object"] = player_to_role(game, game.obj(a.object_id))
                 else:
-                    am["object"] = a.object.id
+                    am["object"] = a.object_id
             if a.ability is not None:
-                am["ability"] = a.ability.get_text(_as.game, a.object)
+                am["ability"] = a.ability.get_text(game, game.obj(a.object_id))
                 if isinstance(a.ability, BasicManaAbility):
                     am["manaability"] = True
-            if a.player is not None:
-                am["player"] = player_to_role(_as.game, a.player)
+            if a.player_id is not None:
+                am["player"] = player_to_role(game, game.obj(a.player_id))
             actions.append(am)
 
     elif isinstance(_as, QueryNumber):
@@ -244,7 +244,7 @@ def ab_game_action(ab_game, client_player, client_message):
   
         ab_game.current_actions = _as
 
-        ab_game.current_state = ab_game_state(ab_game.current_actions)
+        ab_game.current_state = ab_game_state(game, ab_game.current_actions)
 
         # Get the current ab_player by the role
         ab_game.current_player = None
@@ -442,7 +442,7 @@ class ABGame:
 
         self.current_actions = self.game.next(None)
 
-        self.current_state = ab_game_state(self.current_actions)
+        self.current_state = ab_game_state(self.game, self.current_actions)
 
         # Get the current ab_player by the role
         self.current_player = None
