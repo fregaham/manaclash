@@ -2767,6 +2767,20 @@ class SelectTargetsProcess(Process):
         else:
             game.process_returns_push(self.targets)
 
+    def __copy__(self):
+        class Idable:
+            def __init__(self, id):
+                self.id = id
+
+        pid = Idable(self.player_id)
+        sid = Idable(self.source_id)
+
+        ret = SelectTargetsProcess(pid, sid, self.selector, self.n, self.optional, self.multi)
+        ret.targets = self.targets[:]
+        ret.i = self.i
+
+        return ret
+
 # DONE?
 def process_select_targets(game, player, source, selector, n, optional=False):
 

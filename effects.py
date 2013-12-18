@@ -110,6 +110,7 @@ class PlayerMayGainLifeEffect(OneShotEffect):
     def __init__ (self, playerSelector, count):
         self.selector = playerSelector
         self.count = count
+
     def resolve(self, game, obj):
         from process import process_ask_option
         n = self.count.evaluate(game, obj)
@@ -1619,9 +1620,9 @@ class TargetXLoseLife(SingleTargetOneShotEffect):
         return "TargetXLoseLife(%s, %s)" % (self.targetSelector, str(self.count))
 
 class AbstractPutCardsIntoLibraryProcess:
-    def __init__ (self, player, card_ids):
-        self.player_id = player.id
-        self.card_ids = card_ids
+    def __init__ (self, player_id, card_ids):
+        self.player_id = player_id
+        self.card_ids = card_ids[:]
         self.message = None
 
     def next(self, game, action):
@@ -1664,9 +1665,17 @@ class AbstractPutCardsIntoLibraryProcess:
     def putSelectedCard(self, library, card):
         pass
 
+    def _copy(self, src):
+        self.player_id = src.player_id
+        self.card_ids = src.card_ids[:]
+        self.mesage = src.message
+
+    def __copy__ (self):
+        raise Exception("not implemented")
+
 class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(AbstractPutCardsIntoLibraryProcess):
-    def __init__ (self, player, card_ids):
-        AbstractPutCardsIntoLibraryProcess.__init__ (self, player, card_ids)
+    def __init__ (self, player_id, card_ids):
+        AbstractPutCardsIntoLibraryProcess.__init__ (self, player_id, card_ids)
         self.message = "Put card on top of your library"
 
     def putSelectedCard(self, game, library, card):
@@ -1678,6 +1687,12 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(AbstractPu
             card = game.obj(card_id)
             library.objects.remove(card)
             library.objects.append(card)
+
+    def __copy__ (self):
+        ret = LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(self.player_id, self.card_ids)
+        ret._copy(self)
+
+        return ret
 
 
 class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
@@ -1703,7 +1718,7 @@ class LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(OneShotEffect):
                 card_ids.append(library.objects[-i-1].id)
 
         game.process_returns_push(True)
-        game.process_push(LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(player, card_ids))
+        game.process_push(LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrderResolveProcess(player.get_id(), card_ids))
 
     def __str__ (self):
         return "LookAtTopNCardsOfYourLibraryPutThemBackInAnyOrder(%s)" % self.n
@@ -1726,8 +1741,8 @@ class PutCardsIntoHandProcess:
 
 # Process of moving cards from library or own hand to the bottom of the library
 class PutCardsToTheBottomOfYourLibraryProcess(AbstractPutCardsIntoLibraryProcess):
-    def __init__ (self, player, card_ids):
-        AbstractPutCardsIntoLibraryProcess.__init__ (self, player, card_ids)
+    def __init__ (self, player_id, card_ids):
+        AbstractPutCardsIntoLibraryProcess.__init__ (self, player_id, card_ids)
         self.message = "Put card to the bottom of your library"
 
     def putSelectedCard(self, game, library, card):
@@ -1741,6 +1756,12 @@ class PutCardsToTheBottomOfYourLibraryProcess(AbstractPutCardsIntoLibraryProcess
             card.zone_id = library.id
             zone.objects.remove(card)
             library.objects.insert(0, card)
+
+    def __copy__ (self):
+        ret = PutCardsToTheBottomOfYourLibraryProcess(self.player_id, self.card_ids)
+        ret._copy(self)
+
+        return ret
 
 
 class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYourLibraryInAnyOrder(OneShotEffect):
@@ -1777,7 +1798,7 @@ class RevealTopNCardsOfYourLibraryPutAllXIntoYourHandAndTheRestOnTheBottomOfYour
                 card_ids.remove(card.id)
 
         game.process_returns_push(True)
-        game.process_push(PutCardsToTheBottomOfYourLibraryProcess(player, card_ids))
+        game.process_push(PutCardsToTheBottomOfYourLibraryProcess(player.get_id(), card_ids))
         game.process_push(PutCardsIntoHandProcess(player, obj, card_ids_to_hand))
         game.process_push(RevealCardsProcess(player, cards))
 
@@ -1805,7 +1826,7 @@ class XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(On
         for i in range(n):
             game.process_push(DrawCardProcess(player))
 
-        game.process_push(PutCardsToTheBottomOfYourLibraryProcess(player, card_ids))
+        game.process_push(PutCardsToTheBottomOfYourLibraryProcess(player.get_id(), card_ids))
 
     def __str__ (self):
         return "XPutsTheCardsInHandOnTheBottomOfLibraryInAnyOrderThenDrawsThatManyCards(%s)" % self.selector
