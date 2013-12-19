@@ -516,6 +516,7 @@ class Game:
                         applicable = []
                     else:
                         # we let the reciever's controller choose
+                        # TODO: make threadless
                         controller = self.objects[self.lki(b_lki_id).get_controller_id()]
 
                         actions = []

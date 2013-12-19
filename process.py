@@ -468,42 +468,6 @@ class PayCostProcess(Process):
         return ret
 
         
-# DONE
-def process_pay_cost (game, player, obj, effect, costs):
-    notpaid = costs
-    while len(notpaid) > 0:
-        actions = []
-
-        _pass = PassAction (player.id)
-        _pass.text = "Cancel"
-        actions.append (_pass)
-
-        _al = AllSelector()
-        for o in _al.all(game, None):
-            for ability in o.state.abilities:
-                if isinstance(ability, ManaAbility):
-                    if ability.canActivate(game, o, player):
-                        actions.append (AbilityAction(player.id, o.id, ability, ability.get_text(game, o)))
-
-        for cost in notpaid:
-            if cost.canPay(game, obj, player):
-                actions.append (PayCostAction(player.id, cost, cost.get_text(game, obj, player)))
-
-        _as = ActionSet (player.id, "Play Mana Abilities", actions)
-        a = game.input.send (_as)
-
-        if a == _pass:
-            return False
-
-        if isinstance(a, PayCostAction):
-            if a.cost.pay(game, obj, effect, player):
-                notpaid.remove(a.cost)
-
-        if isinstance(a, AbilityAction):
-            do_action (game, player, a)
-
-    return True
-
 class AbstractPlayProcess(Process):
     def __init__ (self, ability, player):
         self.ability = ability
@@ -930,18 +894,6 @@ class BeginningOfCombatStepProcess(SandwichProcess):
     def post(self, game):
         game.process_push(PostPhaseProcess())
         
-# DONE?
-def process_step_beginning_of_combat (game):
-    game.current_step = "beginning of combat"
-    process_step_pre (game)
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    process_step_post (game)
-
 
 class DeclareAttackersStepProcess(Process):
     def __init__ (self):
@@ -1050,74 +1002,6 @@ class DeclareAttackersStepProcess(Process):
         ret.attackers = self.attackers.copy()
 
         return ret
-
-
-def process_step_declare_attackers (game):
-    game.current_step = "declare attackers"
-    process_step_pre (game)
-
-    valid = False
-    while not valid:
-        # select attackers
-        attackers = set()
-        while True:
-
-            actions = []
-            _pass = PassAction (game.get_attacking_player())
-            _pass.text = "No more attackers"
-            actions.append (_pass)
-
-            selector = PermanentPlayerControlsSelector(game.get_attacking_player())
-            for permanent in selector.all(game, None):
-                if "creature" in permanent.state.types and not permanent.tapped and ("haste" in permanent.state.tags or not "summoning sickness" in permanent.state.tags) and permanent not in attackers and "can't attack" not in permanent.state.tags and "can't attack or block" not in permanent.state.tags and ("defender" not in permanent.state.tags or "can attack as though it didn't have defender" in permanent.state.tags):
-
-                    v = AttackerValidator(permanent, True)
-                    game.raise_event("validate_attacker", v)
-                    if v.can:
-                        _p = Action ()
-                        _p.object_id = permanent.id
-                        _p.player_id = game.get_attacking_player().id
-                        _p.text = "Attack with %s" % permanent
-                        actions.append (_p)
-
-            _as = ActionSet (game.get_attacking_player().id, "Select attackers", actions)
-            a = game.input.send (_as)
-
-            if a != _pass:
-                attackers.add (a.object_id)
-            else:
-                break
-
-        valid = validate_attack(game, attackers)
-    for a in attackers:
-        a_lki = game.create_lki(a)
-        game.declared_attackers.add (a_lki)
-        game.creature_that_attacked_this_turn_lkis.add (a_lki)
-
-    # tap attacking creatures
-    for a in game.declared_attackers:
-        if "vigilance" not in a.get_state().tags:
-            game.doTap(a.get_object())
-
-    # attacks event
-    for a in game.declared_attackers:
-        game.raise_event("attacks", a)
-
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    # remove the moved declared attackers
-    torm = []
-    for attacker in game.declared_attackers:
-        if attacker.is_moved():
-            torm.append (attacker)
-    for attacker in torm:
-        game.declared_attackers.remove(attacker)
-
-    process_step_post (game)
 
 
 def validate_attack(game, attacker_ids):
@@ -1424,109 +1308,6 @@ class DeclareBlockersStepProcess(Process):
         ret.blockers_map = self.blockers_map.copy()
 
         return ret
-
-# DONE ?
-def process_step_declare_blockers (game):
-    game.current_step = "declare blockers"
-    process_step_pre (game)
-    # select blockers
-
-    valid = False
-    while not valid:
-        blockers = set()
-        blockers_map = {}
-
-        # TODO: save the game state
-
-        while True:
-
-            actions = []
-            _pass = PassAction (game.get_defending_player())
-            _pass.text = "No more blockers"
-            actions.append (_pass)
-
-            selector = PermanentPlayerControlsSelector(game.get_defending_player())
-            for permanent in selector.all(game, None):
-                if "creature" not in permanent.state.types:
-                    continue
-                if permanent.tapped:
-                    continue
-                if permanent in blockers:
-                    blocked = blockers_map.get(permanent.id, [])
-
-                    if "can block any number of creatures" not in permanent.state.tags:
-                        if len(blocked) == 1 and "can block an additional creature" in permanent.state.tags:
-                            pass
-                        else:
-                            continue
-
-                _p = Action ()
-                _p.object_id = permanent.id
-                _p.player_id = game.get_defending_player().id
-                _p.text = "Block with %s" % permanent
-                actions.append (_p)
-
-            _as = ActionSet (game.get_defending_player().id, "Select blockers", actions)
-            b = game.input.send (_as)
-
-            if b != _pass:
-
-                actions = []
-                _pass = PassAction (game.get_defending_player())
-                _pass.text = "Cancel block"
-                actions.append (_pass)
-
-                selector = AllPermanentSelector()
-                for permanent in selector.all(game, None):
-                    if "attacking" in permanent.state.tags:
-                        # cannot block the same object more than once
-                        if permanent in blockers_map.get(b.object.id, []):
-                            continue
-
-                        if is_valid_block(game, permanent, b.object):
-                            _p = Action ()
-                            _p.object_id = permanent.id
-                            _p.player_id = game.get_defending_player().id
-                            _p.text = "Let %s block %s" % (b.object, permanent)
-                            actions.append (_p)
-                _as = ActionSet (game.get_defending_player().id, "Block which attacker", actions)
-                a = game.input.send (_as)
-
-                if a != _pass:
-                    blockers.add (b.object)
-
-                    _as = blockers_map.get(b.object.id, [])
-                    blockers_map[b.object.id] = _as + [a.object]
-                else:
-                    pass
-            else:
-                break
-
-        valid = validate_block(game, blockers, blockers_map)
-
-    for b in blockers:
-        b_lki = game.create_lki(b)
-        game.declared_blockers.add (b_lki)
-        game.declared_blockers_map[b.id] = map(lambda x:x.id, blockers_map[b.id])
-
-    process_raise_blocking_events(game)
-
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    # remove the moved declared attackers
-    torm = []
-    for attacker in game.declared_attackers:
-        if attacker.is_moved():
-            torm.append (attacker)
-    for attacker in torm:
-        game.declared_attackers.remove(attacker)
-
-    process_step_post (game)
 
 def process_raise_blocking_events(game):
     attacker_lki_map = {}
@@ -1839,166 +1620,6 @@ class CombatDamageStepProcess(Process):
         return ret
 
 
-# DONE?
-def process_step_combat_damage (game, firstStrike):
-    game.current_step = "combat damage"
-    process_step_pre (game)
-
-    # map object ids to object last known information
-    id2lki = {}
-
-    # map attacker id to list of blocker ids that block the attacker
-    a_id2b_ids = {}
-
-    # map blocker id to list of attacker ids it blocks
-    b_id2a_ids = {}
-
-    # Init the maps... for attackers
-    for a in game.declared_attackers:
-        # declared_attackers is an LastKnownInformation
-        _id = a.get_object().id
-        id2lki[_id] = a
-        a_id2b_ids[_id] = []
-
-    # ...and for blockers...
-    for b in game.declared_blockers:
-        _id = b.get_object().id
-        id2lki[_id] = b
-
-        b_id2a_ids[_id] = []
-
-        # the declared_blockers_map map blocker id to the attacker ids it
-        # blocks
-        a_ids = game.declared_blockers_map[b.get_object().id]
-
-        for a_id in a_ids:
-            a_id2b_ids[a_id].append (_id)
-            b_id2a_ids[_id].append (a_id)
-
-
-    # list of  (source lki,
-    #           target lki,
-    #           damage (integer))
-    damage = []
-    for a_id, b_ids in a_id2b_ids.items():
-        a_lki = id2lki[a_id]
-        a_obj = id2lki[a_id].get_object()
-        a_state = id2lki[a_id].get_state()
-        
-        # only creatures deal combat damage
-        if not a_lki.is_moved() and "creature" in a_state.types and ((firstStrike and "first strike" in a_lki.get_state().tags) or (not firstStrike and "first strike" not in a_lki.get_state().tags) or (firstStrike and "double strike" in a_lki.get_state().tags)):
-
-            if len(b_ids) == 0:
-                # unblocked creature deal damage to the defending player
-                damage.append ( (a_lki, game.create_lki(game.get_defending_player()), a_state.power) )
-
-            else:
-
-                doDamage = True
-
-                if "x-sneaky" in a_lki.get_state().tags:
-                    actions = []
-                    _yes = Action()
-                    _yes.text = "Yes"
-                    actions.append (_yes)
-
-                    _no = Action()
-                    _no.text = "No" 
-                    actions.append (_no)
-
-                    _as = ActionSet (game, game.get_attacking_player(), "Assign %s combat damage as though it wasn't blocked" % (a_lki.get_object()), actions)
-                    a = game.input.send (_as)
-
-                    if a.text == "Yes":
-                        damage.append ( (a_lki, game.create_lki(game.get_defending_player()), a_state.power) )
-                        doDamage = False
-
-                if doDamage:
-                    if len(b_ids) == 1:
-                        # blocked by one creature deal all damage to that creature
-                        b_id = b_ids[0]
-                        b_lki = id2lki[b_id]
-                        damage.append ( (a_lki, b_lki, a_state.power) )
-                    else:
-                        # damage to assign
-                        d = a_state.power
-
-                        while d > 0:
-                            # attacking player choose how to assign damage
-                            actions = []
-
-                            for b_id in b_ids:
-                                _p = Action ()
-                                _p.object_id = id2lki[b_id].get_object().id
-                                _p.text = str(_p.object)
-                                actions.append (_p)
-
-                            _as = ActionSet (game.get_attacking_player().id, "Assign 1 damage from %s to what defending creature?" % (a_lki.get_object()), actions)
-                            a = game.input.send (_as)
-
-                            b_lki = id2lki[a.object.id]
-                            damage.append ( (a_lki, b_lki, 1) )
-
-                            d -= 1
-
-    # damage by the blocked creatures
-    for b_id, a_ids in b_id2a_ids.items():
-        b_lki = id2lki[b_id]
-        b_obj = id2lki[b_id].get_object()
-        b_state = id2lki[b_id].get_state()
-
-        if not b_lki.is_moved() and "creature" in b_state.types and ((firstStrike and "first strike" in b_lki.get_state().tags) or (not firstStrike and "first strike" not in b_lki.get_state().tags) or (firstStrike and "double strike" in b_lki.get_state().tags)):
-            if len(a_ids) == 0:
-                # creature not blocking any attacker, do nothing
-                pass
-
-            elif len(a_ids) == 1:
-                # creature blocking one attacker
-                a_id = a_ids[0]
-                a_lki = id2lki[a_id]
-                damage.append ( (b_lki, a_lki, b_state.power) )
-
-            else:
-                d = b_state.power
-
-                while d > 0:
-                    # defending player choose how to assign damage
-                    actions = []
-
-                    for a_id in a_ids:
-                        _p = Action ()
-                        _p.object_id = id2lki[a_id].get_object().id
-                        _p.text = str(_p.object)
-                        actions.append (_p)
-
-                    _as = ActionSet (game.get_defending_player(), "Assign 1 damage from %s to what attacking creature?" % (b_lki.get_object()), actions)
-                    a = game.input.send (_as)
-
-                    a_lki = id2lki[a.object.id]
-                    damage.append ( (b_lki, a_lki, 1) )
-
-                    d -= 1
-
-
-    merged = {}
-    for a, b, n in damage:
-        d = merged.get( (a,b), 0)
-        merged[ (a,b) ] = d + n
-
-    damage = []
-    for (a,b), n in merged.iteritems():
-        damage.append ( (a, b, n) )
-
-    damage_object = game.create_damage_assignment(damage, True)
-    game.stack_push(damage_object)
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    process_step_post (game)
-
 class EndOfCombatStepProcess(SandwichProcess):
     def __init__(self):
         SandwichProcess.__init__ (self)
@@ -2023,27 +1644,6 @@ class EndOfCombatStepProcess(SandwichProcess):
         game.declared_attackers = set()
         game.declared_blockers = set()
         game.declared_blockers_map = {}
-
-# DONE?
-def process_step_end_of_combat (game):
-    game.current_step = "end of combat"
-    process_step_pre (game)
-
-    for ability in game.end_of_combat_triggers:
-        game.triggered_abilities.append (ability)
-    game.end_of_combat_triggers = []
-
-    for ability in game.triggered_abilities:
-        game.stack_push (ability)
-    game.triggered_abilities = []
-
-    process_priority_succession (game, game.get_active_player())
-
-    process_step_post (game)
-
-    game.declared_attackers = set()
-    game.declared_blockers = set()
-    game.declared_blockers_map = {}
 
 
 class CombatPhaseProcess(Process):
@@ -2105,42 +1705,6 @@ class CombatPhaseProcess(Process):
         elif self.state == 4:
             game.defending_player_id = None 
     
-# DONE?
-def process_phase_combat (game):
-    game.current_phase = "combat"
-
-    # 306.2
-    game.attacking_player_id = game.active_player_id
-    game.defending_player_id = game.get_next_player(game.get_active_player()).id
-
-    process_phase_pre(game)
-
-    process_step_beginning_of_combat (game)
-    process_step_declare_attackers (game)
-
-    # 308.5
-    if len(game.declared_attackers) != 0:
-        process_step_declare_blockers (game)
-
-        # any first or double strikers?
-        firstStrike = False
-        for a in game.declared_attackers:
-            if "first strike" in a.get_state().tags or "double strike" in a.get_state().tags:
-                firstStrike = True
-
-        for b in game.declared_blockers:
-            if "first strike" in b.get_state().tags or "double strike" in b.get_state().tags:
-                firstStrike = True
-
-        if firstStrike:
-            process_step_combat_damage (game, True)
-        process_step_combat_damage (game, False)
-
-    process_step_end_of_combat (game)
-
-    process_phase_post(game)
-
-    game.defending_player_id = None
 
 class EndOfTurnStepProcess(SandwichProcess):
 
@@ -2189,24 +1753,6 @@ class DiscardACardProcess(Process):
             return _as
         else:
             game.doDiscard(player, game.obj(action.object_id), cause)
-
-# DONE
-def process_discard_a_card(game, player, cause = None):
-
-    if len(game.get_hand(player).objects) == 0:
-        return
-
-    actions = []
-    for card in game.get_hand(player).objects:
-        _p = Action ()
-        _p.object_id = card.id
-        _p.text = "Discard " + str(card)
-        actions.append (_p)
-
-    _as = ActionSet (game, player, "Discard a card", actions)
-    a = game.input.send (_as)
-
-    game.doDiscard(player, a.object, cause)
 
 
 class RevealHandAndDiscardACardProcess(Process):
@@ -2289,29 +1835,6 @@ class RevealCardsProcess(Process):
         elif self.state == 2:
             game.revealed = self.oldrevealed
             
-# DONE? 
-def process_reveal_cards(game, player, cards):
-    oldrevealed = game.revealed
-    game.revealed = game.revealed[:]
-
-    for card in cards:
-        game.revealed.append(card.get_id())
-
-    evaluate(game)       
-
-    p = player
-    while True:
-        _ok = PassAction(p)
-        _ok.text = "OK"
-
-        _as = ActionSet(game, p, "Player %s reveals cards" % p.name, [_ok])
-        a = game.input.send(_as)
-
-        p = game.get_next_player(p)
-        if p.get_id() == player.get_id():
-            break
-
-    game.revealed = oldrevealed 
 
 class LookAtCardsProcess(Process):
     def __init__(self, player, card_ids):
@@ -2338,23 +1861,6 @@ class LookAtCardsProcess(Process):
         else:
             game.looked_at = self.oldlooked_at
 
-# DONE?
-def process_look_at_cards(game, player, cards):
-    oldlooked_at = game.looked_at
-    game.looked_at = game.looked_at.copy()
-
-    for card in cards:
-        game.looked_at[player.id].append (card.get_id())
-
-    evaluate(game)
-
-    _ok = PassAction(player)
-    _ok.text = "OK"
-
-    _as = ActionSet(game, player, "Look at cards", [_ok])
-    a = game.input.send(_as)
-
-    game.looked_at = oldlooked_at
 
 class CleanupStepProcess(Process):
 
@@ -2521,28 +2027,6 @@ class TriggerEffectProcess(SandwichProcess):
             game.triggered_abilities.remove(e)
 
  
-def process_select_selector(game, player, source, selector, text, optional=False):
-    actions = []
-    _pass = PassAction(player)
-    _pass.text = "Cancel"
-
-    for obj in selector.all(game, source):
-        _p = Action()
-        _p.object_id = obj.id
-        _p.text = str(obj)
-        actions.append(_p)
-
-    if len(actions) == 0 or optional:
-        actions = [_pass] + actions
-
-    _as = ActionSet(game, player, text, actions)
-    a = game.input.send(_as)
-
-    if a == _pass:
-        return None
-
-    return a.object
-
 class SelectSourceOfDamageProcess(Process):
     def __init__ (self, player, SELF, selector, text, optional=False):
         self.player_id = player.id
@@ -2606,54 +2090,6 @@ class SelectSourceOfDamageProcess(Process):
                 game.process_returns_push(action.object_id)
 
 
-def process_select_source_of_damage(game, player, SELF, selector, text, optional=False):
-    actions = []
-    _pass = PassAction(player)
-    _pass.text = "Cancel"
-
-    sources = set([obj for obj in selector.all(game, SELF)])
-    valid_sources = set()
-
-    # permanents, spells on stack, card or permanent referred by an objecton stack,  creature assigning combat damage
-    for permanent in AllPermanentSelector().all(game, SELF):
-        if permanent in sources:
-            valid_sources.add(permanent)
-
-    for obj in game.get_stack_zone().objects:
-        if "spell" in obj.get_state().tags and obj in sources and not isinstance(obj, EffectObject):
-            valid_sources.add(obj)
-
-        if isinstance(obj, EffectObject):
-            source = obj.get_source_lki().get_object()
-            if (not isinstance(source, EffectObject)) and source in sources:
-                valid_sources.add(obj)
-
-        elif isinstance(obj, DamageAssignment):
-            for a, b, n in obj.damage_assignment_list:
-                if a.get_object() in sources:
-                    valid_sources.add(a.get_object())
-        
-        for target in obj.targets.values():
-            if target.get_object() in sources and not isinstance(target.get_object(), EffectObject):
-                valid_sources.add(target.get_object())
-
-    for obj in valid_sources:
-        _p = Action()
-        _p.object_id = obj.id
-        _p.text = str(obj)
-        actions.append(_p)
-
-    if len(actions) == 0 or optional:
-        actions = [_pass] + actions
-
-    _as = ActionSet(game, player, text, actions)
-    a = game.input.send(_as)
-
-    if a == _pass:
-        return None
-
-    return a.object
-   
 
 def _is_valid_target(game, source, target):
     # TODO: protections and stuff 
@@ -2781,53 +2217,6 @@ class SelectTargetsProcess(Process):
 
         return ret
 
-# DONE?
-def process_select_targets(game, player, source, selector, n, optional=False):
-
-    _pass = PassAction (player)
-    _pass.text = "Cancel"
-
-    _enough = PassAction(player)
-    _enough.text = "Enough targets"
-    # actions.append (_pass)
-
-    targets = []
-
-    for i in range(n):
-        actions = []
-
-        for obj in selector.all(game, source):
-            if obj not in targets and _is_valid_target(game, source, obj):
-                _p = Action ()
-                _p.object_id = obj.id
-                _p.text = "Target " + str(obj)
-                actions.append (_p)
-
-        if len(actions) == 0 and not optional:
-            actions = [_pass] + actions
-
-        if optional:
-            actions = [_enough] + actions
-
-        numberals = ["first", "second", "third", "fourth", "fifth", "sixth", "sevetnh", "eighth", "ninth"]
-        if i <= 8:
-            query = ("Choose the %s target for " % (numberals[i]))  + str(source)
-        else:
-            query = ("Choose the %dth target for " % i) + str(source)
-
-        _as = ActionSet (game, player, query, actions)
-        a = game.input.send (_as)
-
-        if a == _pass:
-            return None
-
-        if a == _enough:
-            break
-
-        targets.append (a.object)
-
-    return targets
-
 
 class PutCardIntoPlayProcess(Process):
     def __init__ (self, card, controller, cause, tapped=False):
@@ -2867,31 +2256,6 @@ class PutCardIntoPlayProcess(Process):
                 card.tapped = self.tapped
                 game.doZoneTransfer(card, in_play_zone, cause)
                
-
-# Special effect which causes something to be put into play under a player's control
-def process_put_card_into_play(game, card, controller, cause, tapped=False):
-
-    in_play_zone = game.get_in_play_zone()
-
-    if "aura" in card.get_state().subtypes:
-        if card.rules.selectTargets(game, controller, card):
-            assert card.targets["target"] is not None
-
-            card.enchanted_id = card.targets["target"].get_id()
-            card.controller_id = controller.get_id()
-            card.tapped = tapped
-            game.doZoneTransfer(card, in_play_zone, cause)
-
-        else:
-            return False
-
-    else:
-        # else, just add it into play
-        card.controller_id = controller.get_id()
-        card.tapped = tapped
-        game.doZoneTransfer(card, in_play_zone, cause)
-
-    return True
 
 def validate_target(game, obj, selector, target):
     assert isinstance(target, LastKnownInformation)
@@ -2936,19 +2300,6 @@ class AskXProcess(Process):
             ret += str(action)
 
             game.process_returns_push(ret)
-
-def process_ask_option(game, obj, player, question, options):
-    opts = []
-
-    for o in options:
-       p = Action ()
-       p.text = o
-       opts.append (p)
-
-    _as = ActionSet (game, player, question, opts)
-    a = game.input.send (_as)
-    return a.text
-
 
 class CoinFlipProcess(Process):
     def __init__ (self, player):
