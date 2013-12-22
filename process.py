@@ -2301,6 +2301,36 @@ class AskXProcess(Process):
 
             game.process_returns_push(ret)
 
+class AskOptionalProcess(Process):
+    def __init__ (self, obj, player, query, ack_option, pass_option):
+        self.obj_id = obj.id
+        self.player_id = player.id
+        self.query = query
+        self.ack_option = ack_option
+        self.pass_option = pass_option
+
+    def next(self, game, action):
+        player = game.obj(self.player_id)
+        obj = game.obj(self.obj_id)
+
+        if action is None:
+
+            _pass = PassAction(player.id)
+            _pass.text = self.pass_option
+
+            _p = Action ()
+            _p.object_id = obj.id
+            _p.text = self.ack_option
+      
+            return ActionSet (player.id, self.query, [_pass, _p])
+
+        else:
+            if action.text == self.ack_option:
+                game.process_returns_push(True)
+            else:
+                game.process_returns_push(False)
+
+
 class CoinFlipProcess(Process):
     def __init__ (self, player):
         self.player_id = player.id
@@ -2308,3 +2338,5 @@ class CoinFlipProcess(Process):
     def next(self, game, action):
         player = game.obj(self.player_id)
         game.doCoinFlip(player)
+
+

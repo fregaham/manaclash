@@ -1280,6 +1280,33 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 20
         assert not findObjectInPlay(g, "Island").tapped
 
+    def testSanctimony(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain"], ["Shock"],["Sanctimony"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Gain 1 life?", "Yes")
+        
+        printState(g, a)
+
+        assert g.obj(p2).life == 21
+
+        a = basicManaAbility(g, a, "Mountain", p1)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Gain 1 life?", "No")
+        
+        printState(g, a)
+
+
     def testSeismicAssault(self):
         g, a, p1, p2 = createGameInMainPhase(["Seismic Assault"], ["Mountain"], [], [])
         a = activateAbility(g, a, "Seismic Assault", p1)
@@ -1400,6 +1427,20 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "You may", "Untap")
 
         assert not goblin.tapped
+
+    def testVampiricSpirit(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Vampiric Spirit"], [], [])
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = basicManaAbility(g, a, "Swamp", p1) 
+
+        a = playSpell(g, a, "Vampiric Spirit")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        assert g.obj(p1).life == 16
+
 
     def testVexingArcanix(self):
         g, a, p1, p2 = createGameInMainPhase(["Island", "Island", "Island", "Vexing Arcanix"], [], [], [])
