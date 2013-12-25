@@ -426,10 +426,10 @@ class XDealNDamageToTargetYAndMDamageToZEffect(SingleTargetOneShotEffect):
         count2 = self.number2.evaluate(game, obj)
 
         dlist = []
-        dlist.append ( (source, target, count) )
+        dlist.append ( (game.create_lki(source), game.create_lki(target), count) )
 
         for obj in self.otherSelector.all(game, obj):
-            dlist.append ( (source, obj, count2) )        
+            dlist.append ( (game.create_lki(source), game.create_lki(obj), count2) )
         game.doDealDamage(dlist)
 
     def __str__ (self):

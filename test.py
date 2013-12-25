@@ -1135,7 +1135,16 @@ class ManaClashTest(unittest.TestCase):
         goblin = findObjectInPlay(g, "Raging Goblin")
         attendants = findObjectInPlay(g, "Oracle's Attendants")
         assert attendants.damage == 2
-        
+
+    def testOrcishArtillery(self):
+        g, a, p1, p2 = createGameInMainPhase(["Orcish Artillery"], [], [], [])
+        a = activateAbility(g, a, "Orcish Artillery", p1)
+        a = selectTarget(g, a, "Player2")
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
 
     def testOrcishSpy(self):
         g, a, p1, p2 = createGameInMainPhase(["Orcish Spy"], [], [], [])
