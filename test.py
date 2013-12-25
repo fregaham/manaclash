@@ -791,6 +791,21 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 20
 
+    def testCityOfBrass(self):
+        g, a, p1, p2 = createGameInMainPhase(["City of Brass"], [], [], [])
+        a = activateAbility(g, a, "City of Brass", p1)
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Choose a color", "Black")
+
+        printState(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+        printState(g, a)
+
+        assert g.obj(p1).life == 19
+
+
     def testCoastalTower(self):
         g, a, p1, p2 = createGameInMainPhase(["Coastal Tower"], [], [], [])
         a = activateAbility(g, a, "Coastal Tower", p1)

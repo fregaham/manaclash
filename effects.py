@@ -194,7 +194,7 @@ class XDealNDamageToY(OneShotEffect):
         damage = []
         for y in self.y_selector.all(game, obj):
             if not y.is_moved():
-                damage.append ( (source, y, count) )
+                damage.append ( (game.create_lki(source), game.create_lki(y), count) )
 
         game.doDealDamage(damage)
 

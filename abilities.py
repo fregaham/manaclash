@@ -765,7 +765,7 @@ class WhenXBecomesTappedDoEffectAbility(TriggeredAbility):
         if self.x_selector.contains(game, SELF, obj):
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = obj
+                slots[slot] = game.create_lki(obj)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
@@ -794,7 +794,7 @@ class WhenXBecomesTappedForManaDoManaEffectAbility(TriggeredAbility):
         if self.x_selector.contains(game, SELF, obj):
             slots = {}
             for slot in self.x_selector.slots():
-                slots[slot] = obj
+                slots[slot] = game.create_lki(obj)
 
             # mana abilities don't use stack, resolve immediately
 
