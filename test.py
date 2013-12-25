@@ -812,6 +812,22 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Choose mana", "W")
         assert g.obj(p1).manapool == "W"
 
+    def testCoatOfArms(self):
+        g, a, p1, p2 = createGameInMainPhase(["Coat of Arms", "Goblin Chariot", "Goblin Raider", "Goblin Glider"], [], [], [])
+        chariot = findObjectInPlay(g, "Goblin Chariot") 
+        raider = findObjectInPlay(g, "Goblin Raider")
+        glider = findObjectInPlay(g, "Goblin Glider")
+
+        assert chariot.get_state().power == 4
+        assert chariot.get_state().toughness == 4
+
+        assert raider.get_state().power == 4
+        assert raider.get_state().toughness == 4
+
+        assert glider.get_state().power == 3
+        assert glider.get_state().toughness == 3
+
+
     def testCoercion(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Coercion"], [], ["Raging Goblin", "Plains", "Seismic Assault"])
         a = basicManaAbility(g, a, "Swamp", p1)
