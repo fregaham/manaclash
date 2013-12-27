@@ -589,7 +589,7 @@ class IfXWouldDealDamageToYPreventNOfThatDamageDamagePrevention(DamagePrevention
     def canApply(self, game, damage, combat):
         context = game.obj(self.context_id)
         source, dest, n = damage
-        if self.x_selector.contains(game, context, source) and self.y_selector.contains(game, context, dest):
+        if self.x_selector.contains_lki(game, context, source) and self.y_selector.contains_lki(game, context, dest):
             return True
 
         return False

@@ -1468,6 +1468,17 @@ class ManaClashTest(unittest.TestCase):
 
         assert not goblin.tapped
 
+    def testUrzasArmor(self):
+        g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Urza's Armor"], [])
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Goblin Chariot"])
+
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 19
+
+
     def testVampiricSpirit(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Vampiric Spirit"], [], [])
         a = basicManaAbility(g, a, "Swamp", p1) 
@@ -1532,6 +1543,18 @@ class ManaClashTest(unittest.TestCase):
 
         star = findObjectInGraveyard(g, p1, "Iron Star")
         assert g.obj(p1).life == 18
+
+    def testWorship(self):
+        g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Worship", "Angelic Page"], [])
+        g.obj(p2).life = 1
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Goblin Chariot"])
+        #a = declareBlockersStep(g, a)
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 1
+
 
     def testZursWeirding(self):
         g, a, p1, p2 = createGameInMainPhase(["Zur's Weirding"], [], [], [])
