@@ -626,7 +626,7 @@ class IfXWouldDealDamageToYItDealsDoubleThatDamageToThatYInstead(ContinuousEffec
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
 
-    def onDamageReplacement(self, game, SELF_id, dr):
+    def onDamageReplacement(self, SELF_id, game, dr):
         SELF = game.obj(SELF_id)
 
         list = []

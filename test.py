@@ -891,6 +891,19 @@ class ManaClashTest(unittest.TestCase):
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
 
+    def testFurnanceOfRath(self):
+        g, a, p1, p2 = createGameInMainPhase(["Furnace of Rath", "Goblin Chariot"], [], ["Giant Badger"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Goblin Chariot"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Giant Badger"], ["Goblin Chariot"])
+
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Goblin Chariot")
+        assertNoSuchObjectInPlay(g, "Giant Badger")
+
+
     def testGravePact(self):
         g, a, p1, p2 = createGameInMainPhase(["Grave Pact", "Raging Goblin"], [], ["Elvish Pioneer", "Air Elemental"], [])
         a = declareAttackersStep(g, a)

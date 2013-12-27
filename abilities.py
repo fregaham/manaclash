@@ -553,14 +553,14 @@ class WhenXBlocksDoEffectAbility(TriggeredAbility):
     def getEventHandlers(self, game, obj):
         return [("blocks", partial(self.onBlocks, obj.id))]
 
-    def onBlocks(self, SELF_id, game, blocker, attacker):
+    def onBlocks(self, SELF_id, game, blocker_lki, attacker_lki):
         SELF = game.obj(SELF_id)
 
         from process import TriggerEffectProcess
-        if self.selector.contains(game, SELF, blocker):
+        if self.selector.contains_lki(game, SELF, blocker_lki):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = game.create_lki(blocker)
+                slots[slot] = blocker_lki
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -582,10 +582,10 @@ class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
         SELF = game.obj(SELF_id)
 
         from process import TriggerEffectProcess
-        if self.selector.contains(game, SELF, attacker):
+        if self.selector.contains_lki(game, SELF, attacker):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = game.create_lki(attacker)
+                slots[slot] = attacker
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -593,10 +593,10 @@ class WhenXAttacksOrBlocksDoEffectAbility(TriggeredAbility):
         SELF = game.obj(SELF_id)
 
         from process import TriggerEffectProcess
-        if self.selector.contains(game, SELF, blocker):
+        if self.selector.contains_lki(game, SELF, blocker):
             slots = {}
             for slot in self.selector.slots():
-                slots[slot] = game.create_lki(blocker)
+                slots[slot] = blocker
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
@@ -620,17 +620,17 @@ class WhenXBlocksOrBecomesBlockedByYDoEffectAbility(TriggeredAbility):
         SELF = game.obj(SELF_id)
 
         from process import TriggerEffectProcess
-        if self.x_selector.contains(game, SELF, blocker) and self.y_selector.contains(game, SELF, attacker):
+        if self.x_selector.contains_lki(game, SELF, blocker) and self.y_selector.contains_lki(game, SELF, attacker):
             slots = {}
             for slot in self.y_selector.slots():
-                slots[slot] = game.create_lki(attacker)
+                slots[slot] = attacker
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
 
-        elif (self.x_selector.contains(game, SELF, attacker) and self.y_selector.contains(game, SELF, blocker)):
+        elif (self.x_selector.contains_lki(game, SELF, attacker) and self.y_selector.contains_lki(game, SELF, blocker)):
             slots = {}
             for slot in self.y_selector.slots():
-                slots[slot] = game.create_lki(blocker)
+                slots[slot] = blocker
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
   
