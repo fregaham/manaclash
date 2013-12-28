@@ -696,7 +696,7 @@ class TargetXGetsTagUntilEndOfTurn(SingleTargetOneShotEffect):
 
     def doResolve(self, game, obj, target):
         game.process_returns_push(True)
-        game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target), self.tag)) )
+        game.until_end_of_turn_effects.append ( (obj, XGetsTag(LKISelector(target.get_lki_id()), self.tag)) )
 
     def __str__ (self):
         return "TargetXGetsTagUntilEndOfTurn(%s, %s)" % (self.targetSelector, self.tag)

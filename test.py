@@ -805,6 +805,29 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 19
 
+    def testCoastalHornclaw(self):
+        g, a, p1, p2 = createGameInMainPhase(["Coastal Hornclaw", "Island"], [], [], [])
+        hornclaw = findObjectInPlay(g, "Coastal Hornclaw") 
+        assert "flying" not in hornclaw.get_state().tags
+
+        a = activateAbility(g, a, "Coastal Hornclaw", p1)
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Play", "Sacrifice land")
+        printState(g, a)
+        a = selectObject(g, a, "Island")
+
+        a = emptyStack(g, a)
+
+        hornclaw = findObjectInPlay(g, "Coastal Hornclaw")
+        assert "flying" in hornclaw.get_state().tags
+   
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+
+        hornclaw = findObjectInPlay(g, "Coastal Hornclaw")
+        assert "flying" not in hornclaw.get_state().tags
+
 
     def testCoastalTower(self):
         g, a, p1, p2 = createGameInMainPhase(["Coastal Tower"], [], [], [])
@@ -890,6 +913,20 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
+
+    def testFlyingCarpet(self):
+        g, a, p1, p2 = createGameInMainPhase(["Flying Carpet", "Raging Goblin", "Mountain", "Mountain"], [], [], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = activateAbility(g, a, "Flying Carpet", p1)
+
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        assert "flying" in goblin.get_state().tags
+
 
     def testFurnanceOfRath(self):
         g, a, p1, p2 = createGameInMainPhase(["Furnace of Rath", "Goblin Chariot"], [], ["Giant Badger"], [])
