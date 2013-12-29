@@ -865,6 +865,21 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p2)).objects) == 2
         assert findObjectInGraveyard(g, p2, "Plains") is not None
 
+    def testDarkBanishing(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Dark Banishing"], ["Raging Goblin"], [])
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+
+        a = playSpell(g, a, "Dark Banishing")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = emptyStack(g, a)
+
+        assert findObjectInGraveyard(g, p2, "Raging Goblin") is not None
+
+
     def testDiabolicTutor(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Diabolic Tutor"], [], [])
         a = basicManaAbility(g, a, "Swamp", p1)
