@@ -960,6 +960,11 @@ class DeclareAttackersStepProcess(Process):
             game.process_push(self)
 
         elif self.state == 5:
+
+            self.state = 6
+            game.process_push(self)
+            game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
             for a in self.attackers:
                 a_lki_id = game.create_lki(game.obj(a))
                 game.declared_attackers.add (a_lki_id)
@@ -980,9 +985,6 @@ class DeclareAttackersStepProcess(Process):
 
             game.triggered_abilities = []
 
-            self.state = 6
-            game.process_push(self)
-            game.process_push(PrioritySuccessionProcess(game.get_active_player()))
 
         elif self.state == 6:
             # remove the moved declared attackers

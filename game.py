@@ -665,7 +665,7 @@ class Game:
 
     def next(self, action):
         while True:
-            # print "Stack: " + `self.process_stack` + " Returns: " + `self.process_returns_stack`
+#            print "Stack: " + `self.process_stack` + " Returns: " + `self.process_returns_stack`
 
             p = self.process_stack.pop()
             ret = p.next(self, action)

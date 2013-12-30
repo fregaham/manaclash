@@ -383,6 +383,13 @@ def assertCardInOptions(g, ax, name):
 
     assert False
 
+def assertOptions(g, ax, query, *options_prefixes):
+    assert ax.text.startswith(query)
+    assert len(ax.actions) == len(options_prefixes)
+    for i in range(len(ax.actions)):
+        assert ax.actions[i].text.startswith(options_prefixes[i])
+
+
 class ManaClashTest(unittest.TestCase):
 
     def testAbyssalSpecter(self):
@@ -1445,6 +1452,25 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Gain 1 life?", "No")
         
         printState(g, a)
+
+    def testSeasonedMarshal(self):
+        g, a, p1, p2 = createGameInMainPhase(["Seasoned Marshal"], [], ["Raging Goblin"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Seasoned Marshal"])
+       
+        a = selectObject(g, a, "Raging Goblin")
+        printState(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+ 
+        printState(g, a)
+
+        assertOptions(g, a, "Select blockers", "No more blockers")
 
 
     def testSeismicAssault(self):
