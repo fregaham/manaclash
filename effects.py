@@ -777,7 +777,7 @@ class DoXAtEndOfCombat(OneShotEffect):
     def resolve(self, game, obj):
         game.process_returns_push(True)
 
-        e = game.create_effect_object(obj.get_source_lki(), obj.get_controller_id(), self.effect, obj.get_slots())
+        e = game.create_effect_object(obj.get_source_lki().get_lki_id(), obj.get_controller_id(), self.effect, obj.get_slots())
         game.end_of_combat_triggers.append (e)
 
     def __str__ (self):

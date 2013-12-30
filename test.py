@@ -767,6 +767,17 @@ class ManaClashTest(unittest.TestCase):
         a = _pass(g, a)
         assert findObjectInPlay(g, "Raging Goblin") is not None
 
+    def testCinderWall(self):
+        g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Cinder Wall"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Goblin Chariot"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Cinder Wall"], ["Goblin Chariot"])
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Cinder Wall")
+        assertNoSuchObjectInPlay(g, "Goblin Chariot")
+
     def testChastise(self):
         g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Plains", "Plains", "Plains", "Plains"], ["Chastise"])
 
