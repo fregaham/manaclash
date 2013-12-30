@@ -1654,6 +1654,21 @@ class ManaClashTest(unittest.TestCase):
         star = findObjectInGraveyard(g, p1, "Iron Star")
         assert g.obj(p1).life == 18
 
+    def testWrathOfGod(self):
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains", "Plains", "Plains", "Angelic Page"], ["Wrath of God"], ["Raging Goblin"], [])
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+
+        a = playSpell(g, a, "Wrath of God")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        assertNoSuchObjectInPlay(g, "Angelic Page")
+        assertNoSuchObjectInPlay(g, "Raging Goblin")
+      
+
     def testWorship(self):
         g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Worship", "Angelic Page"], [])
         g.obj(p2).life = 1
