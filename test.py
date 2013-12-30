@@ -767,6 +767,30 @@ class ManaClashTest(unittest.TestCase):
         a = _pass(g, a)
         assert findObjectInPlay(g, "Raging Goblin") is not None
 
+    def testChastise(self):
+        g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Plains", "Plains", "Plains", "Plains"], ["Chastise"])
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Goblin Chariot"])
+
+        printState(g, a)
+
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+
+        a = playSpell(g, a, "Chastise")
+        a = selectTarget(g, a, "Goblin Chariot")
+        a = payCosts(g, a)
+
+        a = emptyStack(g, a)
+
+        assertNoSuchObjectInPlay(g, "Goblin Chariot") 
+        assert g.obj(p2).life == 22
+
 
     def testCircleOfProtectionRed(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Plains", "Circle of Protection: Red"], [])
@@ -1421,6 +1445,16 @@ class ManaClashTest(unittest.TestCase):
         a = emptyStack(g, a)
 
         assert g.obj(p2).life == 18
+
+    def testSeverSoul(self):
+        g, a, p1, p2 = createGameInMainPhase([], ["Sever Soul"], ["Avatar of Hope"], [])
+        g.obj(p1).manapool = "BBBBB"
+        a = playSpell(g, a, "Sever Soul")
+        a = selectTarget(g, a, "Avatar of Hope")
+        a = payCosts(g, a) 
+        a = emptyStack(g, a)
+
+        assert g.obj(p1).life == 29
 
     def testStarCompass(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest", "Swamp", "Mountain", "Star Compass"], [], [], [])
