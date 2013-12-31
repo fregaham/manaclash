@@ -1199,6 +1199,20 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p1).life == 20
         assert g.obj(p2).life == 20
 
+    def testMasterDecoy(self):
+        g, a, p1, p2 = createGameInMainPhase(["Master Decoy", "Plains"], [], ["Raging Goblin"], [])
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = activateAbility(g, a, "Master Decoy", p1)
+
+        printState(g, a) 
+
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        goblin = findObjectInPlay(g, "Raging Goblin")
+        assert goblin.tapped
+
     def testMindBend(self):
         g, a, p1, p2 = createGameInMainPhase(["Eastern Paladin", "Island", "Swamp", "Swamp"], ["Mind Bend"], ["Raging Goblin"], [])
         a = basicManaAbility(g, a, "Island", p1)
