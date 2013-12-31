@@ -1047,6 +1047,22 @@ class ManaClashTest(unittest.TestCase):
         findObjectInGraveyard(g, p1, "Raging Goblin")
         assert g.obj(p2).life == 20
 
+    def testHolyDay(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Plains"], ["Holy Day"], ["Elvish Pioneer"], [])
+        a = basicManaAbility(g, a, "Plains", p1)
+        
+        a = playSpell(g, a, "Holy Day")
+        a = payCosts(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Elvish Pioneer"], ["Raging Goblin"])
+
+        a = postcombatMainPhase(g, a)
+        findObjectInPlay(g, "Raging Goblin")
+        findObjectInPlay(g, "Elvish Pioneer")
+
     def testIndex(self):
         g, a, p1, p2 = createGameInMainPhase(["Island"], ["Index"], [], [])
         createCardToLibrary(g, "Raging Goblin", g.obj(p1))
