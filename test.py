@@ -984,6 +984,13 @@ class ManaClashTest(unittest.TestCase):
         goblin = findObjectInPlay(g, "Raging Goblin")
         assert "flying" in goblin.get_state().tags
 
+    def testFyndhornElder(self):
+        g, a, p1, p2 = createGameInMainPhase(["Fyndhorn Elder"], [], [], [])
+        a = activateAbility(g, a, "Fyndhorn Elder", p1)
+        a = emptyStack(g, a)
+
+        assert g.obj(p1).manapool == "GG"
+
 
     def testFurnanceOfRath(self):
         g, a, p1, p2 = createGameInMainPhase(["Furnace of Rath", "Goblin Chariot"], [], ["Giant Badger"], [])
