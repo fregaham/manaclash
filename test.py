@@ -921,6 +921,26 @@ class ManaClashTest(unittest.TestCase):
 
         assert findObjectInGraveyard(g, p2, "Raging Goblin") is not None
 
+    def testDrudgeSkeletons(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Drudge Skeletons", "Swamp"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Drudge Skeletons")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Swamp", p2)
+        a = activateAbility(g, a, "Drudge Skeletons", p2)
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        printState(g, a)
+
+        skeletons = findObjectInPlay(g, "Drudge Skeletons")
+
+        assert skeletons.damage == 0
+        assert skeletons.tapped 
+
 
     def testDiabolicTutor(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Diabolic Tutor"], [], [])
