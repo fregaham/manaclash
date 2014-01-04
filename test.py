@@ -1651,6 +1651,21 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 19
 
+    def testUrzasTower(self):
+        g, a, p1, p2 = createGameInMainPhase(["Urza's Tower", "Urza's Power Plant"], ["Urza's Mine"], [], [])
+        a = activateAbility(g, a, "Urza's Tower", p1)
+        assert g.obj(p1).manapool == "1"
+
+        tower = findObjectInPlay(g, "Urza's Tower")
+        tower.tapped = False
+
+        printState(g, a)
+
+        a = playLand(g, a, "Urza's Mine")
+        a = activateAbility(g, a, "Urza's Tower", p1)
+        assert g.obj(p1).manapool == "13"
+
+        printState(g, a)
 
     def testVampiricSpirit(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Swamp"], ["Vampiric Spirit"], [], [])
