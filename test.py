@@ -921,6 +921,30 @@ class ManaClashTest(unittest.TestCase):
 
         assert findObjectInGraveyard(g, p2, "Raging Goblin") is not None
 
+    def testDeathPitOffering(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Drudge Skeletons"], ["Death Pit Offering", "Scathe Zombies"], [], [])
+        g.obj(p1).manapool = "BBBBBBB"
+        a = playSpell(g, a, "Death Pit Offering")
+
+        printState(g, a)
+
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        printState(g, a)
+
+        assertNoSuchObjectInPlay(g, "Raging Goblin")
+        assertNoSuchObjectInPlay(g, "Drudge Skeletons")
+
+        a = playSpell(g, a, "Scathe Zombies")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        zombies = findObjectInPlay(g, "Scathe Zombies")
+        assert zombies.get_state().power == 4
+        assert zombies.get_state().toughness == 4
+
+
     def testDrudgeSkeletons(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Drudge Skeletons", "Swamp"], [])
         a = basicManaAbility(g, a, "Mountain", p1)
