@@ -1847,6 +1847,24 @@ class ManaClashTest(unittest.TestCase):
         assertNoSuchObjectInPlay(g, "Angelic Page")
         assertNoSuchObjectInPlay(g, "Raging Goblin")
       
+    def testWrathOfMaritLage(self):
+        g, a, p1, p2 = createGameInMainPhase([], ["Wrath of Marit Lage"], ["Raging Goblin"], [])
+        g.obj(p1).manapool = "UUUUU"
+        a = playSpell(g, a, "Wrath of Marit Lage")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        chariot = findObjectInPlay(g, "Raging Goblin")
+        assert chariot.tapped
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        chariot = findObjectInPlay(g, "Raging Goblin")
+        assert chariot.tapped
 
     def testWorship(self):
         g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Worship", "Angelic Page"], [])
