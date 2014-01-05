@@ -1148,6 +1148,39 @@ class ManaClashTest(unittest.TestCase):
 
         assert findObjectInHand(g, p1, "Air Elemental")
 
+    def testIntruderAlarm(self):
+        g, a, p1, p2 = createGameInMainPhase(["Intruder Alarm", "Air Elemental"], [], ["Goblin Chariot", "Mountain"], ["Raging Goblin"])
+        chariot = findObjectInPlay(g, "Goblin Chariot")
+        chariot.tapped = True
+
+        elemental = findObjectInPlay(g, "Air Elemental")
+        elemental.tapped = True
+    
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        chariot = findObjectInPlay(g, "Goblin Chariot")
+        assert chariot.tapped
+
+        elemental = findObjectInPlay(g, "Air Elemental")
+        assert elemental.tapped 
+           
+        a = basicManaAbility(g, a, "Mountain", p2)
+        a = playSpell(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+ 
+        chariot = findObjectInPlay(g, "Goblin Chariot")
+        assert not chariot.tapped
+
+        elemental = findObjectInPlay(g, "Air Elemental")
+        assert not elemental.tapped 
+        
+
     def testIronStar(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Iron Star"], ["Raging Goblin"], [], [])
         a = basicManaAbility(g, a, "Mountain", p1)
