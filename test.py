@@ -1582,7 +1582,18 @@ class ManaClashTest(unittest.TestCase):
 
         a = answerQuestion(g, a, "Choose mana", "R")
         assert g.obj(p1).manapool == "R"
- 
+
+    def testSoulFeast(self):
+        g, a, p1, p2 = createGameInMainPhase([], ["Soul Feast"], [], [])
+        g.obj(p1).manapool = "BBBBB"
+
+        a = playSpell(g, a, "Soul Feast")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+        assert g.obj(p1).life == 24
+        assert g.obj(p2).life == 16
+
 
     def testTeferisPuzzleBox(self):
         g, a, p1, p2 = createGameInMainPhase(["Teferi's Puzzle Box"], ["Mountain", "Raging Goblin"], [], ["Forest", "Rampant Growth", "Primeval Force"])
@@ -1684,6 +1695,19 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "You may", "Untap")
 
         assert not goblin.tapped
+
+    def testUnsummon(self):
+        g, a, p1, p2 = createGameInMainPhase(["Island"], ["Unsummon"], ["Raging Goblin"], [])
+        a = basicManaAbility(g, a, "Island", p1)
+        a = playSpell(g, a, "Unsummon")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        assert findObjectInHand(g, p2, "Raging Goblin") != None
+
 
     def testUrzasArmor(self):
         g, a, p1, p2 = createGameInMainPhase(["Goblin Chariot"], [], ["Urza's Armor"], [])
