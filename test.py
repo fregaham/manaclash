@@ -1541,6 +1541,25 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 20
         assert not findObjectInPlay(g, "Island").tapped
 
+    def testSacredGround(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain"], ["Stone Rain"], ["Plains", "Sacred Ground"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        
+        a = playSpell(g, a, "Stone Rain")
+        a = selectTarget(g, a, "Plains")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        assert findObjectInPlay(g, "Plains") is not None
+        
+
     def testSanctimony(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain"], ["Shock"],["Sanctimony"], [])
         a = basicManaAbility(g, a, "Mountain", p1)
