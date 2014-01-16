@@ -1896,6 +1896,32 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p2).life == 1
 
+    def testZombify(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Swamp", "Swamp", "Swamp", "Swamp"], ["Zombify"], ["Mountain"], ["Shock"])
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Mountain", p2)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = basicManaAbility(g, a, "Swamp", p1) 
+        a = basicManaAbility(g, a, "Swamp", p1) 
+
+        a = playSpell(g, a, "Zombify")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        findObjectInPlay(g, "Raging Goblin")
+
 
     def testZursWeirding(self):
         g, a, p1, p2 = createGameInMainPhase(["Zur's Weirding"], [], [], [])
