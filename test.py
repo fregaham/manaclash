@@ -1148,6 +1148,22 @@ class ManaClashTest(unittest.TestCase):
 
         assert findObjectInHand(g, p1, "Air Elemental")
 
+    def testInspiration(self):
+        g, a, p1, p2 = createGameInMainPhase(["Island", "Island", "Island", "Island"], ["Inspiration"], [], [])
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+        a = basicManaAbility(g, a, "Island", p1)
+
+        a = playSpell(g, a, "Inspiration")
+        a = selectTarget(g, a, "Player1")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        assert len(g.get_hand(g.obj(p1)).objects) == 2
+
     def testIntruderAlarm(self):
         g, a, p1, p2 = createGameInMainPhase(["Intruder Alarm", "Air Elemental"], [], ["Goblin Chariot", "Mountain"], ["Raging Goblin"])
         chariot = findObjectInPlay(g, "Goblin Chariot")
