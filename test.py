@@ -944,6 +944,46 @@ class ManaClashTest(unittest.TestCase):
         assert zombies.get_state().power == 4
         assert zombies.get_state().toughness == 4
 
+    def testDefenseGrid(self):
+        g, a, p1, p2 = createGameInMainPhase(["Defense Grid"], [], ["Mountain", "Mountain", "Mountain", "Mountain"], ["Shock", "Shock"])
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Mountain", p2)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Player1")
+      
+        printState(g, a) 
+
+        assertOptions(g, a, "Play Mana Abilities", "Cancel", "[R]", "[R]", "[R]")
+
+        a = basicManaAbility(g, a, "Mountain", p2)
+        a = basicManaAbility(g, a, "Mountain", p2)
+        a = basicManaAbility(g, a, "Mountain", p2)
+
+        printState(g, a) 
+        assertOptions(g, a, "Play Mana Abilities", "Cancel", "Pay R3")
+
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        assert g.obj(p1).life == 18
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        a = basicManaAbility(g, a, "Mountain", p2)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Player1")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        assert g.obj(p1).life == 16
+
 
     def testDrudgeSkeletons(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Drudge Skeletons", "Swamp"], [])
