@@ -907,6 +907,22 @@ class ManaClashTest(unittest.TestCase):
         assert len(g.get_hand(g.obj(p2)).objects) == 2
         assert findObjectInGraveyard(g, p2, "Plains") is not None
 
+    def testConfiscate(self):
+        g, a, p1, p2 = createGameInMainPhase([], ["Confiscate"], ["Glory Seeker"], [])
+        g.obj(p1).manapool = "UUUUUU"
+
+        a = playSpell(g, a, "Confiscate")
+        a = selectTarget(g, a, "Glory Seeker")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        seeker = findObjectInPlay(g, "Glory Seeker")
+        assert "summoning sickness" in seeker.get_state().tags
+        assert seeker.get_state().controller_id == p1
+
+
     def testDarkBanishing(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Dark Banishing"], ["Raging Goblin"], [])
         a = basicManaAbility(g, a, "Swamp", p1)
