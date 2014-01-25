@@ -1252,6 +1252,26 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 21
 
+    def testLhurgoyf(self):
+        g, a, p1, p2 = createGameInMainPhase(["Lhurgoyf", "Mountain"], ["Shock"], ["Raging Goblin"], [])
+
+        lhurgoyf = findObjectInPlay(g, "Lhurgoyf")
+        assert lhurgoyf.get_state().power == 0
+        assert lhurgoyf.get_state().toughness == 1
+
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        lhurgoyf = findObjectInPlay(g, "Lhurgoyf")
+        assert lhurgoyf.get_state().power == 1
+        assert lhurgoyf.get_state().toughness == 2
+
+
     def testLoneWolf(self):
         g, a, p1, p2 = createGameInMainPhase(["Lone Wolf"], [], ["Norwood Ranger"], [])
 
@@ -1708,6 +1728,12 @@ class ManaClashTest(unittest.TestCase):
         a = emptyStack(g, a)
         assert g.obj(p1).life == 24
         assert g.obj(p2).life == 16
+
+    def testSwarmOfRats(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swarm of Rats", "Ravenous Rats", "Ravenous Rats"], [], [], [])
+        swarm = findObjectInPlay(g, "Swarm of Rats")
+        assert swarm.get_state().power == 3
+        assert swarm.get_state().toughness == 1
 
 
     def testTeferisPuzzleBox(self):
