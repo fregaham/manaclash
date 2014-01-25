@@ -1408,6 +1408,13 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
+    def testNightmare(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Nightmare"], [], [], [])
+        nightmare = findObjectInPlay(g, "Nightmare")
+
+        assert nightmare.get_state().power == 3
+        assert nightmare.get_state().toughness == 3
+
     def testOraclesAttendants(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Oracle's Attendants", "Raging Goblin"], [])
 
