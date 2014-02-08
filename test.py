@@ -1091,6 +1091,18 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).manapool == "GG"
 
+    def testFungusaur(self):
+        g, a, p1, p2 = createGameInMainPhase(["Fungusaur"], [], ["Raging Goblin"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Fungusaur"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Raging Goblin"], ["Fungusaur"])
+
+        a = postcombatMainPhase(g, a)
+        fungusaur = findObjectInPlay(g, "Fungusaur")
+
+        assert fungusaur.get_state().power == 3
+        assert fungusaur.get_state().toughness == 3
 
     def testFurnanceOfRath(self):
         g, a, p1, p2 = createGameInMainPhase(["Furnace of Rath", "Goblin Chariot"], [], ["Giant Badger"], [])
