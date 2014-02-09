@@ -820,7 +820,8 @@ class DrawStepProcess(SandwichProcess):
         game.process_push(PreStepProcess())
 
     def main(self, game):
-        game.process_push(DrawCardProcess(game.get_active_player()))
+        for i in range(game.get_active_player().draw_cards_count):
+            game.process_push(DrawCardProcess(game.get_active_player()))
 
     def post(self, game):
         for ability in game.triggered_abilities:

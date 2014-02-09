@@ -1182,6 +1182,27 @@ class ManaClashTest(unittest.TestCase):
         findObjectInPlay(g, "Raging Goblin")
         findObjectInPlay(g, "Elvish Pioneer")
 
+    def testHowlingMine(self):
+        g, a, p1, p2 = createGameInMainPhase(["Howling Mine"], [], [], ["Howling Mine"])
+        assert len(g.get_hand(g.obj(p1)).objects) == 0
+        assert len(g.get_hand(g.obj(p2)).objects) == 1
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        assert len(g.get_hand(g.obj(p2)).objects) == 3
+
+        g.obj(p2).manapool = "2"
+
+        a = playSpell(g, a, "Howling Mine")
+        a = payCosts(g, a)
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        assert len(g.get_hand(g.obj(p1)).objects) == 3
+        assert len(g.get_hand(g.obj(p2)).objects) == 2
+
     def testIndex(self):
         g, a, p1, p2 = createGameInMainPhase(["Island"], ["Index"], [], [])
         createCardToLibrary(g, "Raging Goblin", g.obj(p1))
