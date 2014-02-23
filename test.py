@@ -1758,6 +1758,23 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 29
 
+    def testShiftingSky(self):
+        g, a, p1, p2 = createGameInMainPhase(["Eastern Paladin"], ["Shifting Sky"], ["Raging Goblin"], [])
+        g.obj(p1).manapool = "BBU"
+        a = playSpell(g, a, "Shifting Sky")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+        printState(g, a)
+        a = answerQuestion(g, a, "Choose a color", "green")
+        g.obj(p1).manapool = "BB"
+        a = activateAbility(g, a, "Eastern Paladin", p1)
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        assertNoSuchObjectInPlay(g, "Raging Goblin")
+
+
     def testStarCompass(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest", "Swamp", "Mountain", "Star Compass"], [], [], [])
         a = activateAbility(g, a, "Star Compass", p1)

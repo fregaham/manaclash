@@ -63,7 +63,7 @@ class ChooseColorProcess:
                 a.text = name
                 actions.append(a)
 
-            return ActionSet (game, player, ("Choose a color"), actions)
+            return ActionSet (player.get_id(), ("Choose a color"), actions)
         else:
             context.modal = action.text.lower()
 
