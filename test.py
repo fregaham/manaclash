@@ -1795,6 +1795,26 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p1).life == 24
         assert g.obj(p2).life == 16
 
+    def testSunweb(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Air Elemental"], [], ["Sunweb"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin", "Air Elemental"])
+
+        a = declareBlockersStep(g, a)
+
+        a = selectObject(g, a, "Sunweb")
+
+        printState(g, a)
+
+        assertOptions(g, a, "Block which attacker", "Cancel block", "Let")
+        
+        a = selectObject(g, a, "Air Elemental")
+
+        a = postcombatMainPhase(g, a)
+
+        printState(g, a)
+        assertNoSuchObjectInPlay(g, "Air Elemental")
+
     def testSwarmOfRats(self):
         g, a, p1, p2 = createGameInMainPhase(["Swarm of Rats", "Ravenous Rats", "Ravenous Rats"], [], [], [])
         swarm = findObjectInPlay(g, "Swarm of Rats")
