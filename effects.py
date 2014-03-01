@@ -3089,7 +3089,7 @@ class XCantBlockOrBeBlockerByY(ContinuousEffect):
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector) or isinstance(self.y_selector, SelfSelector)
 
-    def onCanBlock(self, game, SELF_id, bv):
+    def onCanBlock(self, SELF_id, game, bv):
         SELF = game.obj(SELF_id)
 
         if bv.can and ((self.x_selector.contains(game, SELF, bv.attacker) and self.y_selector.contains(game, SELF, bv.blocker)) or (self.x_selector.contains(game, SELF, bv.blocker) and self.y_selector.contains(game, SELF, bv.attacker))):

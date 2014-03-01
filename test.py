@@ -1774,6 +1774,29 @@ class ManaClashTest(unittest.TestCase):
 
         assertNoSuchObjectInPlay(g, "Raging Goblin")
 
+    def testSneakyHomunculus(self):
+        g, a, p1, p2 = createGameInMainPhase(["Sneaky Homunculus"], [], ["Ardent Militia"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Sneaky Homunculus"])
+        a = declareBlockersStep(g, a)
+        a = selectObject(g, a, "Ardent Militia")
+
+        assertOptions(g, a, "Block which attacker", "Cancel block")
+
+        a = answerQuestion(g, a, "Block which attacker", "Cancel")
+
+        a = declareBlockers(g, a, [], [])
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Ardent Militia"])
+        a = declareBlockersStep(g, a)
+        a = selectObject(g, a, "Sneaky Homunculus")
+        assertOptions(g, a, "Block which attacker", "Cancel block")
+
 
     def testStarCompass(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest", "Swamp", "Mountain", "Star Compass"], [], [], [])
