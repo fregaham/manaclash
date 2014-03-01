@@ -3066,7 +3066,7 @@ class XCantAttackUnlessDefendingPlayerControlsAY(ContinuousEffect):
     def isSelf(self):
         return isinstance(self.x_selector, SelfSelector)
 
-    def onCanAttack(self, game, SELF_id, av):
+    def onCanAttack(self, SELF_id, game, av):
         SELF = game.obj(SELF_id)
 
         if av.can and self.x_selector.contains(game, SELF, av.attacker):

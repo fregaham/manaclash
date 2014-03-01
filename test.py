@@ -1718,6 +1718,28 @@ class ManaClashTest(unittest.TestCase):
         
         printState(g, a)
 
+    def testSeaMonster(self):
+        g, a, p1, p2 = createGameInMainPhase(["Sea Monster"], [], [], ["Island"])
+        a = declareAttackersStep(g, a)
+        printState(g, a)
+
+        assertOptions(g, a, "Select attackers", "No more")
+
+        a = endOfTurn(g, a)
+        a = postcombatMainPhase(g, a)
+
+        a = playLand(g, a, "Island")
+
+        a = endOfTurn(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Sea Monster"])
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 14
+
+
+
     def testSeasonedMarshal(self):
         g, a, p1, p2 = createGameInMainPhase(["Seasoned Marshal"], [], ["Raging Goblin"], [])
         a = declareAttackersStep(g, a)
