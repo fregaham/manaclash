@@ -1320,6 +1320,28 @@ class ManaClashTest(unittest.TestCase):
         assert lhurgoyf.get_state().power == 1
         assert lhurgoyf.get_state().toughness == 2
 
+    def testLivingTerrain(self):
+        g, a, p1, p2 = createGameInMainPhase([], ["Forest", "Living Terrain"], [], [])
+
+        a = playLand(g, a, "Forest")
+
+        g.obj(p1).manapool = "GGGG"
+        a = playSpell(g, a, "Living Terrain")
+        a = selectTarget(g, a, "Forest")
+        a = payCosts(g, a)
+
+        a = declareAttackersStep(g, a)
+
+        # summoning sickness
+        assertOptions(g, a, "Select attackers", "No more")
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Forest"])
+        a = postcombatMainPhase(g, a)
+        assert g.obj(p2).life == 15
+
 
     def testLoneWolf(self):
         g, a, p1, p2 = createGameInMainPhase(["Lone Wolf"], [], ["Norwood Ranger"], [])
