@@ -1597,6 +1597,18 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
+    def testPlowUnder(self):
+        g, a, p1, p2 = createGameInMainPhase([], ["Plow Under"], ["Swamp", "Mountain"], [])
+        g.obj(p1).manapool = "GGGGG"
+
+        a = playSpell(g, a, "Plow Under")
+        a = selectObject(g, a, "Swamp")
+        a = selectObject(g, a, "Mountain")
+       
+        a = payCosts(g, a)
+        printState(g, a)
+
+
     def testPrimevalForce(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest", "Forest", "Forest", "Plains", "Plains"], ["Primeval Force", "Primeval Force"], [], [])
         a = basicManaAbility(g, a, "Forest", p1)
@@ -1664,6 +1676,40 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
+
+    def testRedeem(self):
+        g, a, p1, p2 = createGameInMainPhase(["Grizzly Bears"], [], ["Raging Goblin", "Eager Cadet", "Plains", "Plains"], ["Redeem"])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Grizzly Bears"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Raging Goblin", "Eager Cadet"], ["Grizzly Bears", "Grizzly Bears"])
+
+        a = _pass(g, a)
+
+        a = basicManaAbility(g, a, "Plains", p2)
+        a = basicManaAbility(g, a, "Plains", p2)
+
+        a = playSpell(g, a, "Redeem")
+        a = selectObject(g, a, "Raging Goblin")
+        a = selectObject(g, a, "Eager Cadet")
+        a = payCosts(g, a)
+
+        a = emptyStack(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        assert a.text.startswith("Assign 1 damage from")
+        a = selectObject(g, a, "Raging Goblin")
+
+        assert a.text.startswith("Assign 1 damage from")
+        a = selectObject(g, a, "Eager Cadet")
+
+        a = postcombatMainPhase(g, a)
+
+        findObjectInPlay(g, "Raging Goblin")
+        findObjectInPlay(g, "Eager Cadet")
+        assertNoSuchObjectInPlay(g, "Grizzly Bears")
+
 
     def testRelentlessAssault(self):
         g, a, p1, p2 = createGameInMainPhase(["Raging Goblin"], ["Relentless Assault", "Mountain"], [], [])

@@ -2963,7 +2963,7 @@ class PreventAllDamageThatWouldBeDealtToXDamagePrevention(DamagePrevention):
 
     def canApply(self, game, damage, combat):
         source, dest, n = damage
-        return self.selector.contains(game, self.obj, dest)
+        return self.selector.contains_lki(game, self.obj, dest)
 
     def apply(self, game, damage, combat):
         source, dest, n = damage
