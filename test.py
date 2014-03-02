@@ -1665,6 +1665,25 @@ class ManaClashTest(unittest.TestCase):
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
 
+    def testRelentlessAssault(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin"], ["Relentless Assault", "Mountain"], [], [])
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = postcombatMainPhase(g, a)
+
+        g.obj(p1).manapool = "RRRR"
+        a = playSpell(g, a, "Relentless Assault")
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+
+        a = postcombatMainPhase(g, a)
+        a = playLand(g, a, "Mountain")
+
+        assert g.obj(p2).life == 18
+        assert g.turn_number == 0
+
+
     def testRewind(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"],["Island", "Island", "Island", "Island"], ["Rewind"])
         a = basicManaAbility(g, a, "Mountain", p1)
