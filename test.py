@@ -1674,6 +1674,8 @@ class ManaClashTest(unittest.TestCase):
 
         g.obj(p1).manapool = "RRRR"
         a = playSpell(g, a, "Relentless Assault")
+        a = payCosts(g, a)
+
         a = declareAttackersStep(g, a)
         a = declareAttackers(g, a, ["Raging Goblin"])
 

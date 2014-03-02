@@ -944,7 +944,7 @@ class SpellOrAbilitySelector(Selector):
 class CreatureThatAttackedThisTurnSelector(Selector):
     def all(self, game, context):
         for item in game.creature_that_attacked_this_turn_lkis:
-            yield item
+            yield game.lki(item)
 
     def slots(self):
         return ["that creature", "it"]
