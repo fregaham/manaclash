@@ -1606,7 +1606,17 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Mountain")
        
         a = payCosts(g, a)
+
+        a = emptyStack(g, a)
         printState(g, a)
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+
+        a = precombatMainPhase(g, a)
+        findObjectInHand(g, p2, "Swamp")
+        findObjectInHand(g, p2, "Mountain")
 
 
     def testPrimevalForce(self):

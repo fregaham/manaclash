@@ -2855,7 +2855,8 @@ class PutNTargetXOnTopOfOwnersLibraries(MultipleTargetOneShotEffect):
     def doResolve(self, game, obj, targets):
         game.process_returns_push(True)
 
-        for target in targets.values():
+        for target_lki in targets.values():
+            target = game.lki(target_lki)
             library = game.get_library(game.objects[target.get_state().owner_id])
             if not target.is_moved():
                 game.doZoneTransfer(target.get_object(), library, obj)
