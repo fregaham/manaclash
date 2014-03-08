@@ -1460,6 +1460,20 @@ class ManaClashTest(unittest.TestCase):
         goblin = findObjectInPlay(g, "Raging Goblin")
         assert goblin.tapped
 
+    def testMillstone(self):
+        g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains", "Millstone"], [], [], [])
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = basicManaAbility(g, a, "Plains", p1)
+        a = activateAbility(g, a, "Millstone", p1)
+
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = emptyStack(g, a)
+
+        grave = g.get_graveyard(g.obj(p2))
+        assert len(grave.objects) == 2
+               
+
     def testMindBend(self):
         g, a, p1, p2 = createGameInMainPhase(["Eastern Paladin", "Island", "Swamp", "Swamp"], ["Mind Bend"], ["Raging Goblin"], [])
         a = basicManaAbility(g, a, "Island", p1)
@@ -1498,6 +1512,27 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         a = selectObject(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
+
+    def testNaturalAffinity(self):
+        g, a, p1, p2 = createGameInMainPhase(["Forest", "Plains"], ["Natural Affinity"], ["Swamp", "Mountain"], [])
+        g.obj(p1).manapool = "GGG"
+
+        a = playSpell(g, a, "Natural Affinity")
+        a = payCosts(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Forest", "Plains"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Swamp"], ["Forest"])
+
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 18
+        assertNoSuchObjectInPlay(g, "Forest")
+        assertNoSuchObjectInPlay(g, "Swamp")
+        findObjectInPlay(g, "Mountain")
+        findObjectInPlay(g, "Plains")
+
 
     def testNightmare(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Nightmare"], [], [], [])
