@@ -3026,7 +3026,7 @@ class PutNNCTCreatureTokenWithTOntoTheBattlefieldAtTheBeginningOfTheNextEndStepE
         self.tag = tag
         self.active = True
 
-    def handle(self, game, SELF_id):
+    def handle(self, SELF_id, game):
         SELF = game.obj(SELF_id)
 
         if self.active and game.current_step == "end of turn":

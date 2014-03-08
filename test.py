@@ -1772,6 +1772,29 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 20
         assert not findObjectInPlay(g, "Island").tapped
 
+    def testRukhEgg(self):
+        g, a, p1, p2 = createGameInMainPhase(["Balduvian Barbarians"], [], ["Rukh Egg"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Balduvian Barbarians"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Rukh Egg"], ["Balduvian Barbarians"])
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        bird = findObjectInPlay(g, "Token")
+        assert bird.get_state().power == 4
+        assert bird.get_state().toughness == 4
+        assert "flying" in bird.get_state().tags
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Token"])
+
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p1).life == 16
+
+
     def testSacredGround(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain"], ["Stone Rain"], ["Plains", "Sacred Ground"], [])
         a = basicManaAbility(g, a, "Mountain", p1)
