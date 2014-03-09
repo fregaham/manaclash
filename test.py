@@ -1513,6 +1513,23 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
+    def testMindSlash(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Mind Slash", "Raging Goblin"], [], [], ["Plains", "Island"])
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = activateAbility(g, a, "Mind Slash", p1)
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+
+        a = selectObject(g, a, "Raging Goblin")
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = selectObject(g, a, "Plains")
+     
+        assert len(g.get_hand(g.obj(p2)).objects) == 1
+
+
     def testNaturalAffinity(self):
         g, a, p1, p2 = createGameInMainPhase(["Forest", "Plains"], ["Natural Affinity"], ["Swamp", "Mountain"], [])
         g.obj(p1).manapool = "GGG"
@@ -2228,6 +2245,26 @@ class ManaClashTest(unittest.TestCase):
 
         star = findObjectInGraveyard(g, p1, "Iron Star")
         assert g.obj(p1).life == 18
+
+    def testWarpedDevotion(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Island"], ["Unsummon"], ["Warped Devotion"], [])
+        a = basicManaAbility(g, a, "Island", p1)
+
+        a = playSpell(g, a, "Unsummon")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Discard a card", "Discard")
+        assert len(g.get_hand(g.obj(p1)).objects) == 0
+
 
     def testWrathOfGod(self):
         g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains", "Plains", "Plains", "Angelic Page"], ["Wrath of God"], ["Raging Goblin"], [])
