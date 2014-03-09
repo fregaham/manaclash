@@ -169,6 +169,12 @@ def endOfTurn(g, ax):
 
     return ax
 
+def upkeep(g, ax):
+    while g.current_phase != "beginning" or g.current_step != "upkeep" or ax.text != "You have priority":
+        ax = _pass(g, ax)
+
+    return ax
+
 def precombatMainPhase(g, ax):
     turn_id = g.get_active_player().id
     while g.current_phase != "precombat main" or ax.text != "You have priority":
@@ -1139,6 +1145,49 @@ class ManaClashTest(unittest.TestCase):
 
         findObjectInGraveyard(g, p2, "Elvish Pioneer")
         findObjectInPlay(g, "Air Elemental")
+
+    def testHammerOfBogardan(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain", "Mountain"], ["Hammer of Bogardan"], [], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Hammer of Bogardan")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+
+        a = emptyStack(g, a)
+
+        assert g.obj(p2).life == 17
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+
+        a = upkeep(g, a)
+        printState(g, a)
+
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+
+        a = activateAbility(g, a, "Hammer of Bogardan", p1)
+        a = payCosts(g, a)
+
+        a = endOfTurn(g, a)
+        a = endOfTurn(g, a)
+        a = postcombatMainPhase(g, a)
+
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Hammer of Bogardan")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+
+        a = emptyStack(g, a)
+
+        assert g.obj(p2).life == 14
 
     def testHealingSalve(self):
         g, a, p1, p2 = createGameInMainPhase(["Plains", "Raging Goblin"], ["Healing Salve"], ["Plains", "Elvish Pioneer"], ["Healing Salve"])
