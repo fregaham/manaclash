@@ -1041,6 +1041,21 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains") 
         assert findObjectInHand(g, p1, "Plains") is not None
 
+    def testDisruptingScepter(self):
+        g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp", "Disrupting Scepter"], [], [], ["Island", "Plains"])
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = basicManaAbility(g, a, "Swamp", p1)
+        a = activateAbility(g, a, "Disrupting Scepter", p1)
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = selectObject(g, a, "Plains") 
+
+        assert len(g.get_hand(g.obj(p2)).objects) == 1
+
     def testDistortingLens(self):
         g, a, p1, p2 = createGameInMainPhase(["Distorting Lens", "Island", "Island", "Island"], ["Hibernation"], ["Raging Goblin"], [])
         a = activateAbility(g, a, "Distorting Lens", p1)
