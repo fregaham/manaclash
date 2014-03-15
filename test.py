@@ -943,6 +943,30 @@ class ManaClashTest(unittest.TestCase):
 
         assert findObjectInGraveyard(g, p2, "Raging Goblin") is not None
 
+    def testDeathgazer(self):
+        g, a, p1, p2 = createGameInMainPhase(["Deathgazer"], [], ["Angel of Mercy"], [])
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Deathgazer"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Angel of Mercy"], ["Deathgazer"])
+
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Angel of Mercy")
+
+    def testDeathgazer2(self):
+        g, a, p1, p2 = createGameInMainPhase(["Giant Octopus"], [], ["Deathgazer"], [])
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Giant Octopus"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Deathgazer"], ["Giant Octopus"])
+
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Giant Octopus")
+
     def testDeathPitOffering(self):
         g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Drudge Skeletons"], ["Death Pit Offering", "Scathe Zombies"], [], [])
         g.obj(p1).manapool = "BBBBBBB"
