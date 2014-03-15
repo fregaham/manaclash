@@ -1581,6 +1581,25 @@ class ManaClashTest(unittest.TestCase):
         goblin = findObjectInPlay(g, "Raging Goblin")
         assert goblin.tapped
 
+    def testMegrim(self):
+        g, a, p1, p2 = createGameInMainPhase(["Megrim"], ["Mind Rot"], [], ["Plains", "Forest"])
+        g.obj(p1).manapool = "BBB"
+
+        a = playSpell(g, a, "Mind Rot")
+        a = selectTarget(g, a, "Player2")
+
+        a = payCosts(g, a)
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = discardACard(g, a, "Plains")
+        a = discardACard(g, a, "Forest")
+
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p1).life == 20
+        assert g.obj(p2).life == 16
+
     def testMillstone(self):
         g, a, p1, p2 = createGameInMainPhase(["Plains", "Plains", "Millstone"], [], [], [])
         a = basicManaAbility(g, a, "Plains", p1)
