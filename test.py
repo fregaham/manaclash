@@ -1365,6 +1365,22 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 21
 
+    def testLesserGargadon(self):
+        g, a, p1, p2 = createGameInMainPhase(["Lesser Gargadon", "Mountain"], [], [], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Lesser Gargadon"])
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Sacrifice land", "Sacrifice")
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 14
+        assertNoSuchObjectInPlay(g, "Mountain")
+
     def testLhurgoyf(self):
         g, a, p1, p2 = createGameInMainPhase(["Lhurgoyf", "Mountain"], ["Shock"], ["Raging Goblin"], [])
 
@@ -2087,6 +2103,21 @@ class ManaClashTest(unittest.TestCase):
         a = emptyStack(g, a)
         assert g.obj(p1).life == 24
         assert g.obj(p2).life == 16
+
+    def testSpiritLink(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin"], ["Spirit Link"], [], [])
+        g.obj(p1).manapool = "W"
+
+        a = playSpell(g, a, "Spirit Link")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+
+        a = postcombatMainPhase(g, a)
+        assert g.obj(p1).life == 21
+
 
     def testSunweb(self):
         g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Air Elemental"], [], ["Sunweb"], [])
