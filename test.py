@@ -1381,6 +1381,23 @@ class ManaClashTest(unittest.TestCase):
         assert g.obj(p2).life == 14
         assertNoSuchObjectInPlay(g, "Mountain")
 
+    def testLesserGargadon2(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin"], [], ["Lesser Gargadon", "Mountain"], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+        a = declareBlockersStep(g, a)
+        a = declareBlockers(g, a, ["Lesser Gargadon"], ["Raging Goblin"])
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = answerQuestion(g, a, "Sacrifice land", "Sacrifice")
+        a = postcombatMainPhase(g, a)
+
+        assertNoSuchObjectInPlay(g, "Mountain")
+
     def testLhurgoyf(self):
         g, a, p1, p2 = createGameInMainPhase(["Lhurgoyf", "Mountain"], ["Shock"], ["Raging Goblin"], [])
 

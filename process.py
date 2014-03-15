@@ -1282,16 +1282,16 @@ class DeclareBlockersStepProcess(Process):
                     game.declared_blockers.add (b_lki)
                     game.declared_blockers_map[b_id] = self.blockers_map[b_id][:]
 
+                self.state = 7
+                game.process_push(self)
+                game.process_push(PrioritySuccessionProcess(game.get_active_player()))
+
                 process_raise_blocking_events(game)
 
                 for ability in game.triggered_abilities:
                     game.stack_push (ability)
 
                 game.triggered_abilities = []
-
-                self.state = 7
-                game.process_push(self)
-                game.process_push(PrioritySuccessionProcess(game.get_active_player()))
 
         elif self.state == 7:
             # remove the moved declared attackers
