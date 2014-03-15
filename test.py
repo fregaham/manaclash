@@ -1622,6 +1622,16 @@ class ManaClashTest(unittest.TestCase):
         assert nightmare.get_state().power == 3
         assert nightmare.get_state().toughness == 3
 
+    def testNoblePurpose(self):
+        g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Noble Purpose"], [], [], [])
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Raging Goblin"])
+
+        a = postcombatMainPhase(g, a)
+
+        assert g.obj(p1).life == 21
+
+
     def testOraclesAttendants(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Oracle's Attendants", "Raging Goblin"], [])
 
