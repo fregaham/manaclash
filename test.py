@@ -2307,6 +2307,15 @@ class ManaClashTest(unittest.TestCase):
 
         assert not goblin.tapped
 
+    def testUnderworldDreams(self):
+        g, a, p1, p2 = createGameInMainPhase(["Underworld Dreams"], [], [], [])
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 19
+        
+
     def testUnsummon(self):
         g, a, p1, p2 = createGameInMainPhase(["Island"], ["Unsummon"], ["Raging Goblin"], [])
         a = basicManaAbility(g, a, "Island", p1)
