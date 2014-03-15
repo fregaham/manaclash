@@ -1185,6 +1185,26 @@ class ManaClashTest(unittest.TestCase):
         findObjectInGraveyard(g, p2, "Elvish Pioneer")
         findObjectInPlay(g, "Air Elemental")
 
+    def testGuerrillaTactics(self):
+        g, a, p1, p2 = createGameInMainPhase([], ["Mind Rot"], [], ["Guerrilla Tactics"])
+        g.obj(p1).manapool = "BBB"
+
+        a = playSpell(g, a, "Mind Rot")
+        a = selectTarget(g, a, "Player2")
+        a = payCosts(g, a)
+
+        printState(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        a = discardACard(g, a, "Guerrilla Tactics")
+        a = selectTarget(g, a, "Player1")
+
+        a = postcombatMainPhase(g, a)
+        assert g.obj(p1).life == 16
+
+
     def testHammerOfBogardan(self):
         g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain", "Mountain", "Mountain"], ["Hammer of Bogardan"], [], [])
         a = basicManaAbility(g, a, "Mountain", p1)
