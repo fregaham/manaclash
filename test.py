@@ -1857,6 +1857,15 @@ class ManaClashTest(unittest.TestCase):
         a = answerQuestion(g, a, "Player Player2 reveals cards", "OK")
         assert len(g.get_hand(g.obj(p2)).objects) == 1
 
+    def testPhyrexianArena(self):
+        g, a, p1, p2 = createGameInMainPhase([], [], ["Phyrexian Arena"], [])
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 19
+        assert len(g.get_hand(g.obj(p2)).objects) == 2
+
     def testPlowUnder(self):
         g, a, p1, p2 = createGameInMainPhase([], ["Plow Under"], ["Swamp", "Mountain"], [])
         g.obj(p1).manapool = "GGGGG"
@@ -2487,6 +2496,24 @@ class ManaClashTest(unittest.TestCase):
 
         star = findObjectInGraveyard(g, p1, "Iron Star")
         assert g.obj(p1).life == 18
+
+    def testViashinoSandstalker(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain", "Mountain", "Mountain"], ["Viashino Sandstalker"], [], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = basicManaAbility(g, a, "Mountain", p1)
+
+        a = playSpell(g, a, "Viashino Sandstalker")
+        a = payCosts(g, a)
+
+        a = declareAttackersStep(g, a)
+        a = declareAttackers(g, a, ["Viashino Sandstalker"])
+
+        a = endOfTurn(g, a)
+        assert g.obj(p2).life == 16
+        assertNoSuchObjectInPlay(g, "Viashino Sandstalker")
+        assert len(g.get_hand(g.obj(p1)).objects) == 1
+
 
     def testWarpedDevotion(self):
         g, a, p1, p2 = createGameInMainPhase(["Raging Goblin", "Island"], ["Unsummon"], ["Warped Devotion"], [])
