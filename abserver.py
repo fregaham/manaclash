@@ -111,7 +111,8 @@ def object_to_map(game, o):
     ret["enchanted_id"] = o.enchanted_id
         
     ret["targets"] = []
-    for target in o.targets.values():
+    for target_lki_id in o.targets.values():
+        target = game.lki(target_lki_id)
         ret["targets"].append(target.get_id())
 
     if o.get_state().controller_id != None:
@@ -124,7 +125,8 @@ def object_to_map(game, o):
 
     ret["show_to"] = map(lambda x: player_to_role(game, game.objects[x]), o.get_state().show_to)
     
-    for obj in game.declared_attackers:
+    for lki_id in game.declared_attackers:
+        obj = game.lki(lki_id)
         if o.id == obj.get_id():
             # Try to find a blocker
             for blocker_id, attacker_ids in game.declared_blockers_map.iteritems():
