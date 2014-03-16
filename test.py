@@ -928,6 +928,24 @@ class ManaClashTest(unittest.TestCase):
         assert "summoning sickness" in seeker.get_state().tags
         assert seeker.get_state().controller_id == p1
 
+    def testCowardice(self):
+        g, a, p1, p2 = createGameInMainPhase(["Cowardice", "Mountain"], ["Shock"], ["Raging Goblin"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        a = _pass(g, a)
+        a = _pass(g, a)
+
+        printState(g, a)
+
+        assert len(g.get_hand(g.obj(p2)).objects) == 1
 
     def testDarkBanishing(self):
         g, a, p1, p2 = createGameInMainPhase(["Swamp", "Swamp", "Swamp"], ["Dark Banishing"], ["Raging Goblin"], [])
@@ -1115,6 +1133,17 @@ class ManaClashTest(unittest.TestCase):
         a = selectObject(g, a, "Plains")
         plains = findObjectInPlay(g, "Plains")
         assert plains.tapped
+
+    def testEmperorCrocodile(self):
+        g, a, p1, p2 = createGameInMainPhase(["Mountain"], ["Shock"], ["Emperor Crocodile", "Raging Goblin"], [])
+        a = basicManaAbility(g, a, "Mountain", p1)
+        a = playSpell(g, a, "Shock")
+        a = selectTarget(g, a, "Raging Goblin")
+        a = payCosts(g, a)
+
+        a = postcombatMainPhase(g, a)
+        assertNoSuchObjectInPlay(g, "Emperor Crocodile")
+
 
     def testFlyingCarpet(self):
         g, a, p1, p2 = createGameInMainPhase(["Flying Carpet", "Raging Goblin", "Mountain", "Mountain"], [], [], [])
@@ -1408,6 +1437,15 @@ class ManaClashTest(unittest.TestCase):
         a = emptyStack(g, a)
 
         assert g.obj(p1).life == 21
+
+    def testKarma(self):
+        g, a, p1, p2 = createGameInMainPhase(["Karma"], [], ["Swamp", "Swamp", "Swamp"], [])
+
+        a = endOfTurn(g, a)
+        a = precombatMainPhase(g, a)
+
+        assert g.obj(p2).life == 17
+
 
     def testLesserGargadon(self):
         g, a, p1, p2 = createGameInMainPhase(["Lesser Gargadon", "Mountain"], [], [], [])

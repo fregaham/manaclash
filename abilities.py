@@ -857,10 +857,10 @@ class WhenXBecomesTargetOfYDoEffectAbility(TriggeredAbility):
         if self.x_selector.contains(game, SELF, target) and self.y_selector.contains(game, SELF, source):
             slots = {}
             for slot in self.y_selector.slots():
-                slots[slot] = source
+                slots[slot] = game.create_lki(source)
 
             for slot in self.x_selector.slots():
-                slots[slot] = target
+                slots[slot] = game.create_lki(target)
 
             game.process_push(TriggerEffectProcess(SELF, self.effect, slots))
        
