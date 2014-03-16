@@ -2388,6 +2388,16 @@ class ManaClashTest(unittest.TestCase):
 
         assert g.obj(p1).life == 16
 
+    def testVernalBloom(self):
+        g, a, p1, p2 = createGameInMainPhase(["Forest", "Forest", "Vernal Bloom"], ["Elvish Piper"], [], [])
+        a = basicManaAbility(g, a, "Forest", p1) 
+        a = basicManaAbility(g, a, "Forest", p1) 
+        a = playSpell(g, a, "Elvish Piper")
+        a = payCosts(g, a)
+      
+        a = postcombatMainPhase(g, a)
+        findObjectInPlay(g, "Elvish Piper")
+
 
     def testVexingArcanix(self):
         g, a, p1, p2 = createGameInMainPhase(["Island", "Island", "Island", "Vexing Arcanix"], [], [], [])
