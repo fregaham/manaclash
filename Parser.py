@@ -17,6 +17,8 @@
 #
 # 
 
+from collections import deque
+
 class NonTerminal:
     def __init__ (self, label):
         self.label = label
@@ -37,7 +39,7 @@ class Rule:
         return (repr((self.lhs, self.rhs)))
 
 def parse(rules, label, string, debug=False):
-    stack = []
+    stack = deque()
 
     lhss = {}
     for rule in rules:
