@@ -20,7 +20,7 @@ def request_handler(req):
 sockJSServer = vertx.create_sockjs_server(server)
 sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'chat'}, {'address':'list'}, {'address':'login'}
+        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}
     ],
     [])
 
@@ -50,10 +50,10 @@ def deploy_handler(err, id):
             }
         })
 
-def login_handler(message):
-    print "Login " + `message.body`
+#def login_handler(message):
+#    print "Login " + `message.body`
 
-login_handler_id = EventBus.register_handler('login', handler=login_handler)
+# login_handler_id = EventBus.register_handler('login', handler=login_handler)
 
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.0.0-final', handler=deploy_handler)
 vertx.deploy_module('io.vertx~mod-auth-mgr~2.0.0-final')

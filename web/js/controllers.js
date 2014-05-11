@@ -4,14 +4,27 @@
 
 var manaclashControllers = angular.module('manaclashControllers', ['manaclashServices']);
 
-manaclashControllers.controller('LoginCtrl', ['$scope', '$http', 'EventBus',
-  function ($scope, $http, EventBus) {
+manaclashControllers.controller('LoginCtrl', ['$scope', '$http', 'EventBus', 'SessionManager', '$location', '$timeout',
+  function ($scope, $http, EventBus, SessionManager, $location, $timeout) {
     $scope.username = 'foo';
     $scope.password = 'bar';
 
+    $scope.error = '';
+
     $scope.login = function() {
-       EventBus.send("login", { "username" : $scope.username, "password": $scope.password } )
-       //alert($scope.username + $scope.password);
+       SessionManager.login($scope.username, $scope.password, function () {
+          $timeout(function() { $location.path('/lobby'); });
+       },
+
+       function () {
+          $scope.$apply (function() {
+             $scope.error = "Wrong username / password";
+          });
+       });
     };
+  }]);
+
+manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus',
+  function ($scope, $http, EventBus) {
   }]);
 

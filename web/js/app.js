@@ -16,6 +16,10 @@ manaclashApp.config(['$routeProvider',
         templateUrl: 'partials/login.html',
         controller: 'LoginCtrl'
       }).
+      when('/lobby', {
+        templateUrl: 'partials/lobby.html',
+        controller: 'LobbyCtrl'
+      }).
       otherwise({
         redirectTo: '/login'
       });
