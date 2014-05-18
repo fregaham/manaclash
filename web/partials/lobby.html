@@ -1,3 +1,130 @@
-<div class="container">
-    <h3>Lobby</h3>
+<div id="lobby" class="container-fluid">
+    <div class="row-fluid" style="margin-bottom:12px">
+        <div class="span12">
+            Deck
+            <div class="btn-group">
+                <button id="lobby_deck_dropdown" class="btn dropdown-toggle" data-toggle="dropdown" href="#">Dropdown trigger <span class="caret"></span></button>
+                <ul id="lobby_deck_list" class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                    <li role="presentation"><a href="#" role="menuitem">Green Machine</a></li>
+                    <li role="presentation"><a href="#" role="menuitem">Red Fries</a></li>
+                </ul>
+            </div>
+
+            <span class="icon-bar"></span>
+
+            Open to a duel? <div id="lobby_open_duel_radio" class="btn-group" data-toggle="buttons-radio">
+                <button id="lobby_open_duel_yes" type="button" class="btn">Yes</button>
+                <button id="lobby_open_duel_no" type="button" class="btn">No</button>
+            </div>
+
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+
+            <button id="lobby_solitaire" class="btn" href="#" onclick="$('#lobby_solitaire_modal').modal('toggle')">Play solitaire</button>
+            <div id="lobby_solitaire_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="lobbySolitaireHeader" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h3 id="lobbySolitaireHeader">Start Solitaire</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row-fluid">
+                        <div class="span6">
+                            <ul id="lobby_solitaire_deck1" class="nav nav-tabs nav-stacked">
+                            <li class="nav-header">Deck 1</li>
+                            <li><a href="#" role="menuitem">Green Machine</a></li>
+                            <li class="active"><a href="#" role="menuitem">Red Fries</a></li>
+                            </ul>
+                        </div>
+                        <div class="span6">
+                            <ul id ="lobby_solitaire_deck2" class="nav nav-tabs nav-stacked">
+                            <li class="nav-header">Deck 2</li>
+                            <li class="active"><a href="#" role="menuitem">Green Machine</a></li>
+                            <li><a href="#" role="menuitem">Red Fries</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                    <button class="btn btn-primary" onclick="lobby_start_solitaire();">Play</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span3">
+            <div class="well">
+                <div class="sidebar-nav">
+
+                    <ul id="lobby_duel_players" class="nav nav-list">
+
+                    </ul>
+
+                    <ul id="lobby_available_players" class="nav nav-list">
+<!--
+                  <li id="lobby_challenging_players" class="nav-header">Players challenging you</li>
+                  <li><a href="#">Rincewind</a></li>
+                  <li class="active">
+                      <button type="button" class="btn pull-right" style="margin-top:8px">Decline</button>
+                      <span class="icon-bar pull-right"></span>    
+                      <button type="button" class="btn pull-right" style="margin-top:8px">Accept</button>
+
+                      <a href="#"><b>Merlin</b><br/>Rank: 10.5</a>
+                  </li>
+
+                  <li><a href="#">George</a></li>
+
+                  <li id="lobby_open_players" class="nav-header">Players open to a duel</li>
+                  <li><a href="#">Jimmy</a></li>
+                  <li class="active">
+                    <button type="button" class="btn pull-right" style="margin-top:8px">Join Duel</button>
+                    <a href="#"><b>Bublach</b><br/>Rank: 3.5</a>
+                  </li>
+-->
+
+<!--                  <li id="lobby_available_players" class="nav-header">Available Players</li>-->
+                    </ul>
+       
+                    <ul id="lobby_games_in_progress" class="nav nav-list">
+<!--
+                  <li><a href="#">Foo</a></li>
+                  <li class="active">
+                                <button type="button" class="btn pull-right" style="margin-top:8px">Challenge</button>
+                                <a href="#"><b>Bar</b><br/>Rank: 10.5</a> 
+                  </li>
+                  <li><a href="#">Jerry</a></li>
+-->
+<!--                  <li class="nav-header">Games in Progress</li>-->
+<!--
+                  <li><a href="#">Foo vs Bar</a></li>
+                  <li><a href="#">Monty vs Blab</a></li>
+                  <li class="active">
+                    <button type="button" class="btn pull-right" style="margin-top:8px">Watch</button>
+                    <a href="#"><b>Wizzo vs Chuck</b><br/>Turn: 5</a>
+                  </li>
+-->
+                    </ul>
+                </div>
+            </div><!--/.well -->
+        </div><!--/span-->
+
+        <div class="span9">
+            <div id="chat" class="well">
+                <div class="row-fluid input-append">
+                    <input class="span11" id="lobby_chat_input" placeholder="Chat..." ng-model="message" type="text">
+                    <button class="btn" type="button" ng-click="chat()">Send</button>
+                </div>
+
+                <div id="lobby_chat_messages">
+<!--                        <div style="color: rgb(192, 152, 83);"><i><b>Rincewind</b> challenged you for a duel!</i></div>
+                        <div><i>Puss entered the lobby.</i></div>
+                        <div><b>Merlin:</b> I will destroy you! </div>
+                        <div><b>Jerry:</b> Anybody want to play? </div> 
+-->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+

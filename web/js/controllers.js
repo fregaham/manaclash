@@ -60,8 +60,15 @@ manaclashControllers.controller('RegisterCtrl', ['$scope', '$http', 'EventBus', 
     }
   }]);
 
-manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus',
-  function ($scope, $http, EventBus) {
+manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'SessionManager',
+  function ($scope, $http, EventBus, SessionManager) {
+    $scope.message = '';
+    $scope.chat = function() {
+        if ($scope.message) {
+            EventBus.send("chat", {'sessionID': SessionManager.sessionID, 'message': $scope.message})
+            $scope.message = '';
+        }
+    }
   }]);
 
 

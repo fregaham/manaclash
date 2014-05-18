@@ -1,8 +1,10 @@
 import functools
 import vertx
 from core.event_bus import EventBus
+from core.shared_data import SharedData
 
 server = vertx.create_http_server()
+shared_hash = SharedData.get_hash('manaclash.chat')
 
 @server.request_handler
 def request_handler(req):
@@ -55,6 +57,18 @@ def register_handler(message):
             }
     }, reply_handler)
 
+def authorise_handler(fun, message):
+    def reply_handler(reply):
+        if reply.body["status"] == "ok":
+            fun(message, reply.body["username"])
+
+    EventBus.send('vertx.basicauthmanager.authorise', {
+        "sessionID": message.body["sessionID"]
+    }, reply_handler)
+
+def chat_handler(message, username):
+    print "chat by: " + username + " message:" + message.body["message"]
+
 def deploy_handler(err, id):
 
     print "deploy handler: " + `err`
@@ -98,6 +112,7 @@ def deploy_handler(err, id):
 
 # login_handler_id = EventBus.register_handler('login', handler=login_handler)
 register_handler_id = EventBus.register_handler('register', handler=register_handler)
+chat_handler_id = EventBus.register_handler('chat', handler=functools.partial(authorise_handler, chat_handler))
 
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.1.0', {"address": "vertx.mongopersistor"},  handler=deploy_handler)
 vertx.deploy_module('io.vertx~mod-auth-mgr~2.0.0-final')
