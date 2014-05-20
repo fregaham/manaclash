@@ -7,7 +7,7 @@ var manaclashControllers = angular.module('manaclashControllers', ['manaclashSer
 manaclashControllers.controller('LoginCtrl', ['$scope', '$http', 'EventBus', 'SessionManager', '$location', '$timeout',
   function ($scope, $http, EventBus, SessionManager, $location, $timeout) {
     $scope.username = 'foo';
-    $scope.password = 'bar';
+    $scope.password = 'foo';
 
     $scope.error = '';
 
@@ -63,6 +63,22 @@ manaclashControllers.controller('RegisterCtrl', ['$scope', '$http', 'EventBus', 
 manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'SessionManager',
   function ($scope, $http, EventBus, SessionManager) {
     $scope.message = '';
+    $scope.messages = [];
+
+    EventBus.myHandler('onchat', function(message) {
+        $scope.$apply (function() {
+            $scope.messages.push(message);
+        });
+
+/*        alert('chat ' + message["username"] + ": " + message["message"] );*/
+    });
+
+    EventBus.send("chat_history", {'sessionID': SessionManager.sessionID}, function(reply) {
+        $scope.$apply (function() {
+            $scope.messages = reply["messages"];
+        });
+    });
+
     $scope.chat = function() {
         if ($scope.message) {
             EventBus.send("chat", {'sessionID': SessionManager.sessionID, 'message': $scope.message})

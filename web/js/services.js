@@ -2,7 +2,29 @@ var manaclashServices = angular.module('manaclashServices', []);
 
 manaclashServices.factory('EventBus', [
   function() {
-    return new vertx.EventBus('http://localhost:8080/eventbus');
+    eb = new vertx.EventBus('http://localhost:8080/eventbus');
+
+    eb.myHandlers = [];
+
+    eb.myHandler = function(address, callback) {
+        if (eb.myInit) {
+            eb.registerHandler(address, callback);
+        }
+        else {
+            eb.myHandlers.push_back({'address': address, 'callback': callback});
+        }
+    }
+
+    eb.onopen = function() {
+        eb.myInit = true;
+        eb.myHandlers.forEach(function (ac) {
+            alert("registering handler");
+            eb.registerHandler(ac["address"], ac["callback"]);
+        });
+        eb.myHandlers = [];
+    };
+
+    return eb;
   }
 ]);
 

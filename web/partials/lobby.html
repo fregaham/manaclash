@@ -117,6 +117,9 @@
                 </div>
 
                 <div id="lobby_chat_messages">
+                    <div ng-repeat="m in messages | reverse">
+                        <b>{{m.username}}:</b> {{m.message}}
+                    </div>
 <!--                        <div style="color: rgb(192, 152, 83);"><i><b>Rincewind</b> challenged you for a duel!</i></div>
                         <div><i>Puss entered the lobby.</i></div>
                         <div><b>Merlin:</b> I will destroy you! </div>

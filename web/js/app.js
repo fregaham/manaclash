@@ -29,4 +29,9 @@ manaclashApp.config(['$routeProvider',
       });
   }]);
 
+manaclashApp.filter('reverse', function() {
+  return function(items) {
+    return items.slice().reverse();
+  };
+});
 

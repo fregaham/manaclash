@@ -2,9 +2,12 @@ import functools
 import vertx
 from core.event_bus import EventBus
 from core.shared_data import SharedData
+from collections import deque
 
 server = vertx.create_http_server()
-shared_hash = SharedData.get_hash('manaclash.chat')
+
+chat_history = deque()
+chat_history_max = 32
 
 @server.request_handler
 def request_handler(req):
@@ -22,9 +25,11 @@ def request_handler(req):
 sockJSServer = vertx.create_sockjs_server(server)
 sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}
+        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_history'}
     ],
-    [])
+    [
+        {'address':'onchat'}
+    ])
 
 
 def register_handler(message):
@@ -67,7 +72,19 @@ def authorise_handler(fun, message):
     }, reply_handler)
 
 def chat_handler(message, username):
-    print "chat by: " + username + " message:" + message.body["message"]
+    m = {"username": username, "message": message.body["message"]}
+    chat_history.append (m)
+
+    if len(chat_history) > chat_history_max:
+        chat_history.popleft()
+
+    EventBus.publish("onchat", m)
+
+def chat_history_handler(message, username):
+    ch = []
+    for c in chat_history:
+        ch.append (c)
+    message.reply({"messages":ch})
 
 def deploy_handler(err, id):
 
@@ -111,8 +128,9 @@ def deploy_handler(err, id):
 #    print "Login " + `message.body`
 
 # login_handler_id = EventBus.register_handler('login', handler=login_handler)
-register_handler_id = EventBus.register_handler('register', handler=register_handler)
-chat_handler_id = EventBus.register_handler('chat', handler=functools.partial(authorise_handler, chat_handler))
+EventBus.register_handler('register', handler=register_handler)
+EventBus.register_handler('chat', handler=functools.partial(authorise_handler, chat_handler))
+EventBus.register_handler('chat_history', handler=functools.partial(authorise_handler, chat_history_handler))
 
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.1.0', {"address": "vertx.mongopersistor"},  handler=deploy_handler)
 vertx.deploy_module('io.vertx~mod-auth-mgr~2.0.0-final')
