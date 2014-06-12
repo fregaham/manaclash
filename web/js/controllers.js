@@ -73,7 +73,7 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'Se
 /*        alert('chat ' + message["username"] + ": " + message["message"] );*/
     });
 
-    EventBus.send("chat_history", {'sessionID': SessionManager.sessionID}, function(reply) {
+    EventBus.send("chat_enter", {'sessionID': SessionManager.sessionID}, function(reply) {
         $scope.$apply (function() {
             $scope.messages = reply["messages"];
         });

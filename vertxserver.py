@@ -1,5 +1,7 @@
 import functools
 import vertx
+import org.vertx.java.core.sockjs.EventBusBridgeHook
+
 from core.event_bus import EventBus
 from core.shared_data import SharedData
 from collections import deque
@@ -9,6 +11,14 @@ server = vertx.create_http_server()
 chat_history = deque()
 chat_history_max = 32
 
+sockjsaddr2username = SharedData.get_hash('manaclash.sockjsaddr2username')
+
+online_users = []
+
+class UserManager:
+    def __init__ (self):
+        self.online_users = [] 
+
 @server.request_handler
 def request_handler(req):
     file = ''
@@ -17,20 +27,98 @@ def request_handler(req):
     elif '..' not in req.path:
         file = req.path[1:]
 
-        print `file`
+#        print `file`
 
     file = "web/" + file
     req.response.send_file(file)
 
 sockJSServer = vertx.create_sockjs_server(server)
-sockJSServer.bridge({'prefix' : '/eventbus'},
+
+class MyHook(org.vertx.java.core.sockjs.EventBusBridgeHook):
+    def handleSocketCreated(self, j_sock):
+        print "handleSocketCreated"
+        return True
+
+    def handleSocketClosed(self, j_sock):
+        print "handleSocketClosed"
+        pass
+
+    def handleSendOrPub(self, j_sock, send, message, address):
+        print "handleSendOrPub"
+        return True
+
+    def handlePreRegister(self, j_sock, address):
+        print "handlePreRegister"
+        return True
+
+    def handlePostRegister(self, j_sock, address):
+        print "handlePostRegister"
+
+    def handleUnregister(self, j_sock, address):
+        print "handleUnregister"
+        return True
+
+    def handleAuthorise(self, message, session_id, handler):
+        print "handleAuthorise"
+        return True
+
+#myHook = MyHook()
+#sockJSServer.java_obj.setHook(myHook)
+
+bridge = sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_history'}
+        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}
     ],
     [
-        {'address':'onchat'}
+        {'address':'onchat'}, {'address':'onusers'}
     ])
 
+
+
+
+#def my_handler(sock, address):
+#   print "my_handler"
+
+
+
+#print `bridge.java_obj`
+
+@bridge.socket_created_handler
+def bridge_socket_created_handler(socket):
+    print "my socket created, address: " + `socket.handler_id()`
+
+@bridge.socket_closed_handler
+def bridge_socket_closed_handler(socket):
+    handler_id = socket.handler_id()
+    if handler_id in sockjsaddr2username:
+        username = sockjsaddr2username[handler_id]
+        print "%s leaves" % username
+
+#    print "my socket closed"
+
+#@bridge.authorise_handler
+#def bridge_authorise_handler(msg, session, handler):
+#    print "socket_authorise_handler"
+
+@bridge.send_or_pub_handler
+def bridge_send_or_pub_handler(sock, send, message, address):
+    print "bridge_send_or_pub_handler: " + `message` + " sock: " + `sock.handler_id()`
+
+    if message["body"].get("sessionID") != None:
+        # associate SockJS address with username
+        #print "sessionID: " + message["body"]["sessionID"]
+        def reply_handler(reply):
+            if reply.body["status"] == "ok":
+                # sockjsaddr2username[reply.body["username"]] = sock.handler_id()
+                sockjsaddr2username[sock.handler_id()] = reply.body["username"]
+
+        EventBus.send('vertx.basicauthmanager.authorise', {
+            "sessionID": message["body"]["sessionID"]
+        }, reply_handler)
+
+#    print "bridge_send_or_pub_handler"
+
+#bridge.authorise_handler(bridge_authorise_handler)
 
 def register_handler(message):
     username = message.body["username"]
@@ -72,6 +160,10 @@ def authorise_handler(fun, message):
     }, reply_handler)
 
 def chat_handler(message, username):
+
+    #print `message.address`
+    #print `dir(message)`
+
     m = {"username": username, "message": message.body["message"]}
     chat_history.append (m)
 
@@ -80,7 +172,10 @@ def chat_handler(message, username):
 
     EventBus.publish("onchat", m)
 
-def chat_history_handler(message, username):
+def chat_enter_handler(message, username):
+
+#     print "XXX chat_enter_handler replyAddress: " + `message.java_obj.replyAddress()`
+
     ch = []
     for c in chat_history:
         ch.append (c)
@@ -88,7 +183,7 @@ def chat_history_handler(message, username):
 
 def deploy_handler(err, id):
 
-    print "deploy handler: " + `err`
+    #print "deploy handler: " + `err`
 
     if err is None:
 
@@ -130,7 +225,7 @@ def deploy_handler(err, id):
 # login_handler_id = EventBus.register_handler('login', handler=login_handler)
 EventBus.register_handler('register', handler=register_handler)
 EventBus.register_handler('chat', handler=functools.partial(authorise_handler, chat_handler))
-EventBus.register_handler('chat_history', handler=functools.partial(authorise_handler, chat_history_handler))
+EventBus.register_handler('chat_enter', handler=functools.partial(authorise_handler, chat_enter_handler))
 
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.1.0', {"address": "vertx.mongopersistor"},  handler=deploy_handler)
 vertx.deploy_module('io.vertx~mod-auth-mgr~2.0.0-final')
