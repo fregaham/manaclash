@@ -65,12 +65,20 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'Se
     $scope.message = '';
     $scope.messages = [];
 
+    $scope.users = [];
+
     EventBus.myHandler('onchat', function(message) {
         $scope.$apply (function() {
             $scope.messages.push(message);
         });
 
 /*        alert('chat ' + message["username"] + ": " + message["message"] );*/
+    });
+
+    EventBus.myHandler('onusers', function(message) {
+        $scope.$apply (function() {
+            $scope.users = message;
+        });
     });
 
     EventBus.send("chat_enter", {'sessionID': SessionManager.sessionID}, function(reply) {

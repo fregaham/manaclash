@@ -12,12 +12,8 @@ chat_history = deque()
 chat_history_max = 32
 
 sockjsaddr2username = SharedData.get_hash('manaclash.sockjsaddr2username')
+online_users = SharedData.get_set('manaclash.online_users')
 
-online_users = []
-
-class UserManager:
-    def __init__ (self):
-        self.online_users = [] 
 
 @server.request_handler
 def request_handler(req):
@@ -73,9 +69,6 @@ bridge = sockJSServer.bridge({'prefix' : '/eventbus'},
         {'address':'onchat'}, {'address':'onusers'}
     ])
 
-
-
-
 #def my_handler(sock, address):
 #   print "my_handler"
 
@@ -92,7 +85,13 @@ def bridge_socket_closed_handler(socket):
     handler_id = socket.handler_id()
     if handler_id in sockjsaddr2username:
         username = sockjsaddr2username[handler_id]
-        print "%s leaves" % username
+
+        del sockjsaddr2username[handler_id]
+        online_users.remove(username)
+
+        EventBus.publish("user.leave", username)
+
+        #print "%s leaves" % username
 
 #    print "my socket closed"
 
@@ -110,7 +109,12 @@ def bridge_send_or_pub_handler(sock, send, message, address):
         def reply_handler(reply):
             if reply.body["status"] == "ok":
                 # sockjsaddr2username[reply.body["username"]] = sock.handler_id()
-                sockjsaddr2username[sock.handler_id()] = reply.body["username"]
+                username = reply.body["username"]
+                sockjsaddr2username[sock.handler_id()] = username
+
+                if username not in online_users:
+                    online_users.add (username)
+                    EventBus.publish("user.enter", username)
 
         EventBus.send('vertx.basicauthmanager.authorise', {
             "sessionID": message["body"]["sessionID"]
@@ -173,13 +177,17 @@ def chat_handler(message, username):
     EventBus.publish("onchat", m)
 
 def chat_enter_handler(message, username):
-
-#     print "XXX chat_enter_handler replyAddress: " + `message.java_obj.replyAddress()`
-
     ch = []
     for c in chat_history:
         ch.append (c)
     message.reply({"messages":ch})
+
+def online_users_handler(message):
+    users = []
+    for u in online_users:
+        users.append (u)
+
+    EventBus.publish("onusers", users)
 
 def deploy_handler(err, id):
 
@@ -227,9 +235,13 @@ EventBus.register_handler('register', handler=register_handler)
 EventBus.register_handler('chat', handler=functools.partial(authorise_handler, chat_handler))
 EventBus.register_handler('chat_enter', handler=functools.partial(authorise_handler, chat_enter_handler))
 
+EventBus.register_handler('user.leave', handler=online_users_handler)
+EventBus.register_handler('user.enter', handler=online_users_handler)
+
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.1.0', {"address": "vertx.mongopersistor"},  handler=deploy_handler)
 vertx.deploy_module('io.vertx~mod-auth-mgr~2.0.0-final')
 # vertx.deploy_module('io.vertx~mod-mailer~2.0.0-final')
 
 server.listen(8080, 'localhost')
+
 

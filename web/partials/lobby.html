@@ -61,7 +61,9 @@
 
                     </ul>
 
-                    <ul id="lobby_available_players" class="nav nav-list">
+                    <ul id="lobby_available_players" class="nav nav-list" ng-repeat="u in users">
+                        <li><a href="#">{{u}}</a></li>
+                        
 <!--
                   <li id="lobby_challenging_players" class="nav-header">Players challenging you</li>
                   <li><a href="#">Rincewind</a></li>
