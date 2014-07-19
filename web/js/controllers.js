@@ -66,6 +66,7 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'Se
     $scope.messages = [];
 
     $scope.users = [];
+    $scope.openForDuel = false;
 
     EventBus.myHandler('onchat', function(message) {
         $scope.$apply (function() {
@@ -92,6 +93,10 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'Se
             EventBus.send("chat", {'sessionID': SessionManager.sessionID, 'message': $scope.message})
             $scope.message = '';
         }
+    }
+
+    $scope.onOpenForDuel = function(t) {
+        EventBus.send("openForDuel", {'sessionID': SessionManager.sessionID, 'open':t})
     }
   }]);
 

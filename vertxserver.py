@@ -5,6 +5,7 @@ import org.vertx.java.core.sockjs.EventBusBridgeHook
 from core.event_bus import EventBus
 from core.shared_data import SharedData
 from collections import deque
+from core.javautils import map_to_vertx, map_from_vertx
 
 server = vertx.create_http_server()
 
@@ -12,7 +13,7 @@ chat_history = deque()
 chat_history_max = 32
 
 sockjsaddr2username = SharedData.get_hash('manaclash.sockjsaddr2username')
-online_users = SharedData.get_set('manaclash.online_users')
+online_users = {}
 
 
 @server.request_handler
@@ -63,7 +64,7 @@ class MyHook(org.vertx.java.core.sockjs.EventBusBridgeHook):
 
 bridge = sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}
+        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}
     ],
     [
         {'address':'onchat'}, {'address':'onusers'}
@@ -87,7 +88,7 @@ def bridge_socket_closed_handler(socket):
         username = sockjsaddr2username[handler_id]
 
         del sockjsaddr2username[handler_id]
-        online_users.remove(username)
+        del online_users[username]
 
         EventBus.publish("user.leave", username)
 
@@ -113,7 +114,7 @@ def bridge_send_or_pub_handler(sock, send, message, address):
                 sockjsaddr2username[sock.handler_id()] = username
 
                 if username not in online_users:
-                    online_users.add (username)
+                    online_users[username] = {"username" : username, "duel": False, "game": None}
                     EventBus.publish("user.enter", username)
 
         EventBus.send('vertx.basicauthmanager.authorise', {
@@ -184,10 +185,19 @@ def chat_enter_handler(message, username):
 
 def online_users_handler(message):
     users = []
-    for u in online_users:
-        users.append (u)
+    for u in online_users.itervalues():
+        users.append ( u )
 
     EventBus.publish("onusers", users)
+
+def open_for_duel_handler(message, username):
+
+    print `message.body`
+
+    if username in online_users:
+        online_users[username]["duel"] = message.body["open"]
+
+    online_users_handler(message)    
 
 def deploy_handler(err, id):
 
@@ -234,6 +244,7 @@ def deploy_handler(err, id):
 EventBus.register_handler('register', handler=register_handler)
 EventBus.register_handler('chat', handler=functools.partial(authorise_handler, chat_handler))
 EventBus.register_handler('chat_enter', handler=functools.partial(authorise_handler, chat_enter_handler))
+EventBus.register_handler('openForDuel', handler=functools.partial(authorise_handler, open_for_duel_handler))
 
 EventBus.register_handler('user.leave', handler=online_users_handler)
 EventBus.register_handler('user.enter', handler=online_users_handler)
