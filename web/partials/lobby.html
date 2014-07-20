@@ -54,16 +54,14 @@
 
     <div class="row">
         <div class="col-md-3">
-            <div class="well">
-                <div class="sidebar-nav">
+            <table class="table">
+                    <!--<ul id="lobby_duel_players" class="nav nav-list">
 
-                    <ul id="lobby_duel_players" class="nav nav-list">
-
-                    </ul>
-
-                    <ul id="lobby_available_players" class="nav nav-list" ng-repeat="u in users">
-                        <li><button ng-show="u.duel" type="button" class="btn pull-right" style="margin-top:8px">Join Duel</button>
-                        <a href="#">{{u.username}}</a></li>
+                    </ul>-->
+                    
+                    <tbody> 
+                        <tr ng-repeat="u in users"><td class="vert-align">{{u.username}}</td><td><button class="btn btn-sm" style="visibility:hidden">X</button></td><td class="vert-align"><button ng-show="u.duel" type="button" class="btn btn-sm">Join Duel</button></td></tr>
+                    </tbody>
                         
 <!--
                   <li id="lobby_challenging_players" class="nav-header">Players challenging you</li>
@@ -87,10 +85,9 @@
 -->
 
 <!--                  <li id="lobby_available_players" class="nav-header">Available Players</li>-->
-                    </ul>
        
-                    <ul id="lobby_games_in_progress" class="nav nav-list">
-<!--
+<!--                    <ul id="lobby_games_in_progress" class="nav nav-list">
+
                   <li><a href="#">Foo</a></li>
                   <li class="active">
                                 <button type="button" class="btn pull-right" style="margin-top:8px">Challenge</button>
@@ -106,10 +103,10 @@
                     <button type="button" class="btn pull-right" style="margin-top:8px">Watch</button>
                     <a href="#"><b>Wizzo vs Chuck</b><br/>Turn: 5</a>
                   </li>
--->
-                    </ul>
+
+                    </ul>-->
                 </div>
-            </div><!--/.well -->
+            </table>
         </div><!--/span-->
 
         <div class="col-md-9">
