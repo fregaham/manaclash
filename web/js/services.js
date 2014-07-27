@@ -18,7 +18,6 @@ manaclashServices.factory('EventBus', [
     eb.onopen = function() {
         eb.myInit = true;
         eb.myHandlers.forEach(function (ac) {
-            alert("registering handler");
             eb.registerHandler(ac["address"], ac["callback"]);
         });
         eb.myHandlers = [];
@@ -39,6 +38,7 @@ manaclashServices.factory('SessionManager', ['EventBus',
 
                 if (loginReply["status"] == "ok") {
                     that.sessionID = loginReply["sessionID"];
+                    that.username = username;
                     ok_callback();
                 }
                 else {
@@ -50,5 +50,48 @@ manaclashServices.factory('SessionManager', ['EventBus',
 
     return new SessionManager(EventBus);
   }
+]);
+
+
+manaclashServices.factory('Game', ['EventBus', 'SessionManager', 
+    function(EventBus, SessionManager) {
+        var Game = function(EventBus, SessionManager) {
+            var that = this;
+
+            that.eventBus = EventBus;
+            that.sessionManager = SessionManager;
+
+            that.unregister_id = null;
+            that.gameid = null;
+
+            that.gameHandler = function(message) {
+                alert(message.toSource());
+            }
+
+            that.leaveGame = function() {
+                 if (that.unregister_id != null) {
+                    that.eventBus.unregisterHandler('game.state.' + that.gameid, that.gameHandler);
+                    that.gameid = null;
+                    that.unregister_id = null;
+                }
+            }
+
+            that.joinGame = function(id) {
+                that.leaveGame();
+
+                that.gameid = id;
+                that.unregister_id = EventBus.registerHandler('game.state.' + id, that.gameHandler);
+                that.eventBus.send("game.join", {'sessionID': that.sessionManager.sessionID, 'id': id});
+            }
+
+            that.eventBus.myHandler('game.started', function(message) {
+                if (message.player1 == that.sessionManager.username || message.player2 == that.sessionManager.username) {
+                    that.joinGame(message.id);
+                }
+            });
+        }
+
+        return new Game(EventBus, SessionManager);
+    }
 ]);
 

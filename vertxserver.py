@@ -7,6 +7,8 @@ from core.shared_data import SharedData
 from collections import deque
 from core.javautils import map_to_vertx, map_from_vertx
 
+from vertxcommon import authorise_handler
+
 server = vertx.create_http_server()
 
 chat_history = deque()
@@ -64,10 +66,10 @@ class MyHook(org.vertx.java.core.sockjs.EventBusBridgeHook):
 
 bridge = sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}
+        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}, {'address':'joinDuel'}, {'address':'game.join'}
     ],
     [
-        {'address':'onchat'}, {'address':'onusers'}
+        {'address':'onchat'}, {'address':'onusers'}, {'address':'game.started'}, {'address_re':'game.state.*'}
     ])
 
 #def my_handler(sock, address):
@@ -155,15 +157,6 @@ def register_handler(message):
             }
     }, reply_handler)
 
-def authorise_handler(fun, message):
-    def reply_handler(reply):
-        if reply.body["status"] == "ok":
-            fun(message, reply.body["username"])
-
-    EventBus.send('vertx.basicauthmanager.authorise', {
-        "sessionID": message.body["sessionID"]
-    }, reply_handler)
-
 def chat_handler(message, username):
 
     #print `message.address`
@@ -198,6 +191,21 @@ def open_for_duel_handler(message, username):
         online_users[username]["duel"] = message.body["open"]
 
     online_users_handler(message)    
+
+def join_duel_handler(message, username):
+
+    msg = {}
+
+    msg["player1"] = username
+    msg["player2"] = message.body["username"]
+    
+    msg["deck1"] = [[20, "Plains"]]
+    msg["deck2"] = [[20, "Swamp"]]
+
+    print "sending game.start " + `msg`
+
+    EventBus.send("game.start", msg)
+
 
 def deploy_handler(err, id):
 
@@ -245,14 +253,18 @@ EventBus.register_handler('register', handler=register_handler)
 EventBus.register_handler('chat', handler=functools.partial(authorise_handler, chat_handler))
 EventBus.register_handler('chat_enter', handler=functools.partial(authorise_handler, chat_enter_handler))
 EventBus.register_handler('openForDuel', handler=functools.partial(authorise_handler, open_for_duel_handler))
+EventBus.register_handler('joinDuel', handler=functools.partial(authorise_handler, join_duel_handler))
 
 EventBus.register_handler('user.leave', handler=online_users_handler)
 EventBus.register_handler('user.enter', handler=online_users_handler)
 
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.1.0', {"address": "vertx.mongopersistor"},  handler=deploy_handler)
 vertx.deploy_module('io.vertx~mod-auth-mgr~2.0.0-final')
+
+vertx.deploy_worker_verticle("vertxworker.py", {})
 # vertx.deploy_module('io.vertx~mod-mailer~2.0.0-final')
 
 server.listen(8080, 'localhost')
 
 
+print "XXX after server.listen"

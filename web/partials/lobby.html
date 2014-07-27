@@ -13,8 +13,8 @@
             <span class="icon-bar"></span>
 
             Open to a duel? <div class="btn-group">
-                <button type="button" class="btn" ng-model="openForDuel" ng-change="onOpenForDuel(true)" btn-radio="true">Yes</button>
-                <button type="button" class="btn" ng-model="openForDuel" ng-change="onOpenForDuel(false)" btn-radio="false">No</button>
+                <button type="button" class="btn btn-default" ng-model="openForDuel" ng-change="onOpenForDuel(true)" btn-radio="true">Yes</button>
+                <button type="button" class="btn btn-default" ng-model="openForDuel" ng-change="onOpenForDuel(false)" btn-radio="false">No</button>
             </div>
 
             <span class="icon-bar"></span>
@@ -60,7 +60,7 @@
                     </ul>-->
                     
                     <tbody> 
-                        <tr ng-repeat="u in users"><td class="vert-align">{{u.username}}</td><td><button class="btn btn-sm" style="visibility:hidden">X</button></td><td class="vert-align"><button ng-show="u.duel" type="button" class="btn btn-sm">Join Duel</button></td></tr>
+                        <tr ng-repeat="u in users"><td class="vert-align">{{u.username}}</td><td><button class="btn btn-sm" style="visibility:hidden">X</button></td><td class="vert-align"><button ng-show="u.duel" type="button" class="btn btn-sm" ng-click="joinDuel(u.username)">Join Duel</button></td></tr>
                     </tbody>
                         
 <!--

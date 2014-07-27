@@ -214,7 +214,7 @@ if __name__ == "__main__":
                 print(rules)
 
                 parsed += 1
-        except Exception as x:
+        except Exception, x:
             print (repr(x))
             print (("Cannot parse %s\n%s" % (obj.state.title, obj.state.text)).encode("utf8"))
 

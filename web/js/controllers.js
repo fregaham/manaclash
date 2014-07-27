@@ -60,8 +60,8 @@ manaclashControllers.controller('RegisterCtrl', ['$scope', '$http', 'EventBus', 
     }
   }]);
 
-manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'SessionManager',
-  function ($scope, $http, EventBus, SessionManager) {
+manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'SessionManager','Game',
+  function ($scope, $http, EventBus, SessionManager, Game) {
     $scope.message = '';
     $scope.messages = [];
 
@@ -97,6 +97,10 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'Se
 
     $scope.onOpenForDuel = function(t) {
         EventBus.send("openForDuel", {'sessionID': SessionManager.sessionID, 'open':t})
+    }
+
+    $scope.joinDuel = function(username) {
+        EventBus.send("joinDuel", {'sessionID': SessionManager.sessionID, 'username': username})
     }
   }]);
 
