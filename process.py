@@ -1988,7 +1988,7 @@ class GameTurnProcess(Process):
 
 class StartGameProcess(Process):
     def next(self, game, action):
-        for player in game.players.__reversed__():
+        for player in reversed(game.players):
             game.process_push(DrawCardProcess(player))
             game.process_push(DrawCardProcess(player))
             game.process_push(DrawCardProcess(player))

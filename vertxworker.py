@@ -9,6 +9,7 @@ from core.shared_data import SharedData
 from collections import deque
 from core.javautils import map_to_vertx, map_from_vertx
 
+from actions import ActionSet, QueryNumber, QueryString, AbilityAction, Action, PassAction
 from mcio import Output, input_generator
 from game import Game
 from process import MainGameProcess
@@ -227,7 +228,7 @@ def game_state(game, _as):
 
 def game_send_state(game):
     state = game_state(game["game"], game["actions"])
-    EvnetBus.publish('game.state.' + game["id"], state)
+    EventBus.publish('game.state.' + game["id"], state)
 
 def game_input(game, action):
     game["actions"] = game["game"].next(action)
