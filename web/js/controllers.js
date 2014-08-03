@@ -4,6 +4,14 @@
 
 var manaclashControllers = angular.module('manaclashControllers', ['manaclashServices']);
 
+manaclashControllers.controller('MainController', ['$rootScope', '$scope', '$location', 
+  function ($rootScope, $scope, $location) {
+    $scope.bgClass = function() {
+       return $rootScope.bgClass;
+    }
+  }]);
+
+
 manaclashControllers.controller('LoginCtrl', ['$scope', '$http', 'EventBus', 'SessionManager', '$location', '$timeout',
   function ($scope, $http, EventBus, SessionManager, $location, $timeout) {
     $scope.username = 'foo';
@@ -102,6 +110,11 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', 'EventBus', 'Se
     $scope.joinDuel = function(username) {
         EventBus.send("joinDuel", {'sessionID': SessionManager.sessionID, 'username': username})
     }
+  }]);
+
+manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'SessionManager', 'Game',
+  function ($scope, $http, EventBus, SessionManager, Game) {
+    
   }]);
 
 
