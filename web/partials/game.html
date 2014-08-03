@@ -1,5 +1,5 @@
 <div id="game" class="container-fluid">
-    <div class="opponent_status">
+    <div class="opponent_status player_status">
         <span class="player_life">
             20
         </span> 
@@ -9,11 +9,51 @@
         </span>
 
         <span class="player_lgh">
-            60 / 0 / 7
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-default"><img src='icons/library.png'/>60</button>
+              <button type="button" class="btn btn-default"><img src='icons/graveyard.png'/>0</button>
+              <button type="button" class="btn btn-default"><img src='icons/hand.png'/>7</button>
+            </div>
         </span>
     </div> 
 
-    <div class="player_status">
+    <div class="opponent_turn_structure turn_structure">
+        <div class="turn_element">
+            <img src="icons/upkeep_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/draw_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/pre_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/post_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/endofturn.png"/>
+        </div>
+    </div>
+
+    <div class="opponent_combat_turn_structure turn_structure">
+         <div class="turn_element">
+            <img src="icons/pre_combat.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/attackers.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/blockers.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/damage.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/post_combat.png"/>
+        </div>
+    </div>
+
+    <div class="player_status self_status">
         <span class="player_life">
             20
         </span> 
@@ -21,7 +61,48 @@
             Player
         </span>
         <span class="player_lgh">
-            60 / 0 / 7
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-default"><img src='icons/library.png'/>60</button>
+              <button type="button" class="btn btn-default"><img src='icons/graveyard.png'/>0</button>
+              <button type="button" class="btn btn-default"><img src='icons/hand.png'/>7</button>
+            </div>
         </span>
     </div>
+
+    <div class="player_turn_structure turn_structure">
+        <div class="turn_element">
+            <img src="icons/upkeep_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/draw_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/pre_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/post_full.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/endofturn.png"/>
+        </div>
+    </div>
+
+    <div class="player_combat_turn_structure turn_structure">
+         <div class="turn_element">
+            <img src="icons/pre_combat.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/attackers.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/blockers.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/damage.png"/>
+        </div>
+        <div class="turn_element">
+            <img src="icons/post_combat.png"/>
+        </div>
+    </div>
+
 </div>

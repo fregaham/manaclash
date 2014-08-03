@@ -11,12 +11,15 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="744.09448819"
    height="1052.3622047"
-   id="svg4509"
+   id="svg3905"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="upkeep.svg">
+   sodipodi:docname="pre.svg"
+   inkscape:export-filename="/home/marcho/Documents/Projects/ManaClash/web/icons/pre.png"
+   inkscape:export-xdpi="3.0776117"
+   inkscape:export-ydpi="3.0776117">
   <defs
-     id="defs4511" />
+     id="defs3907" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -24,30 +27,26 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="541.49736"
-     inkscape:cy="796.88223"
+     inkscape:zoom="1.0710938"
+     inkscape:cx="78.010114"
+     inkscape:cy="465.23705"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="true"
+     showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1014"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1">
-    <inkscape:grid
-       type="xygrid"
-       id="grid4519" />
-  </sodipodi:namedview>
+     inkscape:window-maximized="1" />
   <metadata
-     id="metadata4514">
+     id="metadata3910">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -56,15 +55,8 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;stroke:#000000;stroke-width:13;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 303.72523,156.08742 114.41213,0 L 380,232.36218 c 0,0 85.38143,96.4318 76.27476,152.54955 -2.87979,17.74599 -38.1374,38.13737 -38.1374,38.13737 l -114.41213,0 c 0,0 -35.2576,-20.39138 -38.13739,-38.13737 -9.10667,-56.11775 76.27476,-152.54955 76.27476,-152.54955 z"
-       id="path4517"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccsccscc" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:13;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       d="m 340,232.36218 40,0"
-       id="path3135"
-       inkscape:connector-curvature="0" />
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:13;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="M 331.90625 320.40625 C 228.52306 320.40625 144.71875 404.21056 144.71875 507.59375 C 144.71875 610.97694 228.52306 694.78125 331.90625 694.78125 C 343.89461 694.78125 355.60698 693.65376 366.96875 691.5 C 279.14396 676.0592 212.40625 599.37598 212.40625 507.125 C 212.40625 415.73018 277.91333 339.63822 364.53125 323.21875 C 353.93317 321.35546 343.03845 320.40625 331.90625 320.40625 z "
+       id="path5202" />
   </g>
 </svg>

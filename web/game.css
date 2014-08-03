@@ -3,23 +3,71 @@
    background-image: url(table.png);
 }
 
+.player_status {
+    background-color: rgba(255,255,255, 0.5);
+
+    width: 190px;
+    height: 64px;
+/*
+    background-image: url(table.png);
+    -webkit-filter: blur(20px);
+    -moz-filter: blur(20px);
+    -o-filter: blur(20px);
+    -ms-filter: blur(20px);
+    filter: blur(20px);*/
+/*    opacity: 0.4;*/
+}
+
 .opponent_status {
     position: absolute;
     top: 0px;
     left: 0px;
-    width: 200px;
-    height: 100px;
-
- /*   background: blue;*/
 }
 
-.player_status {
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    width: 200px;
-    height: 100px;
+.opponent_turn_structure {
+    top:64px;
+    left:0px;
+}
 
+.opponent_combat_turn_structure {
+    top:96px;
+    left:0px;
+}
+
+.player_turn_structure {
+    bottom:32px;
+    left:0px;
+}
+
+.player_combat_turn_structure {
+    bottom:0px;
+    left:0px;
+}
+
+.turn_structure {
+    position: absolute;
+    background-color: rgba(255,255,255, 0.5);
+    width:190px;
+    height:32px;
+}
+
+.turn_element {
+   display: inline-block;
+   width: 32px;
+   height: 32px;
+}
+
+.turn_element img {
+   display: block;
+   padding-top: 8px;
+   padding-left: 8px;
+   vertical-align: middle;
+}
+
+.self_status {
+    position: absolute;
+    bottom: 64px;
+    left: 0px;
 /*    background: red;*/
 }
 
@@ -34,12 +82,14 @@
 
 .player_name {
     position: absolute;
-    left: 32px;
+    left: 42px;
     top: 5px;
 }
 
 .player_lgh {
     position: absolute;
-    left:32px;
-    top:24px;
+    left:42px;
+    top:28px;
+
+    opacity: 0.75;
 }
