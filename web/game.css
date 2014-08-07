@@ -1,4 +1,9 @@
 
+#table {
+  overflow: auto;
+  line-height: normal;
+}
+
 .bg-table {
    background-image: url(table.png);
 }
@@ -93,3 +98,390 @@
 
     opacity: 0.75;
 }
+
+
+
+
+/* cards */
+
+.card_stack {
+    display:inline-block;
+    vertical-align:top;
+    position:relative;
+}
+
+.tapped_dummy {
+    position:relative;
+    width:42px;
+    height:142px;
+    display:inline-block;
+}
+
+.card_tapped {
+   -webkit-transform: rotate(90deg) translate(-21px, -21px);
+   -moz-transform: rotate(90deg) translate(-21px, -21px);
+}
+
+
+.card_small {
+    position: relative;
+    display: inline-block;
+    width: 100px;
+    height: 142px;
+    cursor: pointer;
+    vertical-align: top;
+    overflow: hidden;
+    border-radius: 6px;
+    background: white;
+    margin:3px;
+    color: black;
+
+    font-family: 'Open Sans', sans-serif;
+}
+
+.card_small > img {
+   position: absolute;
+   width: 100px;
+   height: 142px;
+   z-index: 2;
+   border-radius: 6px;
+}
+
+.card_small > .card_content {
+    position: relative;
+    left:3px;
+    width:94px;
+    top:3px;
+    height:136px;
+    background: gray;
+    border: 1px solid black;
+    padding: 1px;
+}
+
+.tags {
+    display: block;
+}
+
+.text {
+    display: block;
+}
+
+.card_small .header {
+    position: absolute;
+    font-size: 9px;
+    height: 14px;
+    width: 90px;
+    border: 1px solid black;
+}
+
+.card_small .header > .title {
+    position: absolute;
+    text-align: left;
+    top: 0px;
+    left: 0px;
+    height: 14px;
+    overflow: hidden;
+}
+
+.card_small .header > .manacost {
+    position: absolute;
+    text-align: right;
+    top: 0px;
+    right: 0px;
+}
+
+.card_small .body {
+    display: block;
+    position: absolute;
+    top: 12px;
+    left: 0px;
+    width: 92px;
+    height: 121px;
+    font-size: 9px;
+    overflow: hidden;
+}
+
+.card_small .body .text {
+    border: 1px solid black;
+    margin: 1px;
+    height: 108px;
+}
+
+.card_small .body .types {
+    width:88px;
+    height:10px;
+    margin-top:1px;
+    overflow:hidden;
+}
+
+.card_small .power {
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    height: 10px;
+    width: 20px;
+    left: 67px;
+    bottom: 2px;
+    background: inherit;
+    z-index: 1;
+    text-align: right;
+}
+
+.action {
+   border: solid 1px yellow;
+
+   box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+   -webkit-box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+   -moz-box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+}
+
+.targeted {
+    border: solid 1px red !important;
+
+    box-shadow: 0 0 5px rgba(255, 0, 0, 1);
+    -webkit-box-shadow: 0 0 5px rgba(255, 0, 0, 1);
+    -moz-box-shadow: 0 0 5px rgba(255, 0, 0, 1);
+}
+
+
+/* Red */ 
+.card_red > .card_content {
+    border: 1px solid #843c2e !important;
+    background: #a7524d !important;
+}
+
+.card_red .header {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_red .text {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_red .power {
+    background: #f8ceb6 !important;
+}
+
+/* Green */
+.card_green > .card_content {
+    border: 1px solid #274939 !important;
+    background: #45715a !important;
+}
+
+.card_green .header {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_green .text {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_green .power {
+    background: #c8d5cc !important;
+}
+
+/* Blue */
+.card_blue > .card_content {
+    border: 1px solid #002c43 !important;
+    background: #2f84bd !important;
+}
+
+.card_blue .header {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_blue .text {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_blue .power {
+    background: #c9dceb !important;
+}
+
+
+/* Black */
+.card_black > .card_content {
+    border: 1px solid #312f32 !important;
+    background: #4e4548 !important;
+}
+
+.card_black .header {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_black .text {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_black .power {
+    background: #bbb1b0 !important;
+}
+
+/* White */
+.card_white > .card_content {
+    border: 1px solid #3f3734 !important;
+    background: #fafafa !important;
+}
+
+.card_white .header {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_white .text {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_white .power {
+    background: #f6f5f3 !important;
+}
+
+/* Colorless */
+.card_colorless > .card_content {
+    border: 1px solid #919199 !important;
+    background: #e3e4e8 !important;
+}
+
+.card_colorless .header {
+    border: 1px solid #919199 !important;
+    background: #e3e4e8;
+}
+
+.card_colorless .text {
+    border: 1px solid #919199 !important;
+    background: #e3e4e8;
+}
+
+.card_colorless .power {
+    background: #e3e4e8 !important;
+}
+
+/* Land */
+.card_land > .card_content {
+    border: 1px solid #564f47 !important;
+    background: #bca9a2 !important;
+}
+
+.card_land .header {
+    border: 1px solid #564f47 !important;
+    background: #d7d0ca;
+}
+
+.card_land .text {
+    border: 1px solid #564f47 !important;
+    background: #d7d0ca;
+}
+
+.card_land .power {
+    background: #d7d0ca !important;
+}
+
+/* Forest */
+.card_forest > .card_content {
+    border: 1px solid #274939 !important;
+    background: #bca9a2 !important;
+}
+
+.card_forest .header {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_forest .text {
+    border: 1px solid #274939 !important;
+    background: #c8d5cc;
+}
+
+.card_forest .power {
+    background: #c8d5cc !important;
+}
+
+/* Mountain */
+.card_mountain > .card_content {
+    border: 1px solid #843c2e !important;
+    background: #bca9a2 !important;
+}
+
+.card_mountain .header {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_mountain .text {
+    border: 1px solid #843c2e !important;
+    background: #f8ceb6;
+}
+
+.card_mountain .power {
+    background: #f8ceb6 !important;
+}
+
+/* Island */
+.card_island > .card_content {
+    border: 1px solid #002c43 !important;
+    background: #bca9a2 !important;
+}
+
+.card_island .header {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_island .text {
+    border: 1px solid #002c43 !important;
+    background: #c9dceb;
+}
+
+.card_island .power {
+    background: #c9dceb !important;
+}
+
+/* Swamp */
+.card_swamp > .card_content {
+    border: 1px solid #312f32 !important;
+    background: #bca9a2 !important;
+}
+
+.card_swamp .header {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_swamp .text {
+    border: 1px solid #312f32 !important;
+    background: #bbb1b0;
+}
+
+.card_swamp .power {
+    background: #bbb1b0 !important;
+}
+
+/* Plains */
+.card_plains > .card_content {
+    border: 1px solid #3f3734 !important;
+    background: #bca9a2 !important;
+}
+
+.card_plains .header {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_plains .text {
+    border: 1px solid #3f3734 !important;
+    background: #f6f5f3;
+}
+
+.card_plains .power {
+    background: #f6f5f3 !important;
+}
+
