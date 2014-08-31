@@ -66,7 +66,7 @@ class MyHook(org.vertx.java.core.sockjs.EventBusBridgeHook):
 
 bridge = sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}, {'address':'joinDuel'}, {'address':'game.join'}
+        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}, {'address':'joinDuel'}, {'address':'game.join'}, {'address_re':'game.action.*'}
     ],
     [
         {'address':'onchat'}, {'address':'onusers'}, {'address':'game.started'}, {'address_re':'game.state.*'}

@@ -11,7 +11,7 @@ manaclashServices.factory('EventBus', [
             eb.registerHandler(address, callback);
         }
         else {
-            eb.myHandlers.push_back({'address': address, 'callback': callback});
+            eb.myHandlers.push({'address': address, 'callback': callback});
         }
     }
 
@@ -64,8 +64,27 @@ manaclashServices.factory('Game', ['EventBus', 'SessionManager',
             that.unregister_id = null;
             that.gameid = null;
 
+            that.role = null;
+
+            that.statusHandler = null;
+            that.joinHandler = null;
+
+            that.state = null;
+
             that.gameHandler = function(message) {
-                alert(message.toSource());
+
+                that.state = message;
+
+                console.log("game state = " + message);
+
+                if (that.statusHandler != null) {
+
+                    console.log("invoking status handler");
+
+                    that.statusHandler(message);
+                }
+
+                // alert(message.toSource());
             }
 
             that.leaveGame = function() {
@@ -79,13 +98,40 @@ manaclashServices.factory('Game', ['EventBus', 'SessionManager',
             that.joinGame = function(id) {
                 that.leaveGame();
 
+                console.log("joinGame " + id);
+
+                if (that.joinHandler != null) {
+                    console.log("invoking joinGame handler");
+
+                    that.joinHandler(id);
+                }
+
                 that.gameid = id;
                 that.unregister_id = EventBus.registerHandler('game.state.' + id, that.gameHandler);
                 that.eventBus.send("game.join", {'sessionID': that.sessionManager.sessionID, 'id': id});
             }
 
+            that.rolemap = function(role) {
+                if (that.role == role) {
+                    return "player";
+                }
+                else {
+                    return "opponent";
+                }
+            }
+
             that.eventBus.myHandler('game.started', function(message) {
                 if (message.player1 == that.sessionManager.username || message.player2 == that.sessionManager.username) {
+
+                    if (message.player1 == that.sessionManager.username) {
+                        that.role = "player1";
+                    }
+                    else {
+                        that.role = "player2";
+                    }
+
+                    console.log("game.started, role = " + that.role);
+
                     that.joinGame(message.id);
                 }
             });

@@ -42,8 +42,21 @@ for fname in os.listdir("oracle"):
 
 games = {}
 
-def game_handler(message):
-    pass
+def game_action_handler(gameid, message, user):
+
+    print "game_handler: " + `user` + " " + `gameid` + " " + `message.body`
+
+    game = games[gameid]
+
+    if message.body["type"] == "action":
+
+        _as = game["actions"]
+        if isinstance(_as, ActionSet):
+            action = _as.actions[int(message.body["action"])]
+
+            game_input(game, action)
+
+
 
 def game_start_handler(message):
 
@@ -57,7 +70,12 @@ def game_start_handler(message):
     deck1 = message.body["deck1"]
     deck2 = message.body["deck2"]
 
-    unregister_id = EventBus.register_handler('game.' + gameid, handler=game_handler)
+    print "XXX registering " + gameid
+    unregister_id = EventBus.register_handler('game.action.' + gameid, handler=functools.partial(authorise_handler, functools.partial(game_action_handler, gameid)))
+    
+    #unregister_id = EventBus.register_handler('game.' + gameid, handler=functools.partial(authorise_handler, game_handler))
+
+    print "XXX: registered, unregister_id: " + `unregister_id`
 
     games[gameid] = {'id': gameid, 'unregister_id' : unregister_id, 'player1': player1, 'player2': player2, 'player1_joined': False, 'player2_joined': False}
 

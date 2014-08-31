@@ -30,8 +30,8 @@ manaclashApp.config(['$routeProvider',
         controller: 'GameCtrl'
       }).
       otherwise({
-/*        redirectTo: '/login'*/
-          redirectTo: '/game'
+          redirectTo: '/login'
+/*          redirectTo: '/game'*/
       });
   }]);
 
