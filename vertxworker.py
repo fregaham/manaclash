@@ -14,6 +14,8 @@ from mcio import Output, input_generator
 from game import Game
 from process import MainGameProcess
 from oracle import getParseableCards, createCardObject, parseOracle
+from objects import Player
+from abilities import BasicManaAbility
 import random
 
 from vertxcommon import authorise_handler

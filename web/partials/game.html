@@ -143,20 +143,22 @@
 
         <span class="tapped_dummy"></span>
 
-        <span class="card_stack" ng-repeat="c in hand">
-            <span class="card_small">
-                <div class="card_content">
-                    <span class="header">
-                        <span class="title">{{c.title}}</span>
-                        <span class="manacost">{{c.manacost}}</span>
-                    </span>
-                    <span class="body">
-                        <span class="types"></span>
-                        <span class="text">b</span>
-                    </span>
-                </div>
+        <div class="player_hand">
+            <span class="card_stack" ng-repeat="c in hand">
+                <span class="card_small card_{{c.ui_color}}">
+                    <div class="card_content">
+                        <span class="header">
+                            <span class="title">{{c.title}}</span>
+                            <span class="manacost">{{c.manacost}}</span>
+                        </span>
+                        <span class="body">
+                            <span class="types">{{c.ui_types}}</span>
+                            <span class="text">{{c.text}}</span>
+                        </span>
+                    </div>
+                </span>
             </span>
-        </span>
+        </div>
     </div>
 
 </div>

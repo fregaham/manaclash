@@ -267,7 +267,42 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
         $scope.opponent_stacks = role2stacks["opponent"];
     }
 
-    Game.render = function(message) {
+    $scope.renderCard = function(obj) {
+        // color
+        var color = "colorless";
+        var colors = ["red", "blue", "white", "black", "green", "multicolor"];
+        for (var i = 0; i < colors.length; i++) {
+            if (obj.tags.indexOf(colors[i]) >= 0) {
+                color = colors[i];
+            }
+        }
+
+        if (color == "colorless" && obj.types.indexOf("land") >= 0) {
+            color = "land";
+        }
+
+        var land_subtypes = ["forest", "swamp", "island", "plains", "mountain"];
+        for (var i = 0; i < land_subtypes.length; i++) {
+            if (color == "land" && obj.subtypes.indexOf(land_subtypes[i]) >= 0) {
+                color = land_subtypes[i];
+            }
+        }
+
+        obj["ui_color"] = color;
+
+        var types = obj.supertypes.join(" ") + " " + obj.types.join(" ");
+        if (obj.subtypes.length > 0) {
+            types += " – ";
+        }
+
+        types += obj.subtypes.join(" ");
+
+        obj["ui_types"] = types;
+
+        return obj;
+    }
+
+    $scope.render = function(message) {
         /* alert("" + message["player"] + " " + Game.role);* /
 
         var in_play = message["in_play"];
@@ -275,9 +310,14 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
         /* $scope.hand = message["players"][""]["hand"]*/
 
-        for (var i = 0; i < message["players"]; ++i) {
-            var player = mesage["players"][i];
+        for (var i = 0; i < message["players"].length; ++i) {
+            var player = message["players"][i];
             if (player["role"] == Game.role) {
+
+                $scope.hand = [];
+                for (var j = 0; j < player["hand"].length; ++j) {
+                    $scope.hand.push ($scope.renderCard(player["hand"][j]));
+                }
                 $scope.hand = player["hand"];
             }
         }
@@ -294,14 +334,14 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
     Game.statusHandler = function(message) {
         $scope.$apply (function() {
-            Game.render(message);
+            $scope.render(message);
             /* $scope.messages.push(message); */
         });
     }
 
     /* Game has already been initialized, display current state */
     if (Game.state != null) {
-        Game.render(Game.state);
+        $scope.render(Game.state);
     }
 
     console.log("game controller initialized");
