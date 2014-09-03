@@ -113,6 +113,41 @@
             </div>
         </div>
 
+        <div class="opponent_battlefield">
+             <span class="card_stack" ng-repeat="stack in opponent_stacks" style="width:{{stack.width}}px; height:{{stack.height}}px;">
+                <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
+                    <div class="card_content">
+                        <span class="header">
+                            <span class="title">{{c.obj.title}}</span>
+                            <span class="manacost">{{c.obj.manacost}}</span>
+                        </span>
+                        <span class="body">
+                            <span class="types">{{c.obj.ui_types}}</span>
+                            <span class="text">{{c.text}}</span>
+                        </span>
+                    </div>
+                </span>
+             </span>
+        </div>
+
+        <div class="player_battlefield">
+             <span class="card_stack" ng-repeat="stack in player_stacks" style="width:{{stack.width}}px; height:{{stack.height}}px;">
+                <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
+                    <div class="card_content">
+                        <span class="header">
+                            <span class="title">{{c.obj.title}}</span>
+                            <span class="manacost">{{c.obj.manacost}}</span>
+                        </span>
+                        <span class="body">
+                            <span class="types">{{c.obj.ui_types}}</span>
+                            <span class="text">{{c.text}}</span>
+                        </span>
+                    </div>
+                </span>
+            </span>
+        </div>
+
+<!--
         <span class="card_stack" style="width:150px;height:200px;background:red;display:inline-block;">
             <span  style="position:absolute; left: 0px; top:0px;" title="#1 Maggot Carrier B  creature - zombie when SELF enters the battlefield, each player loses 1 life. 1/1" class="card_small card_black" id="obj_1">
                 <div class="card_content">
@@ -142,7 +177,7 @@
         </span>
 
         <span class="tapped_dummy"></span>
-
+-->
         <div class="player_hand">
             <span class="card_stack" ng-repeat="c in hand">
                 <span class="card_small card_{{c.ui_color}}">

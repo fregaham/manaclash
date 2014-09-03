@@ -99,7 +99,11 @@
     opacity: 0.75;
 }
 
-
+.player_hand {
+    position: absolute;
+    bottom: 0px;
+    left: 200px;
+}
 
 
 /* cards */

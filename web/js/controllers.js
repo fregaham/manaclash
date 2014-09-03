@@ -133,11 +133,11 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
     $scope.createBattlefieldStackRecursive = function(rendered_stack, root_card, left_offset, top_offset, width, height, zindex, enchantments) {
 
-        rendered_card = {}
+        var rendered_card = {};
 
         rendered_stack["cards"].push (rendered_card)
 
-        rendered_card["obj"] = root_card
+        rendered_card["obj"] = $scope.renderCard(root_card);
 
         rendered_card["left"] = left_offset;
         rendered_card["top"] = top_offset;
@@ -174,34 +174,34 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
         return [top_offset, width, height, zindex];
     }
 
-    $scope.createBattlefieldStack = function(stack, enchantments, rendered_stacks) {
-        for (var i = 0; i < stack.length; ++i) {
+    $scope.createBattlefieldStack = function(stack, enchantments) {
 
-            var rendered_stack = {};
-            rendered_stack["cards"] = [];
+        console.log("createBattlefieldStack: " + stack.toSource());
 
-            var width = 0;
-            var height = 0;
+        var rendered_stack = {};
+        rendered_stack["cards"] = [];
 
-            var top_offset = 0;
-            var zindex = 0;
+        var width = 0;
+        var height = 0;
 
-            for (var j = 0; j < stack[i].length; ++j) {
-                var obj = stack[i][j];
-                var dims = _displayBattlefieldStackRecursive(rendered_stack, obj, 0, top_offset, width, height, zindex, enchantments);
-                top_offset = dims[0];
-                width = dims[1];
-                height = dims[2];
-                zindex = dims[3];
-            }
-            /*stack_span.css("width", width + 8);
-            stack_span.css("height", height + 8);*/
+        var top_offset = 0;
+        var zindex = 0;
 
-            rendered_stack.width = width + 8;
-            rendered_stack.height = height + 8;
-
-            rendered_stacks.push(rendered_stack);
+        for (var j = 0; j < stack.length; ++j) {
+            var obj = stack[j];
+            var dims = $scope.createBattlefieldStackRecursive(rendered_stack, obj, 0, top_offset, width, height, zindex, enchantments);
+            top_offset = dims[0];
+            width = dims[1];
+            height = dims[2];
+            zindex = dims[3];
         }
+        /*stack_span.css("width", width + 8);
+        stack_span.css("height", height + 8);*/
+
+        rendered_stack.width = width + 8;
+        rendered_stack.height = height + 8;
+
+        return rendered_stack;
     }
 
     $scope.createStacks = function(objects) {
@@ -209,8 +209,10 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
         /* Map object ids to list of enchantments */
         var enchantments = {};
 
+        console.log("objects: " + objects);
+
         for (var i = 0; i < objects.length; ++i) {
-            var obj = in_play[i];
+            var obj = objects[i];
             if (obj.enchanted_id !== null) {
                 if (!(obj.enchanted_id in enchantments)) {
                     enchantments[obj.enchanted_id] = [];
@@ -221,12 +223,17 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
         /* role to list of Stacks (list) of non-aura objects of the same name  */
         var role2stacks = {};
+        role2stacks["player"] = [];
+        role2stacks["opponent"] = [];
 /*        var role2stacks_battle = {};*/
 
         for (var i = 0; i < objects.length; ++i) {
             var obj = objects[i];
 
             if (obj.controller !== null && obj.enchanted_id === null) {
+
+                
+
                 var role = Game.rolemap(obj.controller);
 /*                var battle = (obj.tags.indexOf("attacking") >= 0 || obj.tags.indexOf("blocking") >= 0); */
 
@@ -263,8 +270,23 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
             }
         }
 
-        $scope.player_stacks = role2stacks["player"];
-        $scope.opponent_stacks = role2stacks["opponent"];
+        var stacks = role2stacks["player"];
+        var rendered_stacks = [];
+        for (var i = 0; i < stacks.length; ++i) {
+           rendered_stacks.push ($scope.createBattlefieldStack (stacks[i], enchantments));
+        }
+
+        $scope.player_stacks = rendered_stacks;
+
+        stacks = role2stacks["opponent"];
+        rendered_stacks = [];
+        for (var i = 0; i < stacks.length; ++i) {
+           rendered_stacks.push ($scope.createBattlefieldStack (stacks[i], enchantments));
+        }
+
+        $scope.opponent_stacks = rendered_stacks;
+
+        console.log("player_stacks: " + $scope.player_stacks.toSource());
     }
 
     $scope.renderCard = function(obj) {
@@ -303,12 +325,12 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
     }
 
     $scope.render = function(message) {
-        /* alert("" + message["player"] + " " + Game.role);* /
+        /* alert("" + message["player"] + " " + Game.role);*/
 
         var in_play = message["in_play"];
         $scope.createStacks(in_play);
 
-        /* $scope.hand = message["players"][""]["hand"]*/
+        /* $scope.hand = message["players"][""]["hand"] */
 
         for (var i = 0; i < message["players"].length; ++i) {
             var player = message["players"][i];
