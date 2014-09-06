@@ -228,6 +228,10 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
         var role2stacks = {};
         role2stacks["player"] = [];
         role2stacks["opponent"] = [];
+
+        var battlestacks = [];
+        var id2battlestack = {}; /* map any attacker/blocker linked with any of the object in the battlestack */
+
 /*        var role2stacks_battle = {};*/
 
         for (var i = 0; i < objects.length; ++i) {
@@ -235,40 +239,85 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
             if (obj.controller !== null && obj.enchanted_id === null) {
 
-                
-
                 var role = Game.rolemap(obj.controller);
-/*                var battle = (obj.tags.indexOf("attacking") >= 0 || obj.tags.indexOf("blocking") >= 0); */
+                var battle = (obj.tags.indexOf("attacking") >= 0 || obj.tags.indexOf("blocking") >= 0);
 
-                var role2stacksmap = role2stacks;
-/*                if (battle) {
-                    role2stacksmap = role2stacks_battle;
-                }*/
+                if (battle) {
+                    /* attacking or blocking, display in battlestacks */
 
-                if (!(role in role2stacksmap)) {
-                   role2stacksmap[role] = [];
-                }
+                    var battlestack = null;
 
-                /* Look if there is already a stack of cards with the same name */
-                var stacks = role2stacksmap[role];
-                var found = false;
-                for (var j = 0; j < stacks.length; ++j) {
-                    var stack = stacks[j];
-                    if (stack[0].title == obj.title) {
-
-                        /* Add the object to this stack */
-                        stack.push(obj);
-
-                        found = true;
-                        break;
+                    if (obj.id in id2battlestack) {
+                        battlestack = id2battlestack[obj.id];
                     }
-                }
 
-                /* No stack with this title yet, create a new one */
-                if (!found) {
-                    var stack = [];
-                    stack.push(obj);
-                    stacks.push(stack);
+                    for (var j = 0; j < obj["blockers"].length; ++j) {
+                        if (obj["blockers"][j] in id2battlestack) {
+                            battlestack = id2battlestack[obj["blockers"][j]];
+                        }
+                    }
+
+                    for (var j = 0; j < obj["attackers"].length; ++j) {
+                        if (obj["attackers"][j] in id2battlestack) {
+                            battlestack = id2battlestack[obj["attackers"][j]];
+                        }
+                    }
+
+                    if (battlestack == null) {
+                        battlestack = {};
+                        battlestack["player"] = [];
+                        battlestack["opponent"] = [];
+                    }
+
+                    battlestack[role].push( $scope.createBattlefieldStack (obj, enchantments) );
+
+                    id2battlestack[obj.id] = battlestack;
+                    for (var j = 0; j < obj["blockers"].length; ++j) {
+                        id2battlestack[obj["blockers"][j]] = battlestack;
+                    }
+
+                    for (var j = 0; j < obj["attackers"].length; ++j) {
+                        id2battlestack[obj["attackers"][j]] = battlestack;
+                    }
+
+                    /*for (var j = 0; j < battlestacks.length; ++j) {
+                        var bs_opponent_stack = battlestacks[j]["opponent"];
+                        var bs_player_stack = battlestacks[j]["player"];
+
+                        for (var l = 0; l < 
+                            /* if (obj["blockers"] bs_opponent_stack[k]["cards"][0].obj.id*/
+                     /*   }
+                    }*/
+                }
+                else { 
+
+                    var role2stacksmap = role2stacks;
+
+                    if (!(role in role2stacksmap)) {
+                       role2stacksmap[role] = [];
+                    }
+
+                    /* Look if there is already a stack of cards with the same name */
+                    var stacks = role2stacksmap[role];
+                    var found = false;
+                    for (var j = 0; j < stacks.length; ++j) {
+                        var stack = stacks[j];
+                        if (stack[0].title == obj.title) {
+    
+                            /* Add the object to this stack */
+                            stack.push(obj);
+    
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    /* No stack with this title yet, create a new one */
+                    if (!found) {
+                        var stack = [];
+                        stack.push(obj);
+                        stacks.push(stack);
+                    }
                 }
             }
         }
