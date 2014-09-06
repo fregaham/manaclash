@@ -1,7 +1,12 @@
 
-#table {
+#gametable {
+  position: absolute;
   overflow: auto;
   line-height: normal;
+  left: 200px;
+  top:0px;
+  right:0px;
+  bottom:0px;
 }
 
 .bg-table {
@@ -102,9 +107,21 @@
 .player_hand {
     position: absolute;
     bottom: 0px;
+    left: 0px;
+}
+
+
+/*
+.opponent_battlefield {
+    position: absolute;
     left: 200px;
 }
 
+.player_battlefield {
+    position:absolute;
+    left:200px;
+}
+*/
 
 /* cards */
 

@@ -139,12 +139,15 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
         rendered_card["obj"] = $scope.renderCard(root_card);
 
+        rendered_card["klass"] = "";
+
         rendered_card["left"] = left_offset;
         rendered_card["top"] = top_offset;
 /*        rendered_stack["position"] = , "absolute");*/
         rendered_card["z-index"] = zindex;
 
         if (root_card.tapped) {
+            rendered_card["klass"] = "card_tapped";
             width = Math.max(width, left_offset + 142);
             height = Math.max(height, top_offset + 100);
         }

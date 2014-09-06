@@ -105,17 +105,17 @@
         </div>
     </div>
 
-    <div id="table">
-
-        <div style="position:absolute; left:200px;">
-            <div ng-repeat="a in actions">
-                <button type="button" class="btn btn-default" ng-click="action(a)">{{a.text}}</button>
-            </div>
+    <div style="position:absolute; top:140px;">
+        <div ng-repeat="a in actions">
+            <button type="button" class="btn btn-default" ng-click="action(a)">{{a.text}}</button>
         </div>
+    </div>
+
+    <div id="gametable">
 
         <div class="opponent_battlefield">
              <span class="card_stack" ng-repeat="stack in opponent_stacks" style="width:{{stack.width}}px; height:{{stack.height}}px;">
-                <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
+                <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
                     <div class="card_content">
                         <span class="header">
                             <span class="title">{{c.obj.title}}</span>
@@ -132,7 +132,7 @@
 
         <div class="player_battlefield">
              <span class="card_stack" ng-repeat="stack in player_stacks" style="width:{{stack.width}}px; height:{{stack.height}}px;">
-                <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
+                <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
                     <div class="card_content">
                         <span class="header">
                             <span class="title">{{c.obj.title}}</span>
