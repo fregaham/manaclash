@@ -192,15 +192,34 @@ def open_for_duel_handler(message, username):
 
     online_users_handler(message)    
 
+
+def read_deck(deckname):
+
+    deck = []
+
+    f = open('decks/' + deckname + '.txt', 'r')
+    for line in f:
+        count, title = line.rstrip().split(" ", 1)
+        deck.append ( (int(count), title.strip()) )
+
+    f.close()
+
+    return deck
+
 def join_duel_handler(message, username):
 
     msg = {}
 
     msg["player1"] = username
     msg["player2"] = message.body["username"]
-    
-    msg["deck1"] = [[20, "Plains"]]
-    msg["deck2"] = [[20, "Swamp"]]
+
+    # temporary hard coded data
+       
+    #msg["deck1"] = [[20, "Plains"]]
+    #msg["deck2"] = [[20, "Swamp"]]
+
+    msg["deck1"] = read_deck("Heavy Hitters")
+    msg["deck2"] = read_deck("Speed Scorch")
 
     print "sending game.start " + `msg`
 

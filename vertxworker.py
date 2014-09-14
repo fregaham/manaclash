@@ -81,6 +81,14 @@ def game_start_handler(message):
 
     games[gameid] = {'id': gameid, 'unregister_id' : unregister_id, 'player1': player1, 'player2': player2, 'player1_joined': False, 'player2_joined': False}
 
+    games[gameid]["player1_autopass"] = ["player beginning upkeep", "opponent beginning upkeep", "player beginning draw", "opponent beginning draw", "opponent precombat main", "player combat beginning of combat", "opponent combat beginning of combat", "player combat end of combat", "opponent combat end of combat", "opponent postcombat main", "player end end of turn"]
+    games[gameid]["player2_autopass"] = ["player beginning upkeep", "opponent beginning upkeep", "player beginning draw", "opponent beginning draw", "opponent precombat main", "player combat beginning of combat", "opponent combat beginning of combat", "player combat end of combat", "opponent combat end of combat", "opponent postcombat main", "player end end of turn"]
+
+    # remember previus step for autopass
+    games[gameid]["previous_step"] = None
+    games[gameid]["autopass_state"] = 0
+
+
     output = Output()
     g = Game(output)
 
@@ -250,8 +258,68 @@ def game_send_state(game):
     state = game_state(game["game"], game["actions"])
     EventBus.publish('game.state.' + game["id"], state)
 
+def _relative_phase_step(game, player):
+
+    if player == "player1":
+        player_id = game["game"].players[0].id
+    elif player == "player2":
+        player_id = game["game"].players[1].id
+
+    if player_id == game["game"].active_player_id:
+        return ("player" + " " + game["game"].current_phase + " " + game["game"].current_step).rstrip()
+    else:
+        return ("opponent" + " " + game["game"].current_phase + " " + game["game"].current_step).rstrip()
+
+def _current_player_n(game):
+    if game["game"].players[0].id == game["actions"].player_id:
+        return "player1"
+    elif game["game"].players[1].id == game["actions"].player_id:
+        return "player2"
+
+    assert False
+
 def game_input(game, action):
-    game["actions"] = game["game"].next(action)
+
+    # auto pass
+    while True:
+
+        #print "pre next"
+        game["actions"] = game["game"].next(action)
+        #print "post next"
+
+        previous_step = game["previous_step"]
+        current_step = game["game"].current_phase + " " + game["game"].current_step 
+        current_player_n = _current_player_n(game)
+
+#        player1_step = _relative_phase_step(game, "player1")
+#        player2_step = _relative_phase_step(game, "player2"
+
+        current_player_step = _relative_phase_step(game, current_player_n)
+
+#        if game["autopass_step"] == 0:
+#        if previous_step == current_step:
+#                break
+
+        #print "current player step: " + current_player_step + ", " + game["actions"].text
+
+        # autopass if stack is empty
+        # also autopass automatically declare attackers if no attackers in combat (even if that phase is not in player's autopass list)
+        if isinstance(game["actions"], ActionSet) and game["actions"].text == "You have priority" and len(game["game"].get_stack_zone().objects) == 0 and (current_player_step in game[current_player_n + "_autopass"] or (current_player_step.endswith("combat declare attackers") and len(game["game"].declared_attackers) == 0)):
+            passAction = None
+            for a in game["actions"].actions:
+                if isinstance(a, PassAction):
+                    passAction = a
+
+            if passAction != None:
+                action = passAction
+                print "autopassing " + current_player_step
+            else:
+                print "no pass action"
+                break
+        else:
+            print "not passing " + current_player_step
+            break
+
     game_send_state(game)
 
 def game_join_handler(message, username):
