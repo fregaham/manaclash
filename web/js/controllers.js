@@ -126,6 +126,7 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
     $scope.opponent_stacks = [];
     $scope.player_stacks = [];
     $scope.hand = [];
+    $scope.stack = [];
 
     $scope.action = function(action) {
         EventBus.send("game.action." + Game.gameid, {'sessionID': SessionManager.sessionID, 'type': 'action', 'action': action.index} );
@@ -382,6 +383,11 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
         var in_play = message["in_play"];
         $scope.createStacks(in_play);
 
+        $scope.stack = [];
+        for (var j = 0; j < message["stack"].length; ++j) {
+            $scope.stack.push ($scope.renderCard(message["stack"][j]));
+        }
+
         /* $scope.hand = message["players"][""]["hand"] */
 
         for (var i = 0; i < message["players"].length; ++i) {
@@ -392,7 +398,7 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
                 for (var j = 0; j < player["hand"].length; ++j) {
                     $scope.hand.push ($scope.renderCard(player["hand"][j]));
                 }
-                $scope.hand = player["hand"];
+                //$scope.hand = player["hand"];
             }
         }
 

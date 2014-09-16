@@ -123,11 +123,30 @@
                         </span>
                         <span class="body">
                             <span class="types">{{c.obj.ui_types}}</span>
-                            <span class="text">{{c.text}}</span>
+                            <span class="text">{{c.obj.text}}</span>
+                            <span class="power" ng-if="c.obj.power != null">{{c.obj.power}}/{{c.obj.toughness}}</span>
                         </span>
                     </div>
                 </span>
              </span>
+        </div>
+
+        <div class="game_stack">
+            <span class="card_stack" ng-repeat="c in stack">
+                <span class="card_small card_{{c.ui_color}}">
+                    <div class="card_content">
+                        <span class="header">
+                            <span class="title">{{c.title}}</span>
+                            <span class="manacost">{{c.manacost}}</span>
+                        </span>
+                        <span class="body">
+                            <span class="types">{{c.ui_types}}</span>
+                            <span class="text">{{c.text}}</span>
+                            <span class="power" ng-if="c.power != null">{{c.power}}/{{c.toughness}}</span>
+                        </span>
+                    </div>
+                </span>
+            </span>
         </div>
 
         <div class="player_battlefield">
@@ -140,7 +159,8 @@
                         </span>
                         <span class="body">
                             <span class="types">{{c.obj.ui_types}}</span>
-                            <span class="text">{{c.text}}</span>
+                            <span class="text">{{c.obj.text}}</span>
+                            <span class="power" ng-if="c.obj.power != null">{{c.obj.power}}/{{c.obj.toughness}}</span>
                         </span>
                     </div>
                 </span>
@@ -189,6 +209,7 @@
                         <span class="body">
                             <span class="types">{{c.ui_types}}</span>
                             <span class="text">{{c.text}}</span>
+                            <span class="power" ng-if="c.power != null">{{c.power}}/{{c.toughness}}</span>
                         </span>
                     </div>
                 </span>
