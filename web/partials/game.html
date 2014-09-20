@@ -131,6 +131,45 @@
              </span>
         </div>
 
+        <div class="battle_battlefield">
+            <span class="battlestack" ng-repeat="s in battlestacks">
+                <div class="opponent_battlestack">
+                    <span class="card_stack" ng-repeat="stack in s.opponent" style="width:{{stack.width}}px; height:{{stack.height}}px;">
+                        <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
+                            <div class="card_content">
+                                <span class="header">
+                                    <span class="title">{{c.obj.title}}</span>
+                                    <span class="manacost">{{c.obj.manacost}}</span>
+                                </span>
+                                <span class="body">
+                                    <span class="types">{{c.obj.ui_types}}</span>
+                                    <span class="text">{{c.obj.text}}</span>
+                                    <span class="power" ng-if="c.obj.power != null">{{c.obj.power}}/{{c.obj.toughness}}</span>
+                                </span>
+                            </div>
+                        </span>
+                     </span>
+                </div>
+                <div class="player_battlestack">
+                    <span class="card_stack" ng-repeat="stack in s.player" style="width:{{stack.width}}px; height:{{stack.height}}px;">
+                        <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
+                            <div class="card_content">
+                                <span class="header">
+                                    <span class="title">{{c.obj.title}}</span>
+                                    <span class="manacost">{{c.obj.manacost}}</span>
+                                </span>
+                                <span class="body">
+                                    <span class="types">{{c.obj.ui_types}}</span>
+                                    <span class="text">{{c.obj.text}}</span>
+                                    <span class="power" ng-if="c.obj.power != null">{{c.obj.power}}/{{c.obj.toughness}}</span>
+                                </span>
+                            </div>
+                        </span>
+                     </span>
+                </div>
+            </span>
+        </div>
+
         <div class="game_stack">
             <span class="card_stack" ng-repeat="c in stack">
                 <span class="card_small card_{{c.ui_color}}">

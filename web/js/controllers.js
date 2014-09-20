@@ -268,9 +268,11 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
                         battlestack = {};
                         battlestack["player"] = [];
                         battlestack["opponent"] = [];
+
+                        battlestacks.push(battlestack);
                     }
 
-                    battlestack[role].push( $scope.createBattlefieldStack (obj, enchantments) );
+                    battlestack[role].push( $scope.createBattlefieldStack ([obj], enchantments) );
 
                     id2battlestack[obj.id] = battlestack;
                     for (var j = 0; j < obj["blockers"].length; ++j) {
@@ -339,7 +341,19 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
         $scope.opponent_stacks = rendered_stacks;
 
-        console.log("player_stacks: " + $scope.player_stacks.toSource());
+
+        /* temporary testing */
+/*
+        battlestacks.push({'opponent':[{'cards':[{'title':'Foobar','left':0,'top':0,'z-index':'1'}, {'title':'Foobar II','left':110,'top':0,'z-index':'1'}], 'width':230,'height':150}], 'player':[{'cards':[{'title':'Foobar III','left':0,'top':0,'z-index':'1'}], 'width':108,'height':150}]});
+
+        battlestacks.push({'opponent':[{'cards':[{'title':'Gaga','left':0,'top':0,'z-index':'1'}, {'title':'Gaga II','left':110,'top':0,'z-index':'1'}], 'width':230,'height':150}], 'player':[{'cards':[{'title':'Gaga III','left':0,'top':0,'z-index':'1'}], 'width':108,'height':150}]});
+*/
+        /* end of temporary testing */
+
+        $scope.battlestacks = battlestacks;
+
+        console.log("battlestacks: " + $scope.battlestacks.toSource());
+/*        console.log("player_stacks: " + $scope.player_stacks.toSource());*/
     }
 
     $scope.renderCard = function(obj) {

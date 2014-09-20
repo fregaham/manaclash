@@ -110,6 +110,25 @@
     left: 0px;
 }
 
+.opponent_battlefield {
+    white-space: nowrap;
+}
+
+.player_battlefield {
+    white-space: nowrap;
+}
+
+.battle_battlefield {
+    white-space: nowrap;
+}
+
+.game_stack {
+    white-space: nowrap;
+}
+
+.battlestack {
+    display:inline-block;
+}
 
 /*
 .opponent_battlefield {
@@ -156,6 +175,8 @@
     background: white;
     margin:3px;
     color: black;
+
+    white-space: normal;
 
     font-family: 'Open Sans', sans-serif;
 }
