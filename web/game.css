@@ -13,11 +13,21 @@
    background-image: url(table.png);
 }
 
+.player_pass {
+    position: absolute;
+/*    background-color: rgba(255,255,255, 0.5);*/
+  
+    right:0px;
+    top:0px;
+/*    width: 190px;
+    height: 42px;*/
+}
+
 .player_status {
     background-color: rgba(255,255,255, 0.5);
 
     width: 190px;
-    height: 64px;
+    height: 78px;
 /*
     background-image: url(table.png);
     -webkit-filter: blur(20px);
@@ -35,12 +45,12 @@
 }
 
 .opponent_turn_structure {
-    top:64px;
+    top:78px;
     left:0px;
 }
 
 .opponent_combat_turn_structure {
-    top:96px;
+    top:110px;
     left:0px;
 }
 
@@ -74,6 +84,21 @@
    vertical-align: middle;
 }
 
+/*
+.self_pass {
+    position: absolute;
+    text-align: center;
+    bottom: 128px;
+    left: 0px;
+}
+*/
+
+/*
+.player-pass-button {
+    margin-top: 4px;
+}
+*/
+
 .self_status {
     position: absolute;
     bottom: 64px;
@@ -81,13 +106,13 @@
 /*    background: red;*/
 }
 
-.player_life {
 
+.player_life {
     position: absolute;
     width: 32px;
     height: 24px;
+    left: 8px;
     font-size: 2em;
-/*    float: left;*/
 }
 
 .player_name {
@@ -98,15 +123,15 @@
 
 .player_lgh {
     position: absolute;
-    left:42px;
-    top:28px;
+    left:20px;
+    top:42px;
 
     opacity: 0.75;
 }
 
 .player_hand {
     position: absolute;
-    bottom: 0px;
+    bottom: 32px;
     left: 0px;
 }
 
@@ -128,6 +153,16 @@
 
 .battlestack {
     display:inline-block;
+}
+
+.game_text {
+    position: absolute;
+    left: 190px;
+    bottom: 0px;
+    height:32px;
+    right:0px;
+
+    background-color: rgba(255,255,255, 0.5);
 }
 
 /*
@@ -160,6 +195,14 @@
 .card_tapped {
    -webkit-transform: rotate(90deg) translate(-21px, -21px);
    -moz-transform: rotate(90deg) translate(-21px, -21px);
+}
+
+.card_action {
+   border: solid 1px yellow;
+
+   box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+   -webkit-box-shadow: 0 0 5px rgba(255, 255, 0, 1);
+   -moz-box-shadow: 0 0 5px rgba(255, 255, 0, 1);
 }
 
 

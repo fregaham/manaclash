@@ -127,9 +127,17 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
     $scope.player_stacks = [];
     $scope.hand = [];
     $scope.stack = [];
+    $scope.text = "";
+    $scope.action_map = {};
 
     $scope.action = function(action) {
         EventBus.send("game.action." + Game.gameid, {'sessionID': SessionManager.sessionID, 'type': 'action', 'action': action.index} );
+    }
+
+    $scope.objectAction = function(id) {
+        if ($scope.hasObjectAction(id)) {
+            $scope.action($scope.action_map[id]);
+        }
     }
 
     $scope.createBattlefieldStackRecursive = function(rendered_stack, root_card, left_offset, top_offset, width, height, zindex, enchantments) {
@@ -156,6 +164,13 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
             width = Math.max(width, left_offset + 100);
             height = Math.max(height, top_offset + 142);
         }
+
+        /* if the card has an action, get the action class */
+        /*
+        if ($scope.hasObjectAction(root_card.id)) {
+            rendered_card["klass"] += " card_action";
+        }
+        */
 
         /* We set the zone name here, so the auras of different controllers get into the right zone in the zone_map */
         /* g_zone_map[root_card.id] = zone_name;*/
@@ -388,21 +403,51 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
         obj["ui_types"] = types;
 
+        if ($scope.hasObjectAction(obj.id)) {
+            obj["ui_color"] += " card_action";
+        }
+
         return obj;
     }
 
     $scope.render = function(message) {
-        /* alert("" + message["player"] + " " + Game.role);*/
+
+        $scope.actions = [];
+        $scope.action_map = {};
+
+        if (message["player"] == Game.role) {
+
+            $scope.text = message["text"];
+
+//            $scope.actions = message["actions"];
+
+            for (var i = 0; i < message["actions"].length; ++i) {
+//                console.log("XXX adding to action map  " + $scope.actions[i]["object"]);
+
+                var action = message["actions"][i];
+                action.index = i;
+
+                if (action["object"] != null) {
+                    console.log("XXX adding to action map  " + action["object"]);
+
+                    $scope.action_map[action["object"]] = action;
+                }
+                else {
+                    $scope.actions.push(action);
+                }
+            }
+        }
+        else {
+            $scope.text = "Waiting for opponent (" + message["text"] + ")";
+        }
 
         var in_play = message["in_play"];
         $scope.createStacks(in_play);
-
+    
         $scope.stack = [];
         for (var j = 0; j < message["stack"].length; ++j) {
             $scope.stack.push ($scope.renderCard(message["stack"][j]));
         }
-
-        /* $scope.hand = message["players"][""]["hand"] */
 
         for (var i = 0; i < message["players"].length; ++i) {
             var player = message["players"][i];
@@ -412,18 +457,17 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
                 for (var j = 0; j < player["hand"].length; ++j) {
                     $scope.hand.push ($scope.renderCard(player["hand"][j]));
                 }
-                //$scope.hand = player["hand"];
             }
         }
 
-        $scope.actions = [];
-        if (message["player"] == Game.role) {
-            $scope.actions = message["actions"];
 
-            for (var i = 0; i < $scope.actions.length; ++i) {
-                $scope.actions[i].index = i;
-            }
-        }
+    }
+
+    $scope.hasObjectAction = function(id) {
+
+        console.log("XXX hasObjectAction " + id);
+
+        return id in $scope.action_map;
     }
 
     Game.statusHandler = function(message) {

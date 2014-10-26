@@ -1,8 +1,10 @@
 <div id="game" class="container-fluid">
     <div class="opponent_status player_status">
+
         <span class="player_life">
             20
         </span> 
+
 
         <span class="player_name">
             Opponent
@@ -10,6 +12,7 @@
 
         <span class="player_lgh">
             <div class="btn-group btn-group-sm">
+<!--              <button type="button" class="btn btn-default"><img src='icons/life.png'/>20</button>-->
               <button type="button" class="btn btn-default"><img src='icons/library.png'/>60</button>
               <button type="button" class="btn btn-default"><img src='icons/graveyard.png'/>0</button>
               <button type="button" class="btn btn-default"><img src='icons/hand.png'/>7</button>
@@ -53,15 +56,28 @@
         </div>
     </div>
 
+    <!--
+    <div class="self_pass player_pass">
+        <button type="button" class="btn btn-default player-pass-button">Pass</button>
+    </div>
+    -->
+
     <div class="player_status self_status">
+
         <span class="player_life">
             20
         </span> 
-        <span class="player_name"> 
+
+        <span class="player_pass">
+            <button type="button" class="btn btn-default player-pass-button" ng-disabled="true">Pass</button>
+        </span>
+<!--        <span class="player_name"> 
             Player
         </span>
+-->
         <span class="player_lgh">
             <div class="btn-group btn-group-sm">
+<!--              <button type="button" class="btn btn-default"><img src='icons/life.png'/>20</button>-->
               <button type="button" class="btn btn-default"><img src='icons/library.png'/>60</button>
               <button type="button" class="btn btn-default"><img src='icons/graveyard.png'/>0</button>
               <button type="button" class="btn btn-default"><img src='icons/hand.png'/>7</button>
@@ -116,7 +132,7 @@
         <div class="opponent_battlefield">
              <span class="card_stack" ng-repeat="stack in opponent_stacks" style="width:{{stack.width}}px; height:{{stack.height}}px;">
                 <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
-                    <div class="card_content">
+                    <div class="card_content" ng-click="objectAction(c.obj.id)">
                         <span class="header">
                             <span class="title">{{c.obj.title}}</span>
                             <span class="manacost">{{c.obj.manacost}}</span>
@@ -136,7 +152,7 @@
                 <div class="opponent_battlestack">
                     <span class="card_stack" ng-repeat="stack in s.opponent" style="width:{{stack.width}}px; height:{{stack.height}}px;">
                         <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
-                            <div class="card_content">
+                            <div class="card_content" ng-click="objectAction(c.obj.id)">
                                 <span class="header">
                                     <span class="title">{{c.obj.title}}</span>
                                     <span class="manacost">{{c.obj.manacost}}</span>
@@ -153,7 +169,7 @@
                 <div class="player_battlestack">
                     <span class="card_stack" ng-repeat="stack in s.player" style="width:{{stack.width}}px; height:{{stack.height}}px;">
                         <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
-                            <div class="card_content">
+                            <div class="card_content" ng-click="objectAction(c.obj.id)">
                                 <span class="header">
                                     <span class="title">{{c.obj.title}}</span>
                                     <span class="manacost">{{c.obj.manacost}}</span>
@@ -173,7 +189,7 @@
         <div class="game_stack">
             <span class="card_stack" ng-repeat="c in stack">
                 <span class="card_small card_{{c.ui_color}}">
-                    <div class="card_content">
+                    <div class="card_content" ng-click="objectAction(c.id)">
                         <span class="header">
                             <span class="title">{{c.title}}</span>
                             <span class="manacost">{{c.manacost}}</span>
@@ -191,7 +207,7 @@
         <div class="player_battlefield">
              <span class="card_stack" ng-repeat="stack in player_stacks" style="width:{{stack.width}}px; height:{{stack.height}}px;">
                 <span ng-repeat="c in stack.cards" class="card_small card_{{c.obj.ui_color}} {{c.klass}}" style="position:absolute; left:{{c.left}}px; top:{{c.top}}px; z-index: {{c.z-index}};">
-                    <div class="card_content">
+                    <div class="card_content" ng-click="objectAction(c.obj.id)">
                         <span class="header">
                             <span class="title">{{c.obj.title}}</span>
                             <span class="manacost">{{c.obj.manacost}}</span>
@@ -240,7 +256,7 @@
         <div class="player_hand">
             <span class="card_stack" ng-repeat="c in hand">
                 <span class="card_small card_{{c.ui_color}}">
-                    <div class="card_content">
+                    <div class="card_content" ng-click="objectAction(c.id)">
                         <span class="header">
                             <span class="title">{{c.title}}</span>
                             <span class="manacost">{{c.manacost}}</span>
@@ -254,6 +270,11 @@
                 </span>
             </span>
         </div>
+
+    </div>
+
+    <div class="game_text">
+        {{text}}
     </div>
 
 </div>
