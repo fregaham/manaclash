@@ -244,6 +244,13 @@ def game_state(game, _as):
                     am["manaability"] = True
             if a.player_id is not None:
                 am["player"] = player_to_role(game, game.obj(a.player_id))
+
+            # flag if the action is a pass action
+            if isinstance(a, PassAction):
+                am["pass"] = True
+            else:
+                am["pass"] = False
+
             actions.append(am)
 
     elif isinstance(_as, QueryNumber):

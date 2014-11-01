@@ -130,8 +130,17 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
     $scope.text = "";
     $scope.action_map = {};
 
+    $scope.passAction = null;
+    $scope.passText = null;
+
     $scope.action = function(action) {
         EventBus.send("game.action." + Game.gameid, {'sessionID': SessionManager.sessionID, 'type': 'action', 'action': action.index} );
+    }
+
+    $scope.doPassAction = function() {
+        if ($scope.passAction != null) {
+            $scope.action($scope.passAction);
+        }
     }
 
     $scope.objectAction = function(id) {
@@ -414,6 +423,8 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
         $scope.actions = [];
         $scope.action_map = {};
+        $scope.passAction = null;
+        $scope.passText = "Pass";
 
         if (message["player"] == Game.role) {
 
@@ -426,6 +437,12 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
                 var action = message["actions"][i];
                 action.index = i;
+
+                if (action["pass"]) {   
+                    $scope.passAction = action;
+                    $scope.passText = action["text"];
+                    console.log("pass : " + $scope.passText);
+                }
 
                 if (action["object"] != null) {
                     console.log("XXX adding to action map  " + action["object"]);
