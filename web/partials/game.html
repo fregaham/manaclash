@@ -121,12 +121,6 @@
         </div>
     </div>
 
-    <div style="position:absolute; top:140px;">
-        <div ng-repeat="a in actions">
-            <button type="button" class="btn btn-default" ng-click="action(a)">{{a.text}}</button>
-        </div>
-    </div>
-
     <div id="gametable">
 
         <div class="opponent_battlefield">
@@ -202,6 +196,17 @@
                     </div>
                 </span>
             </span>
+        </div>
+
+        <div class="panel panel-default" ng-if="actions.length >= 2">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{text}}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="btn-group">
+              <button ng-repeat="a in actions" type="button" class="btn btn-default" ng-click="action(a)">{{a.text}}</button>
+            </div>
+          </div>
         </div>
 
         <div class="player_battlefield">
