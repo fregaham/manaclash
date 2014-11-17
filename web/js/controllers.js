@@ -119,8 +119,8 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', '$timeout', '$l
   }]);
 
 
-manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'SessionManager', 'Game',
-  function ($scope, $http, EventBus, SessionManager, Game) {
+manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'EventBus', 'SessionManager', 'Game',
+  function ($scope, $window, $http, EventBus, SessionManager, Game) {
 
     $scope.actions = [];
     $scope.opponent_stacks = [];
@@ -132,6 +132,13 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$http', 'EventBus', 'Ses
 
     $scope.passAction = null;
     $scope.passText = null;
+
+    $scope.tableHeight = $window.innerHeight;
+   
+    angular.element($window).bind('resize', function() {
+        $scope.tableHeight = $window.innerHeight;
+        $scope.$digest();
+    });
 
     $scope.action = function(action) {
         EventBus.send("game.action." + Game.gameid, {'sessionID': SessionManager.sessionID, 'type': 'action', 'action': action.index} );
