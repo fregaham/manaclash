@@ -134,11 +134,26 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
     $scope.passText = null;
 
     $scope.tableHeight = $window.innerHeight;
+    $scope.stacksHeight = 0;
    
     angular.element($window).bind('resize', function() {
-        $scope.tableHeight = $window.innerHeight;
+        $scope.updateTableSize();
         $scope.$digest();
+//        $scope.tableHeight = $window.innerHeight;
+//        $scope.$digest();
     });
+
+    $scope.updateTableSize = function() {
+
+        var internalHeight = $scope.stacksHeight + 32; // bottom panel
+
+        if ($window.innerHeight > internalHeight) {
+            $scope.tableHeight = $window.innerHeight;
+        }
+        else {
+            $scope.tableHeight = internalHeight;
+        }
+    }
 
     $scope.action = function(action) {
         EventBus.send("game.action." + Game.gameid, {'sessionID': SessionManager.sessionID, 'type': 'action', 'action': action.index} );
@@ -264,6 +279,10 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
         var battlestacks = [];
         var id2battlestack = {}; /* map any attacker/blocker linked with any of the object in the battlestack */
 
+        var battleStackHeights = {};
+        battleStackHeights["player"] = 0;
+        battleStackHeights["opponent"] = 0;
+
 /*        var role2stacks_battle = {};*/
 
         for (var i = 0; i < objects.length; ++i) {
@@ -303,7 +322,12 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
                         battlestacks.push(battlestack);
                     }
 
-                    battlestack[role].push( $scope.createBattlefieldStack ([obj], enchantments) );
+                    var stack = $scope.createBattlefieldStack ([obj], enchantments)
+                    battlestack[role].push( stack );
+
+                    if (stack.height > battleStackHeights[role]) {
+                        battleStackHeights[role] = stack.height;
+                    }
 
                     id2battlestack[obj.id] = battlestack;
                     for (var j = 0; j < obj["blockers"].length; ++j) {
@@ -356,22 +380,40 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
             }
         }
 
+        $scope.stacksHeight = 150 + 150; // player hand + stack
+
+        var stackHeight = 0;
         var stacks = role2stacks["player"];
         var rendered_stacks = [];
         for (var i = 0; i < stacks.length; ++i) {
-           rendered_stacks.push ($scope.createBattlefieldStack (stacks[i], enchantments));
+           var stack = $scope.createBattlefieldStack (stacks[i], enchantments);
+           rendered_stacks.push (stack);
+
+           if (stack.height > stackHeight) {
+               stackHeight = stack.height;
+           }
         }
+
+        $scope.stacksHeight += stackHeight;
 
         $scope.player_stacks = rendered_stacks;
 
+        stackHeight = 0;
         stacks = role2stacks["opponent"];
         rendered_stacks = [];
         for (var i = 0; i < stacks.length; ++i) {
-           rendered_stacks.push ($scope.createBattlefieldStack (stacks[i], enchantments));
+           var stack = $scope.createBattlefieldStack (stacks[i], enchantments);
+           rendered_stacks.push (stack);
+           if (stack.height > stackHeight) {
+               stackHeight = stack.height;
+           }
         }
+        $scope.stacksHeight += stackHeight;
 
         $scope.opponent_stacks = rendered_stacks;
 
+        $scope.stacksHeight += battleStackHeights["opponent"];
+        $scope.stacksHeight += battleStackHeights["player"];
 
         /* temporary testing */
 /*
@@ -384,6 +426,7 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
         $scope.battlestacks = battlestacks;
 
         console.log("battlestacks: " + $scope.battlestacks.toSource());
+
 /*        console.log("player_stacks: " + $scope.player_stacks.toSource());*/
     }
 
@@ -467,6 +510,8 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
 
         var in_play = message["in_play"];
         $scope.createStacks(in_play);
+
+        $scope.updateTableSize();
     
         $scope.stack = [];
         for (var j = 0; j < message["stack"].length; ++j) {
