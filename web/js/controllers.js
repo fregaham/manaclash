@@ -119,13 +119,12 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', '$timeout', '$l
   }]);
 
 
-manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'EventBus', 'SessionManager', 'Game',
-  function ($scope, $window, $http, EventBus, SessionManager, Game) {
+manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$http', 'EventBus', 'SessionManager', 'Game',
+  function ($scope, $window, $modal, $http, EventBus, SessionManager, Game) {
 
     $scope.actions = [];
     $scope.opponent_stacks = [];
     $scope.player_stacks = [];
-    $scope.hand = [];
     $scope.stack = [];
     $scope.text = "";
     $scope.action_map = {};
@@ -135,7 +134,15 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
 
     $scope.tableHeight = $window.innerHeight;
     $scope.stacksHeight = 0;
-   
+
+    $scope.player_hand = [];
+    $scope.player_graveyard = [];
+    $scope.player_library = [];
+
+    $scope.opponent_hand = [];
+    $scope.opponent_graveyard = [];
+    $scope.opponent_library = [];
+  
     angular.element($window).bind('resize', function() {
         $scope.updateTableSize();
         $scope.$digest();
@@ -408,6 +415,7 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
                stackHeight = stack.height;
            }
         }
+
         $scope.stacksHeight += stackHeight;
 
         $scope.opponent_stacks = rendered_stacks;
@@ -469,6 +477,15 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
         return obj;
     }
 
+    $scope.renderZone = function(cards) {
+        var ret = [];
+        for (var j = 0; j < cards.length; ++j) {
+            ret.push ($scope.renderCard(cards[j]));
+        }
+
+        return ret;
+    }
+
     $scope.render = function(message) {
 
         $scope.actions = [];
@@ -521,15 +538,16 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
         for (var i = 0; i < message["players"].length; ++i) {
             var player = message["players"][i];
             if (player["role"] == Game.role) {
-
-                $scope.hand = [];
-                for (var j = 0; j < player["hand"].length; ++j) {
-                    $scope.hand.push ($scope.renderCard(player["hand"][j]));
-                }
+                $scope.player_hand = $scope.renderZone(player["hand"]);
+                $scope.player_library = $scope.renderZone(player["library"]);
+                $scope.player_graveyard = $scope.renderZone(player["graveyard"]);
+            }
+            else {
+                $scope.opponent_hand = $scope.renderZone(player["hand"]);
+                $scope.opponent_library = $scope.renderZone(player["library"]);
+                $scope.opponent_graveyard = $scope.renderZone(player["graveyard"]);
             }
         }
-
-
     }
 
     $scope.hasObjectAction = function(id) {
@@ -537,6 +555,29 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
         console.log("XXX hasObjectAction " + id);
 
         return id in $scope.action_map;
+    }
+
+    $scope.zoneOpen = function(role, zoneName) {
+
+        var zone = $scope[role + "_" + zoneName];
+
+        var modalInstance = $modal.open({
+          templateUrl: 'zone.html',
+          controller: 'GameZoneCtrl',
+          size: 'lg',
+          resolve: {
+            objects: function () {
+              return zone;
+            }
+          }
+        });
+
+        modalInstance.result.then(function (selectedAction) {
+           $scope.objectAction(selectedAction);
+          //$scope.selected = selectedItem;
+        }, function () {
+//          $log.info('Modal dismissed at: ' + new Date());
+        });    
     }
 
     Game.statusHandler = function(message) {
@@ -555,4 +596,16 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$http', 'Even
 
   }]);
 
+manaclashControllers.controller('GameZoneCtrl', ['$scope', '$modalInstance', 'objects', 
+  function ($scope, $modalInstance, objects) {
+    $scope.objects = objects;
+
+    $scope.zoneClose = function() {
+        $modalInstance.dismiss('cancel');
+    }
+
+    $scope.objectAction = function(id) {
+        $modalInstance.close(id); 
+    }
+  }]);
 

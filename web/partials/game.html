@@ -13,9 +13,9 @@
         <span class="player_lgh">
             <div class="btn-group btn-group-sm">
 <!--              <button type="button" class="btn btn-default"><img src='icons/life.png'/>20</button>-->
-              <button type="button" class="btn btn-default"><img src='icons/library.png'/>60</button>
-              <button type="button" class="btn btn-default"><img src='icons/graveyard.png'/>0</button>
-              <button type="button" class="btn btn-default"><img src='icons/hand.png'/>7</button>
+              <button type="button" class="btn btn-default" ng-click="zoneOpen('opponent', 'library')"><img src='icons/library.png'/>60</button>
+              <button type="button" class="btn btn-default" ng-click="zoneOpen('opponent', 'graveyard')"><img src='icons/graveyard.png'/>0</button>
+              <button type="button" class="btn btn-default" ng-click="zoneOpen('opponent', 'hand')"><img src='icons/hand.png'/>7</button>
             </div>
         </span>
     </div> 
@@ -78,9 +78,9 @@
         <span class="player_lgh">
             <div class="btn-group btn-group-sm">
 <!--              <button type="button" class="btn btn-default"><img src='icons/life.png'/>20</button>-->
-              <button type="button" class="btn btn-default"><img src='icons/library.png'/>60</button>
-              <button type="button" class="btn btn-default"><img src='icons/graveyard.png'/>0</button>
-              <button type="button" class="btn btn-default"><img src='icons/hand.png'/>7</button>
+              <button type="button" class="btn btn-default" ng-click="zoneOpen('player', 'library')"><img src='icons/library.png'/>60</button>
+              <button type="button" class="btn btn-default" ng-click="zoneOpen('player', 'graveyard')"><img src='icons/graveyard.png'/>0</button>
+              <button type="button" class="btn btn-default" ng-click="zoneOpen('player', 'hand')"><img src='icons/hand.png'/>7</button>
             </div>
         </span>
     </div>
@@ -121,7 +121,32 @@
         </div>
     </div>
 
+    <script type="text/ng-template" id="zone.html">
+        <div class="modal-header">
+            <button type="button" class="close" ng-click="zoneClose()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h3 class="modal-title">I'm a modal!</h3>
+        </div>
+        <div class="modal-body">
+            <span class="card_stack" ng-repeat="c in objects">
+                <span class="card_small card_{{c.ui_color}}">
+                    <div class="card_content" ng-click="objectAction(c.id)">
+                        <span class="header">
+                            <span class="title">{{c.title}}</span>
+                            <span class="manacost">{{c.manacost}}</span>
+                        </span>
+                        <span class="body">
+                            <span class="types">{{c.ui_types}}</span>
+                            <span class="text">{{c.text}}</span>
+                            <span class="power" ng-if="c.power != null">{{c.power}}/{{c.toughness}}</span>
+                        </span>
+                    </div>
+                </span>
+            </span>
+        </div>
+    </script>
+
     <div id="gametable">
+
 
         <div class="opponent_battlefield">
              <span class="card_stack" ng-repeat="stack in opponent_stacks" style="width:{{stack.width}}px; height:{{stack.height}}px;">
@@ -259,7 +284,7 @@
         <span class="tapped_dummy"></span>
 -->
         <div class="player_hand">
-            <span class="card_stack" ng-repeat="c in hand">
+            <span class="card_stack" ng-repeat="c in player_hand">
                 <span class="card_small card_{{c.ui_color}}">
                     <div class="card_content" ng-click="objectAction(c.id)">
                         <span class="header">
