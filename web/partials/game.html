@@ -124,7 +124,7 @@
     <script type="text/ng-template" id="zone.html">
         <div class="modal-header">
             <button type="button" class="close" ng-click="zoneClose()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h3 class="modal-title">I'm a modal!</h3>
+            <h3 class="modal-title">{{zoneName}}</h3>
         </div>
         <div class="modal-body">
             <span class="card_stack" ng-repeat="c in objects">

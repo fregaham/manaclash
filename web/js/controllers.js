@@ -561,6 +561,14 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
 
         var zone = $scope[role + "_" + zoneName];
 
+        var renderedZoneName = zoneName;
+        if (role == "opponent") {
+            renderedZoneName = "Opponents " + zoneName;
+        }
+        else {
+            renderedZoneName = "Your " + zoneName;
+        }
+
         var modalInstance = $modal.open({
           templateUrl: 'zone.html',
           controller: 'GameZoneCtrl',
@@ -568,6 +576,9 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
           resolve: {
             objects: function () {
               return zone;
+            },
+            zoneName: function () {
+              return renderedZoneName;
             }
           }
         });
@@ -596,9 +607,10 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
 
   }]);
 
-manaclashControllers.controller('GameZoneCtrl', ['$scope', '$modalInstance', 'objects', 
-  function ($scope, $modalInstance, objects) {
+manaclashControllers.controller('GameZoneCtrl', ['$scope', '$modalInstance', 'objects', 'zoneName', 
+  function ($scope, $modalInstance, objects, zoneName) {
     $scope.objects = objects;
+    $scope.zoneName = zoneName;
 
     $scope.zoneClose = function() {
         $modalInstance.dismiss('cancel');
