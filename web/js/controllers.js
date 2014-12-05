@@ -142,7 +142,7 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
     $scope.opponent_hand = [];
     $scope.opponent_graveyard = [];
     $scope.opponent_library = [];
-  
+
     angular.element($window).bind('resize', function() {
         $scope.updateTableSize();
         $scope.$digest();
@@ -479,8 +479,14 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
 
     $scope.renderZone = function(cards) {
         var ret = [];
+        ret.action = false;
         for (var j = 0; j < cards.length; ++j) {
-            ret.push ($scope.renderCard(cards[j]));
+            var card = $scope.renderCard(cards[j]);
+            ret.push (card);
+
+            if ($scope.hasObjectAction(cards[j].id)) {
+                ret.action = true;
+            }
         }
 
         return ret;

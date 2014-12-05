@@ -13,9 +13,9 @@
         <span class="player_lgh">
             <div class="btn-group btn-group-sm">
 <!--              <button type="button" class="btn btn-default"><img src='icons/life.png'/>20</button>-->
-              <button type="button" class="btn btn-default" ng-click="zoneOpen('opponent', 'library')"><img src='icons/library.png'/>60</button>
-              <button type="button" class="btn btn-default" ng-click="zoneOpen('opponent', 'graveyard')"><img src='icons/graveyard.png'/>0</button>
-              <button type="button" class="btn btn-default" ng-click="zoneOpen('opponent', 'hand')"><img src='icons/hand.png'/>7</button>
+              <button type="button" class="btn {{opponent_library.action ? 'btn-warning':'btn-default'}}" ng-click="zoneOpen('opponent', 'library')"><img src='icons/library.png'/>{{opponent_library.length}}</button>
+              <button type="button" class="btn {{opponent_graveyard.action ? 'btn-warning':'btn-default'}} " ng-click="zoneOpen('opponent', 'graveyard')"><img src='icons/graveyard.png'/>{{opponent_graveyard.length}}</button>
+              <button type="button" class="btn {{opponent_hand.action ? 'btn-warning':'btn-default'}}" ng-click="zoneOpen('opponent', 'hand')"><img src='icons/hand.png'/>{{opponent_hand.length}}</button>
             </div>
         </span>
     </div> 
@@ -78,9 +78,9 @@
         <span class="player_lgh">
             <div class="btn-group btn-group-sm">
 <!--              <button type="button" class="btn btn-default"><img src='icons/life.png'/>20</button>-->
-              <button type="button" class="btn btn-default" ng-click="zoneOpen('player', 'library')"><img src='icons/library.png'/>60</button>
-              <button type="button" class="btn btn-default" ng-click="zoneOpen('player', 'graveyard')"><img src='icons/graveyard.png'/>0</button>
-              <button type="button" class="btn btn-default" ng-click="zoneOpen('player', 'hand')"><img src='icons/hand.png'/>7</button>
+              <button type="button" class="btn {{player_library.action ? 'btn-warning':'btn-default'}}" ng-click="zoneOpen('player', 'library')"><img src='icons/library.png'/>{{player_library.length}}</button>
+              <button type="button" class="btn {{player_graveyard.action ? 'btn-warning':'btn-default'}}" ng-click="zoneOpen('player', 'graveyard')"><img src='icons/graveyard.png'/>{{player_graveyard.length}}</button>
+              <button type="button" class="btn {{player_hand.action ? 'btn-warning':'btn-default'}}" ng-click="zoneOpen('player', 'hand')"><img src='icons/hand.png'/>{{player_hand.length}}</button>
             </div>
         </span>
     </div>
