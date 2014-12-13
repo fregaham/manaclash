@@ -2,7 +2,7 @@
     <div class="opponent_status player_status">
 
         <span class="player_life">
-            20
+            {{opponent_life}}
         </span> 
 
 
@@ -22,37 +22,47 @@
 
     <div class="opponent_turn_structure turn_structure">
         <div class="turn_element">
-            <img src="icons/upkeep_full.png"/>
+            <img src="icons/upkeep_full.png" ng-if="!(step == 'upkeep' && turn == 'opponent')"/>
+            <img src="icons/upkeep_full_active.png" ng-if="(step == 'upkeep' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/draw_full.png"/>
+            <img src="icons/draw_full.png" ng-if="!(step == 'draw' && turn == 'opponent')"/>
+            <img src="icons/draw_full_active.png" ng-if="(step == 'draw' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/pre_full.png"/>
+            <img src="icons/pre_full.png" ng-if="!(phase == 'precombat main' && turn == 'opponent')"/>
+            <img src="icons/pre_full_active.png" ng-if="(phase == 'precombat main' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/post_full.png"/>
+            <img src="icons/post_full.png" ng-if="!(phase == 'postcombat main' && turn == 'opponent')"/>
+            <img src="icons/post_full_active.png" ng-if="(phase == 'postcombat main' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/endofturn.png"/>
+            <img src="icons/endofturn.png" ng-if="!(phase == 'end' && turn == 'opponent')"/>
+            <img src="icons/endofturn_active.png" ng-if="(phase == 'end' && turn == 'opponent')"/>
         </div>
     </div>
 
     <div class="opponent_combat_turn_structure turn_structure">
          <div class="turn_element">
-            <img src="icons/pre_combat.png"/>
+            <img src="icons/pre_combat.png" ng-if="!(step == 'beginning of combat' && turn == 'opponent')"/>
+            <img src="icons/pre_combat_active.png" ng-if="(step == 'beginning of combat' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/attackers.png"/>
+            <img src="icons/attackers.png" ng-if="!(step == 'declare attackers' && turn == 'opponent')"/>
+            <img src="icons/attackers_active.png" ng-if="(step == 'declare attackers' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/blockers.png"/>
+            <img src="icons/blockers.png" ng-if="!(step == 'declare blockers' && turn == 'opponent')"/>
+            <img src="icons/blockers_active.png" ng-if="(step == 'declare blockers' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/damage.png"/>
+            <img src="icons/damage.png" ng-if="!(step == 'combat damage' && turn == 'opponent')"/>
+            <img src="icons/damage_active.png" ng-if="(step == 'combat damage' && turn == 'opponent')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/post_combat.png"/>
+            <img src="icons/post_combat.png" ng-if="!(step == 'end of combat' && turn == 'opponent')"/>
+            <img src="icons/post_combat_active.png" ng-if="(step == 'end of combat' && turn == 'opponent')"/>
         </div>
     </div>
 
@@ -65,7 +75,7 @@
     <div class="player_status self_status">
 
         <span class="player_life">
-            20
+            {{player_life}}
         </span> 
 
         <span class="player_pass">
@@ -87,37 +97,47 @@
 
     <div class="player_turn_structure turn_structure">
         <div class="turn_element">
-            <img src="icons/upkeep_full.png"/>
+            <img src="icons/upkeep_full.png" ng-if="!(step == 'upkeep' && turn == 'player')"/>
+            <img src="icons/upkeep_full_active.png" ng-if="(step == 'upkeep' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/draw_full.png"/>
+            <img src="icons/draw_full.png" ng-if="!(step == 'draw' && turn == 'player')"/>
+            <img src="icons/draw_full_active.png" ng-if="(step == 'draw' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/pre_full.png"/>
+            <img src="icons/pre_full.png" ng-if="!(phase == 'precombat main' && turn == 'player')"/>
+            <img src="icons/pre_full_active.png" ng-if="(phase == 'precombat main' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/post_full.png"/>
+            <img src="icons/post_full.png" ng-if="!(phase == 'postcombat main' && turn == 'player')"/>
+            <img src="icons/post_full_active.png" ng-if="(phase == 'postcombat main' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/endofturn.png"/>
+            <img src="icons/endofturn.png" ng-if="!(phase == 'end' && turn == 'player')"/>
+            <img src="icons/endofturn_active.png" ng-if="(phase == 'end' && turn == 'player')"/>
         </div>
     </div>
 
     <div class="player_combat_turn_structure turn_structure">
          <div class="turn_element">
-            <img src="icons/pre_combat.png"/>
+            <img src="icons/pre_combat.png" ng-if="!(step == 'beginning of combat' && turn == 'player')"/>
+            <img src="icons/pre_combat_active.png" ng-if="(step == 'beginning of combat' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/attackers.png"/>
+            <img src="icons/attackers.png" ng-if="!(step == 'declare attackers' && turn == 'player')"/>
+            <img src="icons/attackers_active.png" ng-if="(step == 'declare attackers' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/blockers.png"/>
+            <img src="icons/blockers.png" ng-if="!(step == 'declare blockers' && turn == 'player')"/>
+            <img src="icons/blockers_active.png" ng-if="(step == 'declare blockers' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/damage.png"/>
+            <img src="icons/damage.png" ng-if="!(step == 'combat damage' && turn == 'player')"/>
+            <img src="icons/damage_active.png" ng-if="(step == 'combat damage' && turn == 'player')"/>
         </div>
         <div class="turn_element">
-            <img src="icons/post_combat.png"/>
+            <img src="icons/post_combat.png" ng-if="!(step == 'end of combat' && turn == 'player')"/>
+            <img src="icons/post_combat_active.png" ng-if="(step == 'end of combat' && turn == 'player')"/>
         </div>
     </div>
 

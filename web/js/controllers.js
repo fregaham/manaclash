@@ -139,9 +139,17 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
     $scope.player_graveyard = [];
     $scope.player_library = [];
 
+    $scope.player_life = 0;
+
     $scope.opponent_hand = [];
     $scope.opponent_graveyard = [];
     $scope.opponent_library = [];
+
+    $scope.opponent_life = 0;
+
+    $scope.phase = "";
+    $scope.step = "";
+    $scope.turn = "";
 
     angular.element($window).bind('resize', function() {
         $scope.updateTableSize();
@@ -499,6 +507,12 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
         $scope.passAction = null;
         $scope.passText = "Pass";
 
+        $scope.phase = message["phase"];
+        $scope.step = message["step"];
+        $scope.turn = Game.rolemap(message["turn"]);
+
+        console.log("XXX phase = " + $scope.phase + ", step: " + $scope.step + ", turn: " + $scope.turn);
+
         if (message["player"] == Game.role) {
 
             $scope.text = message["text"];
@@ -547,11 +561,15 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
                 $scope.player_hand = $scope.renderZone(player["hand"]);
                 $scope.player_library = $scope.renderZone(player["library"]);
                 $scope.player_graveyard = $scope.renderZone(player["graveyard"]);
+
+                $scope.player_life = player["life"];
             }
             else {
                 $scope.opponent_hand = $scope.renderZone(player["hand"]);
                 $scope.opponent_library = $scope.renderZone(player["library"]);
                 $scope.opponent_graveyard = $scope.renderZone(player["graveyard"]);
+
+                $scope.opponent_life = player["life"];
             }
         }
     }
