@@ -119,6 +119,7 @@
     position: absolute;
     left: 42px;
     top: 5px;
+    cursor: default;
 }
 
 .player_lgh {

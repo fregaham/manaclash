@@ -5,8 +5,11 @@
             {{opponent_life}}
         </span> 
 
+        <span class="player_name" ng-if="opponent_action == null">
+            Opponent
+        </span>
 
-        <span class="player_name">
+        <span class="player_name card_action" ng-if="opponent_action != null" ng-click="action(opponent_action);">
             Opponent
         </span>
 
@@ -81,10 +84,15 @@
         <span class="player_pass">
             <button type="button" class="btn btn-default player-pass-button" ng-disabled="passAction == null" ng-click="doPassAction()">{{passText}}</button>
         </span>
-<!--        <span class="player_name"> 
+
+        <span class="player_name" ng-if="player_action == null">
             Player
         </span>
--->
+
+        <span class="player_name card_action" ng-if="player_action != null" ng-click="action(player_action);">
+            Player
+        </span>
+
         <span class="player_lgh">
             <div class="btn-group btn-group-sm">
 <!--              <button type="button" class="btn btn-default"><img src='icons/life.png'/>20</button>-->

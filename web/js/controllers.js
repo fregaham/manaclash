@@ -140,12 +140,14 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
     $scope.player_library = [];
 
     $scope.player_life = 0;
+    $scope.player_action = null;
 
     $scope.opponent_hand = [];
     $scope.opponent_graveyard = [];
     $scope.opponent_library = [];
 
     $scope.opponent_life = 0;
+    $scope.opponent_action = null;
 
     $scope.phase = "";
     $scope.step = "";
@@ -514,6 +516,9 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
         $scope.step = message["step"];
         $scope.turn = Game.rolemap(message["turn"]);
 
+        $scope.player_action = null;
+        $scope.opponent_action = null;
+
         console.log("XXX phase = " + $scope.phase + ", step: " + $scope.step + ", turn: " + $scope.turn);
 
         if (message["player"] == Game.role) {
@@ -538,6 +543,17 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
                     console.log("XXX adding to action map  " + action["object"]);
 
                     $scope.action_map[action["object"]] = action;
+                }
+                else if (action["player_object"] != null) {
+                    if (Game.rolemap(action["player_object"]) == "opponent") {
+                        $scope.opponent_action = action;
+                    }
+                    else if (Game.rolemap(action["player_object"]) == "player") {
+                        $scope.player_action = action;
+                    }
+                    else {
+                        $scope.actions.push(action);
+                    }
                 }
                 else {
                     $scope.actions.push(action);
