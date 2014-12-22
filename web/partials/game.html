@@ -148,7 +148,7 @@
         </div>
         <div class="modal-body">
             <span class="card_stack" ng-repeat="c in objects">
-                <span class="card_small card_{{c.ui_color}}">
+                <span class="card_small card_{{c.ui_color}}" ng-if="c.revealed">
                     <div class="card_content" ng-click="objectAction(c.id)">
                         <span class="header">
                             <span class="title">{{c.title}}</span>
@@ -160,6 +160,9 @@
                             <span class="power" ng-if="c.power != null">{{c.power}}/{{c.toughness}}</span>
                         </span>
                     </div>
+                </span>
+                <span class="card_back" ng-if="!c.revealed">
+                    <img src="mc_back.png" width="100" height="142"/>
                 </span>
             </span>
         </div>

@@ -201,6 +201,7 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
 /*        rendered_stack["position"] = , "absolute");*/
         rendered_card["z-index"] = zindex;
 
+
         if (root_card.tapped) {
             rendered_card["klass"] = "card_tapped";
             width = Math.max(width, left_offset + 142);
@@ -481,6 +482,8 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
         if ($scope.hasObjectAction(obj.id)) {
             obj["ui_color"] += " card_action";
         }
+
+        obj["revealed"] = obj.show_to.indexOf(Game.role) >= 0;
 
         return obj;
     }
