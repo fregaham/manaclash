@@ -9,13 +9,13 @@ from core.shared_data import SharedData
 from collections import deque
 from core.javautils import map_to_vertx, map_from_vertx
 
-from actions import ActionSet, QueryNumber, QueryString, AbilityAction, Action, PassAction
+from actions import ActionSet, QueryNumber, QueryString, AbilityAction, Action, PassAction, PayCostAction
 from mcio import Output, input_generator
 from game import Game
 from process import MainGameProcess
 from oracle import getParseableCards, createCardObject, parseOracle
 from objects import Player
-from abilities import BasicManaAbility
+from abilities import BasicManaAbility, ManaAbility
 import random
 
 from vertxcommon import authorise_handler
@@ -57,7 +57,13 @@ def game_action_handler(gameid, message, user):
             action = _as.actions[int(message.body["action"])]
 
             game_input(game, action)
-
+        elif isinstance(_as, QueryNumber):
+            action = int(message.body["action"])
+            # TODO: error parsing
+            game_input(game, action)
+        elif isinstance(_as, QueryString):
+            action = str(message.body["action"])
+            game_input(game, action)
 
 
 def game_start_handler(message):
@@ -322,6 +328,35 @@ def game_input(game, action):
                 print "autopassing " + current_player_step
             else:
                 print "no pass action"
+                break
+        elif isinstance(game["actions"], ActionSet) and game["actions"].text == "Play Mana Abilities":
+            # can we pay automatically? Only if only one pay action and other actions are just mana abilities
+            payAction = None
+            for a in game["actions"].actions:
+                if isinstance(a, PassAction):
+                    pass
+                elif isinstance(a, AbilityAction):
+                    if isinstance(a.ability, ManaAbility):
+                        pass
+                    else:
+                        # some non-mana ability action in the list, don't autopay
+                        break
+                elif isinstance(a, PayCostAction):
+                    if payAction is None:
+                        payAction = a
+                    else:
+                        # there are more pay actions, cannot autopay
+                        payAction = None
+                        break
+                else:
+                    # any other action means we cannot autopay
+                    payAction = None
+                    break
+            if payAction != None:
+                action = payAction
+                print "autopaying " + current_player_step
+            else:
+                print "not autopaying"
                 break
         else:
             print "not passing " + current_player_step

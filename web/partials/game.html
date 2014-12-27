@@ -176,6 +176,18 @@
         </div>
     </script>
 
+    <script type="text/ng-template" id="query.html">
+        <div class="modal-header">
+            <h3 class="modal-title">{{query}}</h3>
+        </div>
+        <div class="modal-body">
+            <form ng-submit="submit()">
+                <input type="text" class="input-block-level" ng-model="data.answer"></input>
+                <button class="btn btn-large btn-primary" type="submit">Answer</button>
+            </form>
+        </div>
+    </script>
+
     <div id="gametable">
 
 

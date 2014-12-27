@@ -176,6 +176,10 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
         EventBus.send("game.action." + Game.gameid, {'sessionID': SessionManager.sessionID, 'type': 'action', 'action': action.index} );
     }
 
+    $scope.queryAnswer = function(answer) {
+        EventBus.send("game.action." + Game.gameid, {'sessionID': SessionManager.sessionID, 'type': 'action', 'action': answer} );
+    }
+
     $scope.doPassAction = function() {
         if ($scope.passAction != null) {
             $scope.action($scope.passAction);
@@ -519,45 +523,44 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
         $scope.player_action = null;
         $scope.opponent_action = null;
 
-        console.log("XXX phase = " + $scope.phase + ", step: " + $scope.step + ", turn: " + $scope.turn);
-
         if (message["player"] == Game.role) {
 
             $scope.text = message["text"];
 
-//            $scope.actions = message["actions"];
+            if (message["actions"] != null) {
 
-            for (var i = 0; i < message["actions"].length; ++i) {
-//                console.log("XXX adding to action map  " + $scope.actions[i]["object"]);
+                for (var i = 0; i < message["actions"].length; ++i) {
 
-                var action = message["actions"][i];
-                action.index = i;
+                    var action = message["actions"][i];
+                    action.index = i;
 
-                if (action["pass"]) {   
-                    $scope.passAction = action;
-                    $scope.passText = action["text"];
-                    console.log("pass : " + $scope.passText);
-                }
-
-                if (action["object"] != null) {
-                    console.log("XXX adding to action map  " + action["object"]);
-
-                    $scope.action_map[action["object"]] = action;
-                }
-                else if (action["player_object"] != null) {
-                    if (Game.rolemap(action["player_object"]) == "opponent") {
-                        $scope.opponent_action = action;
+                    if (action["pass"]) {   
+                        $scope.passAction = action;
+                        $scope.passText = action["text"];
+                        console.log("pass : " + $scope.passText);
                     }
-                    else if (Game.rolemap(action["player_object"]) == "player") {
-                        $scope.player_action = action;
+
+                    if (action["object"] != null) {
+                        $scope.action_map[action["object"]] = action;
+                    }
+                    else if (action["player_object"] != null) {
+                        if (Game.rolemap(action["player_object"]) == "opponent") {
+                            $scope.opponent_action = action;
+                        }
+                        else if (Game.rolemap(action["player_object"]) == "player") {
+                            $scope.player_action = action;
+                        }
+                        else {
+                            $scope.actions.push(action);
+                        }
                     }
                     else {
                         $scope.actions.push(action);
                     }
                 }
-                else {
-                    $scope.actions.push(action);
-                }
+            }
+            else if (message["query"] != null) {
+                $scope.openQueryDialog(message["query"]);
             }
         }
         else {
@@ -591,12 +594,10 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
                 $scope.opponent_life = player["life"];
             }
         }
+
     }
 
     $scope.hasObjectAction = function(id) {
-
-        console.log("XXX hasObjectAction " + id);
-
         return id in $scope.action_map;
     }
 
@@ -634,6 +635,28 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
         });    
     }
 
+    $scope.openQueryDialog = function(query) {
+        var modalInstance = $modal.open({
+          templateUrl: 'query.html',
+          controller: 'GameQueryCtrl',
+          // size: 'lg',
+          resolve: {
+            query: function () {
+              return query;
+            }
+          }
+        });
+
+        modalInstance.result.then(function (answer) {
+           console.log('answer dialog result: ' + answer);
+           $scope.queryAnswer(answer);
+        }, function () {
+           console.log('answer dialog dismissed');
+           $scope.queryAnswer("");
+        //   $log.info('Modal dismissed at: ' + new Date());
+        });
+    }
+
     Game.statusHandler = function(message) {
         $scope.$apply (function() {
             $scope.render(message);
@@ -661,6 +684,18 @@ manaclashControllers.controller('GameZoneCtrl', ['$scope', '$modalInstance', 'ob
 
     $scope.objectAction = function(id) {
         $modalInstance.close(id); 
+    }
+  }]);
+
+manaclashControllers.controller('GameQueryCtrl', ['$scope', '$modalInstance', 'query', 
+  function ($scope, $modalInstance, query) {
+    $scope.query = query;
+    $scope.data = {
+        answer:""
+    };
+
+    $scope.submit = function() {
+        $modalInstance.close($scope.data.answer);
     }
   }]);
 
