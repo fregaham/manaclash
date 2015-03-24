@@ -153,6 +153,8 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
     $scope.step = "";
     $scope.turn = "";
 
+    $scope.autopass = [];
+
     angular.element($window).bind('resize', function() {
         $scope.updateTableSize();
         $scope.$digest();
@@ -595,6 +597,13 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
             }
         }
 
+
+        if (Game.role == "player1") {
+            $scope.autopass = message["player1_autopass"];
+        }
+        else if (Game.role == "player2") {
+            $scope.autopass = message["player2_autopass"];
+        }
     }
 
     $scope.hasObjectAction = function(id) {

@@ -269,6 +269,8 @@ def game_state(game, _as):
 
 def game_send_state(game):
     state = game_state(game["game"], game["actions"])
+    state["player1_autopass"] = game["player1_autopass"]
+    state["player2_autopass"] = game["player2_autopass"]
     EventBus.publish('game.state.' + game["id"], state)
 
 def _relative_phase_step(game, player):
