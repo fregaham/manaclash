@@ -24,46 +24,46 @@
     </div> 
 
     <div class="opponent_turn_structure turn_structure">
-        <div class="turn_element" ng-class="autopass.indexOf('opponent beginning upkeep') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent beginning upkeep') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent beginning upkeep')">
             <img src="icons/upkeep_full.png" ng-if="!(step == 'upkeep' && turn == 'opponent')"/>
             <img src="icons/upkeep_full_active.png" ng-if="(step == 'upkeep' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent beginning draw') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent beginning draw') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent beginning draw')">
             <img src="icons/draw_full.png" ng-if="!(step == 'draw' && turn == 'opponent')"/>
             <img src="icons/draw_full_active.png" ng-if="(step == 'draw' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent precombat main') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent precombat main') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent precombat main')">
             <img src="icons/pre_full.png" ng-if="!(phase == 'precombat main' && turn == 'opponent')"/>
             <img src="icons/pre_full_active.png" ng-if="(phase == 'precombat main' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent postcombat main') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent postcombat main') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent postcombat main')">
             <img src="icons/post_full.png" ng-if="!(phase == 'postcombat main' && turn == 'opponent')"/>
             <img src="icons/post_full_active.png" ng-if="(phase == 'postcombat main' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent end end of turn') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent end end of turn') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent end end of turn')">
             <img src="icons/endofturn.png" ng-if="!(phase == 'end' && turn == 'opponent')"/>
             <img src="icons/endofturn_active.png" ng-if="(phase == 'end' && turn == 'opponent')"/>
         </div>
     </div>
 
     <div class="opponent_combat_turn_structure turn_structure">
-         <div class="turn_element" ng-class="autopass.indexOf('opponent combat beginning of combat') == -1 ? 'turn_unselected' : 'turn_selected'">
+         <div class="turn_element" ng-class="autopass.indexOf('opponent combat beginning of combat') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent combat beginning of combat')">
             <img src="icons/pre_combat.png" ng-if="!(step == 'beginning of combat' && turn == 'opponent')"/>
             <img src="icons/pre_combat_active.png" ng-if="(step == 'beginning of combat' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent combat declare attackers') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent combat declare attackers') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent combat declare attackers')">
             <img src="icons/attackers.png" ng-if="!(step == 'declare attackers' && turn == 'opponent')"/>
             <img src="icons/attackers_active.png" ng-if="(step == 'declare attackers' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent combat declare blockers') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent combat declare blockers') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent combat declare blockers')">
             <img src="icons/blockers.png" ng-if="!(step == 'declare blockers' && turn == 'opponent')"/>
             <img src="icons/blockers_active.png" ng-if="(step == 'declare blockers' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent combat combat damage') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent combat combat damage') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent combat combat damage')">
             <img src="icons/damage.png" ng-if="!(step == 'combat damage' && turn == 'opponent')"/>
             <img src="icons/damage_active.png" ng-if="(step == 'combat damage' && turn == 'opponent')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('opponent combat end of combat') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('opponent combat end of combat') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('opponent combat end of combat')">
             <img src="icons/post_combat.png" ng-if="!(step == 'end of combat' && turn == 'opponent')"/>
             <img src="icons/post_combat_active.png" ng-if="(step == 'end of combat' && turn == 'opponent')"/>
         </div>
@@ -104,46 +104,46 @@
     </div>
 
     <div class="player_turn_structure turn_structure">
-        <div class="turn_element" ng-class="autopass.indexOf('player beginning upkeep') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player beginning upkeep') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player beginning upkeep')">
             <img src="icons/upkeep_full.png" ng-if="!(step == 'upkeep' && turn == 'player')"/>
             <img src="icons/upkeep_full_active.png" ng-if="(step == 'upkeep' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player beginning draw') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player beginning draw') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player beginning draw')">
             <img src="icons/draw_full.png" ng-if="!(step == 'draw' && turn == 'player')"/>
             <img src="icons/draw_full_active.png" ng-if="(step == 'draw' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player precombat main') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player precombat main') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player precombat main')">
             <img src="icons/pre_full.png" ng-if="!(phase == 'precombat main' && turn == 'player')"/>
             <img src="icons/pre_full_active.png" ng-if="(phase == 'precombat main' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player postcombat main') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player postcombat main') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player postcombat main')">
             <img src="icons/post_full.png" ng-if="!(phase == 'postcombat main' && turn == 'player')"/>
             <img src="icons/post_full_active.png" ng-if="(phase == 'postcombat main' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player end end of turn') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player end end of turn') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player end end of turn')">
             <img src="icons/endofturn.png" ng-if="!(phase == 'end' && turn == 'player')"/>
             <img src="icons/endofturn_active.png" ng-if="(phase == 'end' && turn == 'player')"/>
         </div>
     </div>
 
     <div class="player_combat_turn_structure turn_structure">
-         <div class="turn_element" ng-class="autopass.indexOf('player combat beginning of combat') == -1 ? 'turn_unselected' : 'turn_selected'">
+         <div class="turn_element" ng-class="autopass.indexOf('player combat beginning of combat') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player combat beginning of combat')">
             <img src="icons/pre_combat.png" ng-if="!(step == 'beginning of combat' && turn == 'player')"/>
             <img src="icons/pre_combat_active.png" ng-if="(step == 'beginning of combat' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player combat declare attackers') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player combat declare attackers') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player combat declare attackers')">
             <img src="icons/attackers.png" ng-if="!(step == 'declare attackers' && turn == 'player')"/>
             <img src="icons/attackers_active.png" ng-if="(step == 'declare attackers' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player combat declare blockers') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player combat declare blockers') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player combat declare blockers')">
             <img src="icons/blockers.png" ng-if="!(step == 'declare blockers' && turn == 'player')"/>
             <img src="icons/blockers_active.png" ng-if="(step == 'declare blockers' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player combat combat damage') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player combat combat damage') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player combat combat damage')">
             <img src="icons/damage.png" ng-if="!(step == 'combat damage' && turn == 'player')"/>
             <img src="icons/damage_active.png" ng-if="(step == 'combat damage' && turn == 'player')"/>
         </div>
-        <div class="turn_element" ng-class="autopass.indexOf('player combat end of combat') == -1 ? 'turn_unselected' : 'turn_selected'">
+        <div class="turn_element" ng-class="autopass.indexOf('player combat end of combat') == -1 ? 'turn_unselected' : 'turn_selected'" ng-click="autopassToggle('player combat end of combat')">
             <img src="icons/post_combat.png" ng-if="!(step == 'end of combat' && turn == 'player')"/>
             <img src="icons/post_combat_active.png" ng-if="(step == 'end of combat' && turn == 'player')"/>
         </div>

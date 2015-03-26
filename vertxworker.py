@@ -65,6 +65,19 @@ def game_action_handler(gameid, message, user):
             action = str(message.body["action"])
             game_input(game, action)
 
+def game_autopass_handler(gameid, message, user):
+
+    print "XXX game_autopass_handler"
+
+    game = games[gameid]
+    if message.body["role"] == "player1":
+        assert game["player1"] == user
+        game["player1_autopass"] = message.body["list"]
+    elif message.body["role"] == "player2":
+        assert game["player2"] == user
+        game["player2_autopass"] = message.body["list"]
+    else:
+        assert False
 
 def game_start_handler(message):
 
@@ -80,12 +93,15 @@ def game_start_handler(message):
 
     print "XXX registering " + gameid
     unregister_id = EventBus.register_handler('game.action.' + gameid, handler=functools.partial(authorise_handler, functools.partial(game_action_handler, gameid)))
+
+    # autopass setting
+    unregister_autopass_id = EventBus.register_handler('game.autopass.' + gameid, handler=functools.partial(authorise_handler, functools.partial(game_autopass_handler, gameid)))
     
     #unregister_id = EventBus.register_handler('game.' + gameid, handler=functools.partial(authorise_handler, game_handler))
 
     print "XXX: registered, unregister_id: " + `unregister_id`
 
-    games[gameid] = {'id': gameid, 'unregister_id' : unregister_id, 'player1': player1, 'player2': player2, 'player1_joined': False, 'player2_joined': False}
+    games[gameid] = {'id': gameid, 'unregister_id' : unregister_id, 'unregister_autopass_id': unregister_autopass_id, 'player1': player1, 'player2': player2, 'player1_joined': False, 'player2_joined': False}
 
     games[gameid]["player1_autopass"] = ["player beginning upkeep", "opponent beginning upkeep", "player beginning draw", "opponent beginning draw", "opponent precombat main", "player combat beginning of combat", "opponent combat beginning of combat", "player combat end of combat", "opponent combat end of combat", "opponent postcombat main", "player end end of turn"]
     games[gameid]["player2_autopass"] = ["player beginning upkeep", "opponent beginning upkeep", "player beginning draw", "opponent beginning draw", "opponent precombat main", "player combat beginning of combat", "opponent combat beginning of combat", "player combat end of combat", "opponent combat end of combat", "opponent postcombat main", "player end end of turn"]

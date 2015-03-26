@@ -194,6 +194,19 @@ manaclashControllers.controller('GameCtrl', ['$scope', '$window', '$modal', '$ht
         }
     }
 
+    $scope.autopassToggle = function(pass) {
+
+        var passIndex = $scope.autopass.indexOf(pass);
+        if (passIndex == -1) {
+            $scope.autopass.push(pass);
+        }
+        else {
+            $scope.autopass.splice(passIndex, 1);
+        }
+
+        EventBus.send("game.autopass." + Game.gameid, {'sessionID': SessionManager.sessionID, 'role': Game.role, 'list': $scope.autopass});
+    }
+
     $scope.createBattlefieldStackRecursive = function(rendered_stack, root_card, left_offset, top_offset, width, height, zindex, enchantments) {
 
         var rendered_card = {};
