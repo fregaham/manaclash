@@ -2,23 +2,52 @@
     <h3>Decks!</h3>
     <p>Deck: {{deckname}}</p>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Count</th><th>Card Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr ng-repeat="entry in deck">
-                <td>{{entry[0]}}</td>
-                <td>{{entry[1]}}</td>
-                <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn" ng-click="deckDec(entry[1])"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
-                        <button class="btn" ng-click="deckInc(entry[1])"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <input type="text" ng-model="filter" class="col-md-8" placeholder="Filter...">
+
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Card Name</th><th>Cost</th><th>Rule text</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="card in cards | filter:filter">
+                    <td>{{card.name}}</td>
+                    <td>{{card.cost}}</td>
+                    <td>{{card.rules}}</td>
+                    <td>
+                        <div class="btn-group btn-group-xs">
+                            <button class="btn" ng-click="deckInc(card.name)"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Count</th><th>Card Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="entry in deck">
+                    <td>{{entry[0]}}</td>
+                    <td>{{entry[1]}}</td>
+                    <td>
+                        <div class="btn-group btn-group-xs">
+                            <button class="btn" ng-click="deckDec(entry[1])"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                            <button class="btn" ng-click="deckInc(entry[1])"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
 </div>

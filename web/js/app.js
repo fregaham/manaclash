@@ -6,6 +6,7 @@ var manaclashApp = angular.module('manaclashApp', [
     'ngRoute',
     'manaclashControllers',
     'manaclashServices',
+    'cardsService',
     'decksService',
     'decksController',
     'ui.bootstrap'

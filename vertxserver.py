@@ -9,6 +9,10 @@ from core.javautils import map_to_vertx, map_from_vertx
 
 from vertxcommon import authorise_handler
 
+from oracle import parseOracle
+
+import os
+
 server = vertx.create_http_server()
 
 chat_history = deque()
@@ -17,6 +21,28 @@ chat_history_max = 32
 sockjsaddr2username = SharedData.get_hash('manaclash.sockjsaddr2username')
 online_users = {}
 
+# read the oracle
+cards = {}
+for fname in os.listdir("oracle"):
+    oracleFile = open(os.path.join("oracle", fname), "r")
+    for card in parseOracle(oracleFile):
+        cardMap = {}
+
+        cardMap["name"] = card.name
+        cardMap["cost"] = card.cost
+        cardMap["supertypes"] = list(card.supertypes)
+        cardMap["subtypes"] = list(card.subtypes)
+        cardMap["types"] = list(card.types)
+        cardMap["power"] = card.power
+        cardMap["toughness"] = card.toughness
+        cardMap["rules"] = card.rules
+
+        cards[card.name] = cardMap
+
+    oracleFile.close()
+
+cardNames = cards.keys()
+cardNames.sort()
 
 @server.request_handler
 def request_handler(req):
@@ -66,7 +92,20 @@ class MyHook(org.vertx.java.core.sockjs.EventBusBridgeHook):
 
 bridge = sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'deck.read'}, {'address':'deck.username2deck'}, {'address':'deck.read'}, {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}, {'address':'joinDuel'}, {'address':'game.join'}, {'address_re':'game.action.*'}, {'address_re':'game.autopass.*'}
+        {'address':'cards'},
+        {'address':'deck.read'},
+        {'address':'deck.username2deck'},
+        {'address':'deck.save'},
+        {'address':'chat'},
+        {'address':'list'},
+        {'address':'vertx.basicauthmanager.login'},
+        {'address':'register'},
+        {'address':'chat_enter'},
+        {'address':'openForDuel'},
+        {'address':'joinDuel'},
+        {'address':'game.join'},
+        {'address_re':'game.action.*'},
+        {'address_re':'game.autopass.*'}
     ],
     [
         {'address':'onchat'}, {'address':'onusers'}, {'address':'game.started'}, {'address_re':'game.state.*'}
@@ -225,6 +264,10 @@ def join_duel_handler(message, username):
 
     EventBus.send("game.start", msg)
 
+def cards_handler(message):
+    print "here!!!"
+    message.reply(cards)
+
 def deck_username2deck_handler(message):
 
     def find_handler(reply):
@@ -245,12 +288,11 @@ def deck_username2deck_handler(message):
 def deck_read_handler(message, username):
     def find_handler(reply):
 
-        print `reply.body`
-
         decks = reply.body["results"][0]["decks"]
         deckname = reply.body["results"][0]["deckname"]
+        available = cardNames
 
-        message.reply({'deckname':deckname, 'decks':decks})
+        message.reply({'deckname':deckname, 'decks':decks, 'available':available})
 
     EventBus.send('vertx.mongopersistor', {
         "action": "find",
@@ -392,7 +434,7 @@ EventBus.register_handler('user.enter', handler=online_users_handler)
 EventBus.register_handler('deck.username2deck', handler=deck_username2deck_handler)
 EventBus.register_handler('deck.read', handler=functools.partial(authorise_handler, deck_read_handler))
 EventBus.register_handler('deck.save', handler=functools.partial(authorise_handler, deck_save_handler))
-
+EventBus.register_handler('cards', handler=cards_handler)
 
 
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.1.0', {"address": "vertx.mongopersistor"},  handler=deploy_handler)

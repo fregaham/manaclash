@@ -13,12 +13,19 @@ decksService.factory('Decks', ['EventBus', 'SessionManager',
             that.deckname = null;
             that.decks = null;
 
+            that.availableCards = null;
+
             that.readDecks = function(callback) {
                 that.eventBus.send("deck.read", {'sessionID': that.sessionManager.sessionID}, function (readReply) {
                     that.deckname = readReply["deckname"];
                     that.decks = readReply["decks"];
+                    that.availableCards = readReply["available"];
 
-                    callback(that.deckname, that.decks);
+                    // alert(that.availableCards.toSource());
+
+                    if (callback != null) {
+                        callback(that.deckname, that.decks, that.availableCards);
+                    }
                 });
             }
 

@@ -1,22 +1,50 @@
 'use strict';
 
-var decksController = angular.module('decksController', ['manaclashServices', 'decksService']);
+var decksController = angular.module('decksController', ['manaclashServices', 'decksService', 'cardsService']);
 
-decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'SessionManager', 'Decks', '$location', '$timeout',
-    function ($scope, $http, EventBus, SessionManager, Decks, $location, $timeout) {
+decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'SessionManager', 'Decks', 'Cards', '$location', '$timeout',
+    function ($scope, $http, EventBus, SessionManager, Decks, Cards, $location, $timeout) {
         $scope.deckname = null;
         $scope.deck = [];
         $scope.decks = {};
+        $scope.cards = null;
+
+        $scope.filter = null;
 
         $scope.$on('$viewContentLoaded', function() {
-            Decks.readDecks(function(deckname, decks) {
-                $scope.$apply (function() {
-                    $scope.deckname = deckname;
-                    $scope.decks = decks;
-                    $scope.deck = decks[deckname];
-                });
-            })
+            Decks.readDecks(function(deckname, decks, availableCards) {
+                $scope.refreshCards();
+            });
+
+            Cards.readCards(function(cards) {
+                $scope.refreshCards();
+            });
         });
+
+        $scope.refreshCards = function() {
+
+            // alert("Cards.cards: " + Cards.cards + ", Decks.availableCards: " + Decks.availableCards);
+
+            if (Cards.cards != null && Decks.availableCards != null) {
+                $scope.$apply (function() {
+                    var cards = [];
+                    for (var i = 0; i < Decks.availableCards.length; ++i) {
+                        var card = Cards.cards[Decks.availableCards[i]];
+                        cards.push(card);
+                    }
+
+                    $scope.cards = cards;
+                });
+            }
+
+            if (Decks.decks != null) {
+                $scope.$apply(function () {
+                    $scope.deckname = Decks.deckname;
+                    $scope.decks = Decks.decks;
+                    $scope.deck = Decks.decks[$scope.deckname];
+                });
+            }
+        }
 
         $scope.deckInc = function(cardName) {
             var found = false;
@@ -30,7 +58,7 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
             }
 
             if (!found) {
-                $scope.deck.append([1, cardName]);
+                $scope.deck.push([1, cardName]);
             }
         }
 
