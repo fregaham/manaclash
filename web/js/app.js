@@ -3,10 +3,12 @@
 /* App Module */
 
 var manaclashApp = angular.module('manaclashApp', [
-  'ngRoute',
-  'manaclashControllers',
-  'manaclashServices',
-  'ui.bootstrap'
+    'ngRoute',
+    'manaclashControllers',
+    'manaclashServices',
+    'decksService',
+    'decksController',
+    'ui.bootstrap'
 ]);
 
 
@@ -29,7 +31,11 @@ manaclashApp.config(['$routeProvider',
         templateUrl: 'partials/game.html',
         controller: 'GameCtrl'
       }).
-      otherwise({
+      when('/decks', {
+        templateUrl: 'partials/decks.html',
+        controller: 'DecksController'
+      })
+      .otherwise({
           redirectTo: '/login'
 /*          redirectTo: '/game'*/
       });

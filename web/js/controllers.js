@@ -103,6 +103,10 @@ manaclashControllers.controller('LobbyCtrl', ['$scope', '$http', '$timeout', '$l
         }
     }
 
+    $scope.decks = function() {
+        $location.path('/decks');
+    }
+
     $scope.onOpenForDuel = function(t) {
         EventBus.send("openForDuel", {'sessionID': SessionManager.sessionID, 'open':t})
     }

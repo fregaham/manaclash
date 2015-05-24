@@ -66,7 +66,7 @@ class MyHook(org.vertx.java.core.sockjs.EventBusBridgeHook):
 
 bridge = sockJSServer.bridge({'prefix' : '/eventbus'},
     [
-        {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}, {'address':'joinDuel'}, {'address':'game.join'}, {'address_re':'game.action.*'}, {'address_re':'game.autopass.*'}
+        {'address':'deck.read'}, {'address':'deck.username2deck'}, {'address':'deck.read'}, {'address':'chat'}, {'address':'list'}, {'address':'vertx.basicauthmanager.login'}, {'address':'register'}, {'address':'chat_enter'}, {'address':'openForDuel'}, {'address':'joinDuel'}, {'address':'game.join'}, {'address_re':'game.action.*'}, {'address_re':'game.autopass.*'}
     ],
     [
         {'address':'onchat'}, {'address':'onusers'}, {'address':'game.started'}, {'address_re':'game.state.*'}
@@ -200,7 +200,7 @@ def read_deck(deckname):
     f = open('decks/' + deckname + '.txt', 'r')
     for line in f:
         count, title = line.rstrip().split(" ", 1)
-        deck.append ( (int(count), title.strip()) )
+        deck.append ( [int(count), title.strip()] )
 
     f.close()
 
@@ -225,6 +225,64 @@ def join_duel_handler(message, username):
 
     EventBus.send("game.start", msg)
 
+def deck_username2deck_handler(message):
+
+    def find_handler(reply):
+        decks = reply.body["results"][0]["decks"]
+        deckname = reply.body["results"][0]["deckname"]
+
+        message.reply({'deckname':deckname, 'deck':decks[deckname]})
+
+    EventBus.send('vertx.mongopersistor', {
+        "action": "find",
+        "collection": "users",
+        "matcher": {
+            "username": message.body
+        }
+    }, find_handler)
+
+
+def deck_read_handler(message, username):
+    def find_handler(reply):
+
+        print `reply.body`
+
+        decks = reply.body["results"][0]["decks"]
+        deckname = reply.body["results"][0]["deckname"]
+
+        message.reply({'deckname':deckname, 'decks':decks})
+
+    EventBus.send('vertx.mongopersistor', {
+        "action": "find",
+        "collection": "users",
+        "matcher": {
+            "username": username
+        }
+    }, find_handler)
+
+def deck_save_handler(message, username):
+
+    deckname = message.body["deckname"]
+    decks = message.body["decks"]
+
+    def update_handler(reply):
+       message.reply()
+
+    EventBus.send('vertx.mongopersistor', {
+        "action": "update",
+        "collection": "users",
+        "criteria": {
+            "username": username,
+        },
+        "objNew" : {
+            "$set": {
+                "decks":decks,
+                "deckname":deckname
+            }
+        },
+        "upsert": False,
+        "multi" : False
+    }, update_handler)
 
 def deploy_handler(err, id):
 
@@ -232,13 +290,67 @@ def deploy_handler(err, id):
 
     if err is None:
 
-        def reply_handler(msg):
-            print `msg.body`
+        def msg_handler(msg):
+            print msg.body
 
-        #EventBus.send('vertx.mongopersistor', {
-        #    'action': 'command',
-        #    'command': "{ createIndexes: 'users', indexes: [{key:'username', unique:true}] }"
-        #    }, reply_handler)
+        def after_delete_handler(msg):
+            EventBus.send('vertx.mongopersistor', {
+                'action': 'command',
+                'command': "{ dropIndexes: 'collection', index: '*' }"
+            }, after_delete_indexes_handler)
+
+        def after_delete_indexes_handler(msg):
+            EventBus.send('vertx.mongopersistor', {
+                'action': 'command',
+                'command': "{ createIndexes: 'users', indexes: [{key:'username', unique:true}] }"
+            }, after_create_indexes_handler)
+
+        def after_create_indexes_handler(msg):
+
+            decknames = ["Heavy Hitters", "Expulsion", "Life Boost", "Sky Slam", "Speed Scorch"]
+            decks = {}
+
+            for deckname in decknames:
+                decks[deckname] = read_deck(deckname)
+
+            EventBus.send('vertx.mongopersistor', {
+                'action': 'save',
+                'collection': 'users',
+                'document': {
+                    'firstname': 'Foo',
+                    'lastname': 'Fooish',
+                    'email': 'foo@zemarov.org',
+                    'username': 'foo',
+                    'password': 'foo',
+                    'deckname': 'Heavy Hitters',
+                    'decks': decks
+                }
+            }, msg_handler)
+            EventBus.send('vertx.mongopersistor', {
+                'action': 'save',
+                'collection': 'users',
+                'document': {
+                    'firstname': 'Bar',
+                    'lastname': 'Barish',
+                    'email': 'bar@zemarov.org',
+                    'username': 'bar',
+                    'password': 'bar',
+                    'deckname': 'Speed Scorch',
+                    'decks': decks
+                }
+            }, msg_handler)
+
+        EventBus.send('vertx.mongopersistor', {
+            'action': 'delete',
+            'collection': 'users',
+            'matcher': {}
+        }, after_delete_handler)
+
+# { dropIndexes: "collection", index: "*" }
+
+
+
+
 
         # And a user
         #EventBus.send('vertx.mongopersistor', {
@@ -276,6 +388,12 @@ EventBus.register_handler('joinDuel', handler=functools.partial(authorise_handle
 
 EventBus.register_handler('user.leave', handler=online_users_handler)
 EventBus.register_handler('user.enter', handler=online_users_handler)
+
+EventBus.register_handler('deck.username2deck', handler=deck_username2deck_handler)
+EventBus.register_handler('deck.read', handler=functools.partial(authorise_handler, deck_read_handler))
+EventBus.register_handler('deck.save', handler=functools.partial(authorise_handler, deck_save_handler))
+
+
 
 vertx.deploy_module('io.vertx~mod-mongo-persistor~2.1.0', {"address": "vertx.mongopersistor"},  handler=deploy_handler)
 vertx.deploy_module('io.vertx~mod-auth-mgr~2.0.0-final')

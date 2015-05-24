@@ -2,7 +2,7 @@ var manaclashServices = angular.module('manaclashServices', []);
 
 manaclashServices.factory('EventBus', [
   function() {
-    eb = new vertx.EventBus('http://localhost:8080/eventbus');
+    var eb = new vertx.EventBus('http://localhost:8080/eventbus');
 
     eb.myHandlers = [];
 
@@ -13,7 +13,7 @@ manaclashServices.factory('EventBus', [
         else {
             eb.myHandlers.push({'address': address, 'callback': callback});
         }
-    }
+    };
 
     eb.onopen = function() {
         eb.myInit = true;
@@ -46,7 +46,7 @@ manaclashServices.factory('SessionManager', ['EventBus',
                 }
             });
         }
-    }
+    };
 
     return new SessionManager(EventBus);
   }
@@ -85,7 +85,7 @@ manaclashServices.factory('Game', ['EventBus', 'SessionManager',
                 }
 
                 // alert(message.toSource());
-            }
+            };
 
             that.leaveGame = function() {
                  if (that.unregister_id != null) {
@@ -93,7 +93,7 @@ manaclashServices.factory('Game', ['EventBus', 'SessionManager',
                     that.gameid = null;
                     that.unregister_id = null;
                 }
-            }
+            };
 
             that.joinGame = function(id) {
                 that.leaveGame();
@@ -109,7 +109,7 @@ manaclashServices.factory('Game', ['EventBus', 'SessionManager',
                 that.gameid = id;
                 that.unregister_id = EventBus.registerHandler('game.state.' + id, that.gameHandler);
                 that.eventBus.send("game.join", {'sessionID': that.sessionManager.sessionID, 'id': id});
-            }
+            };
 
             that.rolemap = function(role) {
                 if (that.role == role) {
@@ -118,7 +118,7 @@ manaclashServices.factory('Game', ['EventBus', 'SessionManager',
                 else {
                     return "opponent";
                 }
-            }
+            };
 
             that.eventBus.myHandler('game.started', function(message) {
                 if (message.player1 == that.sessionManager.username || message.player2 == that.sessionManager.username) {
@@ -135,7 +135,7 @@ manaclashServices.factory('Game', ['EventBus', 'SessionManager',
                     that.joinGame(message.id);
                 }
             });
-        }
+        };
 
         return new Game(EventBus, SessionManager);
     }
