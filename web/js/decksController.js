@@ -11,6 +11,13 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
 
         $scope.filter = null;
 
+        $scope.cardPopoverTemplate = "cardPopoverTemplate.html";
+        $scope.currentCard = null;
+
+        $scope.setCurrentCard = function(cardName) {
+            $scope.currentCard = Cards.cards[cardName];
+        }
+
         $scope.$on('$viewContentLoaded', function() {
             Decks.readDecks(function(deckname, decks, availableCards) {
                 $scope.refreshCards();

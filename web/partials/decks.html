@@ -1,8 +1,20 @@
 <div id="decks" class="container-fluid">
-    <h3>Decks!</h3>
-    <p>Deck: {{deckname}}</p>
+    <div class="row">
+        <div class="col-md-8">
+            <input type="text" class="col-md-12" ng-model="filter" placeholder="Filter...">
+        </div>
 
-    <input type="text" ng-model="filter" class="col-md-8" placeholder="Filter...">
+        <div class="col-md-4">
+            <div class="col-md-8">Deck: {{deckname}}</div><div class="col-md-4 btn-group"><button class="btn">Rename</button><button class="btn">Save</button></div>
+        </div>
+    </div>
+
+    <script type="text/ng-template" id="cardPopoverTemplate.html">
+        <div>{{currentCard.rules}}</div>
+        <div ng-if="currentCard.power != null">
+            <span>{{currentCard.power}}/{{currentCard.toughness}}</span>
+        </div>
+    </script>
 
     <div class="row">
         <div class="col-md-8">
@@ -36,7 +48,7 @@
                 <tbody>
                 <tr ng-repeat="entry in deck">
                     <td>{{entry[0]}}</td>
-                    <td>{{entry[1]}}</td>
+                    <td><button popover-template="cardPopoverTemplate" popover-title="{{currentCard.name}} {{currentCard.cost}}" popover-trigger="mouseenter" ng-mouseenter="setCurrentCard(entry[1])">{{entry[1]}}</button></td>
                     <td>
                         <div class="btn-group btn-group-xs">
                             <button class="btn" ng-click="deckDec(entry[1])"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
