@@ -2,8 +2,8 @@
 
 var decksController = angular.module('decksController', ['manaclashServices', 'decksService', 'cardsService']);
 
-decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'SessionManager', 'Decks', 'Cards', '$location', '$timeout',
-    function ($scope, $http, EventBus, SessionManager, Decks, Cards, $location, $timeout) {
+decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'SessionManager', 'Decks', 'Cards', '$location', '$timeout', '$modal',
+    function ($scope, $http, EventBus, SessionManager, Decks, Cards, $location, $timeout, $modal) {
         $scope.deckname = null;
         $scope.deck = [];
         $scope.decks = {};
@@ -16,7 +16,7 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
 
         $scope.setCurrentCard = function(cardName) {
             $scope.currentCard = Cards.cards[cardName];
-        }
+        };
 
         $scope.$on('$viewContentLoaded', function() {
             Decks.readDecks(function(deckname, decks, availableCards) {
@@ -51,7 +51,7 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
                     $scope.deck = Decks.decks[$scope.deckname];
                 });
             }
-        }
+        };
 
         $scope.deckInc = function(cardName) {
             var found = false;
@@ -67,7 +67,7 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
             if (!found) {
                 $scope.deck.push([1, cardName]);
             }
-        }
+        };
 
         $scope.deckDec = function(cardName) {
             for (var i = 0; i < $scope.deck.length; ++i) {
@@ -81,5 +81,44 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
                     break;
                 }
             }
+        };
+
+        $scope.rename = function() {
+            var modalInstance = $modal.open({
+                templateUrl: 'deckRename.html',
+                controller: 'DecksRenameCtrl',
+                // size: 'lg',
+                resolve: {
+                    deckName: function () {
+                        return $scope.deckname;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function (newName) {
+                Decks.renameDeck(newName);
+                $scope.refreshCards();
+            }, function () {
+                // nop
+            });
+        };
+
+        $scope.save = function() {
+            Decks.save();
+        };
+
+
+    }]);
+
+decksController.controller('DecksRenameCtrl', ['$scope', '$modalInstance', 'deckName',
+    function ($scope, $modalInstance, deckName) {
+        $scope.deckName = deckName;
+
+        $scope.cancel = function() {
+            $modalInstance.dismiss('cancel');
+        };
+
+        $scope.save = function() {
+            $modalInstance.close($scope.deckName);
         }
     }]);

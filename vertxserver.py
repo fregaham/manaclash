@@ -308,7 +308,8 @@ def deck_save_handler(message, username):
     decks = message.body["decks"]
 
     def update_handler(reply):
-       message.reply()
+       print `reply.body`
+       message.reply({"status":"ok"})
 
     EventBus.send('vertx.mongopersistor', {
         "action": "update",

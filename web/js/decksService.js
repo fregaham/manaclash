@@ -27,14 +27,26 @@ decksService.factory('Decks', ['EventBus', 'SessionManager',
                         callback(that.deckname, that.decks, that.availableCards);
                     }
                 });
-            }
+            };
 
             that.getDeckname = function() {
                 return that.deckname;
-            }
+            };
 
             that.getDecks = function() {
                 return that.decks;
+            };
+
+            that.renameDeck = function(newname) {
+
+                that.decks[newname] = that.decks[that.deckname];
+                delete that.decks[that.deckname];
+
+                that.deckname = newname;
+            };
+
+            that.save = function() {
+                that.eventBus.send("deck.save", {'sessionID': that.sessionManager.sessionID, 'deckname': that.deckname, 'decks':that.decks});
             }
         };
 
