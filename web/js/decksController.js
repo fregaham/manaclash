@@ -14,6 +14,10 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
         $scope.cardPopoverTemplate = "cardPopoverTemplate.html";
         $scope.currentCard = null;
 
+        $scope.back = function() {
+            $location.path('/lobby');
+        };
+
         $scope.setCurrentCard = function(cardName) {
             $scope.currentCard = Cards.cards[cardName];
         };
@@ -33,7 +37,7 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
             // alert("Cards.cards: " + Cards.cards + ", Decks.availableCards: " + Decks.availableCards);
 
             if (Cards.cards != null && Decks.availableCards != null) {
-                $scope.$apply (function() {
+                $timeout (function() {
                     var cards = [];
                     for (var i = 0; i < Decks.availableCards.length; ++i) {
                         var card = Cards.cards[Decks.availableCards[i]];
@@ -45,7 +49,7 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
             }
 
             if (Decks.decks != null) {
-                $scope.$apply(function () {
+                $timeout(function () {
                     $scope.deckname = Decks.deckname;
                     $scope.decks = Decks.decks;
                     $scope.deck = Decks.decks[$scope.deckname];
@@ -67,6 +71,8 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
             if (!found) {
                 $scope.deck.push([1, cardName]);
             }
+
+            Decks.save();
         };
 
         $scope.deckDec = function(cardName) {
@@ -81,6 +87,8 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
                     break;
                 }
             }
+
+            Decks.save();
         };
 
         $scope.rename = function() {
@@ -97,6 +105,7 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
 
             modalInstance.result.then(function (newName) {
                 Decks.renameDeck(newName);
+                Decks.save();
                 $scope.refreshCards();
             }, function () {
                 // nop
@@ -107,6 +116,53 @@ decksController.controller('DecksController', ['$scope', '$http', 'EventBus', 'S
             Decks.save();
         };
 
+        $scope.selectDeck = function(dname) {
+            Decks.selectDeck(dname);
+            Decks.save();
+            $scope.refreshCards();
+        };
+
+        $scope.newDeck = function() {
+
+            var modalInstance = $modal.open({
+                templateUrl: 'deckNew.html',
+                controller: 'DecksRenameCtrl',
+                resolve: {
+                    deckName: function () {
+                        return "New Deck";
+                    }
+                }
+            });
+
+            modalInstance.result.then(function (newName) {
+                $scope.decks[newName] = [];
+                Decks.selectDeck(newName);
+                Decks.save();
+                $scope.refreshCards();
+            }, function () {
+                // nop
+            });
+        };
+
+        $scope.delete = function() {
+            var modalInstance = $modal.open({
+                templateUrl: 'deckDelete.html',
+                controller: 'DecksDeleteCtrl',
+                resolve: {
+                    deckName: function () {
+                        return $scope.deckname;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function () {
+                Decks.delete();
+                Decks.save();
+                $scope.refreshCards();
+            }, function () {
+                // nop
+            });
+        };
 
     }]);
 
@@ -120,5 +176,18 @@ decksController.controller('DecksRenameCtrl', ['$scope', '$modalInstance', 'deck
 
         $scope.save = function() {
             $modalInstance.close($scope.deckName);
+        }
+    }]);
+
+decksController.controller('DecksDeleteCtrl', ['$scope', '$modalInstance', 'deckName',
+    function ($scope, $modalInstance, deckName) {
+        $scope.deckName = deckName;
+
+        $scope.cancel = function() {
+            $modalInstance.dismiss('cancel');
+        };
+
+        $scope.ok = function() {
+            $modalInstance.close();
         }
     }]);

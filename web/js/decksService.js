@@ -45,8 +45,32 @@ decksService.factory('Decks', ['EventBus', 'SessionManager',
                 that.deckname = newname;
             };
 
+            that.selectDeck = function(dname) {
+                that.deckname = dname;
+            };
+
             that.save = function() {
                 that.eventBus.send("deck.save", {'sessionID': that.sessionManager.sessionID, 'deckname': that.deckname, 'decks':that.decks});
+            }
+
+            that.delete = function() {
+                delete that.decks[that.deckname];
+                var key;
+                var newDeck = null;
+                for (key in that.decks) {
+                    if (that.decks.hasOwnProperty(key)) {
+                        newDeck = key;
+                    }
+                }
+
+                if (newDeck == null) {
+                    // no other deck found, create an empty deck
+                    that.decks["New Deck"] = [];
+                    that.deckname = "New Deck";
+                }
+                else {
+                    that.deckname = newDeck;
+                }
             }
         };
 
